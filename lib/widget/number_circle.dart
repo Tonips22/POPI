@@ -8,17 +8,17 @@ class NumberCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 90,
-      height: 90,
+      width: 140, // antes 90
+      height: 140, // antes 90
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.black, width: 1),
+        border: Border.all(color: Colors.black, width: 2),
       ),
       alignment: Alignment.center,
       child: Text(
         number.toString(),
         style: const TextStyle(
-          fontSize: 40,
+          fontSize: 60, // antes 40
           fontWeight: FontWeight.bold,
         ),
       ),
