@@ -15,7 +15,7 @@ class NumberGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Wrap(
-        alignment: WrapAlignment.center, // Centra los elementos horizontalmente
+        alignment: WrapAlignment.center,
         spacing: 20,
         runSpacing: 20,
         children: controller.currentNumbers

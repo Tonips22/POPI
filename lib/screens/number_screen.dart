@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../logic/game_controller.dart';
 import '../widget/number_grid.dart';
@@ -12,12 +13,20 @@ class NumberScreen extends StatefulWidget {
 
 class _NumberScreenState extends State<NumberScreen> {
   final GameController _controller = GameController();
+  final FlutterTts _flutterTts = FlutterTts();
   String _message = '';
 
   @override
   void initState() {
     super.initState();
     _controller.initGame();
+    _speakTarget();
+  }
+
+  void _speakTarget() async {
+    await _flutterTts.setLanguage("es-ES");
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.speak("Selecciona el número ${_controller.targetNumber}");
   }
 
   void _handleAnswer(bool isCorrect) {
@@ -29,6 +38,7 @@ class _NumberScreenState extends State<NumberScreen> {
       setState(() {
         _controller.nextRound();
         _message = '';
+        _speakTarget(); // Dice el nuevo número
       });
     });
   }
@@ -39,7 +49,7 @@ class _NumberScreenState extends State<NumberScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: (){},
+          onPressed: () {},
         ),
         actions: [
           IconButton(
@@ -50,7 +60,8 @@ class _NumberScreenState extends State<NumberScreen> {
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
               setState(() {
-                _controller.initGame(); // Actualiza la dificultad al volver
+                _controller.initGame();
+                _speakTarget();
               });
             },
           ),
@@ -61,12 +72,10 @@ class _NumberScreenState extends State<NumberScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 30),
-
             NumberGrid(
               controller: _controller,
               onAnswer: _handleAnswer,
             ),
-
             const SizedBox(height: 40),
             Text(
               _message,
@@ -76,7 +85,7 @@ class _NumberScreenState extends State<NumberScreen> {
                 color: _message.contains('Correcto') ? Colors.green : Colors.red,
               ),
             ),
-            const SizedBox(height: 60), // <-- Fixed: added missing comma here
+            const SizedBox(height: 60),
             IconButton(
               iconSize: 60,
               color: Colors.black,
