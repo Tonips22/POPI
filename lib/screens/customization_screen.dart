@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/customization_option_card.dart';
+import 'color_settings_screen.dart'; // 👈 AÑADE ESTA IMPORTACIÓN
 
 /// Pantalla de Personalización
-/// 
+///
 /// Permite al usuario acceder a diferentes opciones para personalizar
 /// la experiencia de la aplicación:
 /// - Colores favoritos
@@ -14,20 +15,15 @@ class CustomizationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Color de fondo claro
       backgroundColor: Colors.grey[100],
-      
-      // === BARRA SUPERIOR ===
+
       appBar: AppBar(
-        // Botón de retroceso
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
           onPressed: () {
-            // Vuelve a la pantalla anterior
             Navigator.pop(context);
           },
         ),
-        // Título de la pantalla
         title: const Text(
           'Personalizar',
           style: TextStyle(
@@ -39,10 +35,8 @@ class CustomizationScreen extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      
-      // === CONTENIDO DE LA PANTALLA ===
+
       body: ListView(
-        // Añade espacio arriba y abajo
         padding: const EdgeInsets.symmetric(vertical: 20),
         children: [
           // === OPCIÓN 1: COLORES ===
@@ -51,18 +45,16 @@ class CustomizationScreen extends StatelessWidget {
             title: 'Colores',
             iconBackgroundColor: Colors.blue,
             onTap: () {
-              // TODO: Navegar a la pantalla de colores
-              // Tus compañeros implementarán esta pantalla
-              print('Navegar a Colores');
-              
-              // Ejemplo de cómo navegar (cuando exista la pantalla):
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => ColorsScreen()),
-              // );
+              // 👇 ACTUALIZA ESTA FUNCIÓN
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ColorSettingsScreen(),
+                ),
+              );
             },
           ),
-          
+
           // === OPCIÓN 2: TIPOGRAFÍA ===
           CustomizationOptionCard(
             icon: Icons.text_fields,
@@ -71,29 +63,17 @@ class CustomizationScreen extends StatelessWidget {
             onTap: () {
               // TODO: Navegar a la pantalla de tipografía
               print('Navegar a Tipografía');
-              
-              // Ejemplo de cómo navegar (cuando exista la pantalla):
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => TypographyScreen()),
-              // );
             },
           ),
-          
+
           // === OPCIÓN 3: FORMATO DE NÚMEROS ===
           CustomizationOptionCard(
             icon: Icons.looks_one,
-            title: 'Preferencias de visualización',
+            title: 'Formato de números',
             iconBackgroundColor: Colors.blue,
             onTap: () {
               // TODO: Navegar a la pantalla de formato de números
-              print('Preferencias de visualización');
-              
-              // Ejemplo de cómo navegar (cuando exista la pantalla):
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => NumberFormatScreen()),
-              // );
+              print('Navegar a Formato de números');
             },
           ),
         ],
