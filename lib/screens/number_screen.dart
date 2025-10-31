@@ -39,7 +39,7 @@ class _NumberScreenState extends State<NumberScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: (){},
         ),
         actions: [
           IconButton(

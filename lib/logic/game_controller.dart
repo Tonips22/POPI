@@ -10,7 +10,7 @@ class GameController {
   // ===============================
   // 🔧 CONFIGURACIÓN DEL JUEGO
   // ===============================
-  int difficulty = 3; // cantidad de números
+  int difficulty = 3; // cantidad de números a mostrar
   int minRange = 0;
   int maxRange = 10;
 
@@ -21,26 +21,41 @@ class GameController {
   late int targetNumber;
   final Random _random = Random();
 
-  // Inicializa el juego con la configuración actual
+  // ===============================
+  // ⚙️ MÉTODOS DE INICIALIZACIÓN
+  // ===============================
   void initGame() {
     _generateNumbers();
   }
 
   void _generateNumbers() {
-    currentNumbers = List.generate(
-      difficulty,
-          (_) => minRange + _random.nextInt(maxRange - minRange + 1),
-    );
+    int rangeSize = maxRange - minRange + 1;
 
+    // Evita errores si la dificultad es mayor que el rango disponible
+    if (difficulty > rangeSize) {
+      throw Exception(
+        "La dificultad ($difficulty) no puede ser mayor que la cantidad de números únicos posibles ($rangeSize).",
+      );
+    }
+
+    // Genera lista de números únicos dentro del rango y la mezcla
+    List<int> allNumbers =
+    List.generate(rangeSize, (i) => minRange + i)..shuffle(_random);
+
+    // Toma solo los primeros 'difficulty' números únicos
+    currentNumbers = allNumbers.take(difficulty).toList();
+
+    // Selecciona un número objetivo aleatorio
     targetNumber = currentNumbers[_random.nextInt(currentNumbers.length)];
   }
 
-  // Comprueba si el número seleccionado es correcto
+  // ===============================
+  // 🎯 LÓGICA DEL JUEGO
+  // ===============================
   bool checkAnswer(int selected) {
     return selected == targetNumber;
   }
 
-  // Avanza al siguiente turno
   void nextRound() {
     _generateNumbers();
   }
@@ -48,12 +63,31 @@ class GameController {
   // ===============================
   // 🧩 MÉTODOS DE CONFIGURACIÓN
   // ===============================
+
+  /// Ajusta la dificultad sin superar el máximo permitido según el rango
   void setDifficulty(int value) {
-    difficulty = value.clamp(1, 12);
+    int maxAllowed = _calculateMaxDifficulty();
+    difficulty = value.clamp(1, maxAllowed);
   }
 
+  /// Ajusta el rango y valida que la dificultad siga siendo válida
   void setRange(int min, int max) {
     minRange = min;
     maxRange = max;
+
+    // Recalcular dificultad máxima y ajustar si es necesario
+    int maxAllowed = _calculateMaxDifficulty();
+    if (difficulty > maxAllowed) {
+      difficulty = maxAllowed;
+    }
+  }
+
+  /// Calcula la dificultad máxima en función del rango actual
+  int _calculateMaxDifficulty() {
+    // Si el rango es 0–10, dificultad máxima 10
+    if (minRange == 0 && maxRange == 10) return 10;
+
+    // En otros casos, se permite hasta 12 por defecto
+    return 12;
   }
 }
