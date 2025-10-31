@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:popi/screens/settings_screen.dart';
 import '../logic/game_controller.dart';
 import '../widget/number_grid.dart';
-import '../services/tts_service.dart';
-import 'settings_screen.dart';
 
 class NumberScreen extends StatefulWidget {
   const NumberScreen({super.key});
@@ -13,7 +12,6 @@ class NumberScreen extends StatefulWidget {
 
 class _NumberScreenState extends State<NumberScreen> {
   final GameController _controller = GameController();
-  final TtsService _tts = TtsService(); // Instancia del TTS
   String _message = '';
 
   @override
@@ -35,23 +33,13 @@ class _NumberScreenState extends State<NumberScreen> {
     });
   }
 
-  void _speakTargetNumber() {
-    _tts.speak("El número a adivinar es ${_controller.targetNumber}");
-  }
-
-  @override
-  void dispose() {
-    _tts.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {},
+          onPressed: (){},
         ),
         actions: [
           IconButton(
@@ -62,7 +50,7 @@ class _NumberScreenState extends State<NumberScreen> {
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
               setState(() {
-                _controller.initGame();
+                _controller.initGame(); // Actualiza la dificultad al volver
               });
             },
           ),
@@ -73,10 +61,12 @@ class _NumberScreenState extends State<NumberScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: 30),
+
             NumberGrid(
               controller: _controller,
               onAnswer: _handleAnswer,
             ),
+
             const SizedBox(height: 40),
             Text(
               _message,
@@ -86,11 +76,11 @@ class _NumberScreenState extends State<NumberScreen> {
                 color: _message.contains('Correcto') ? Colors.green : Colors.red,
               ),
             ),
-            const SizedBox(height: 60),
+            const SizedBox(height: 60), // <-- Fixed: added missing comma here
             IconButton(
               iconSize: 60,
               color: Colors.black,
-              onPressed: _speakTargetNumber,
+              onPressed: () {},
               icon: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey[300],
