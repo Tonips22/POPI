@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/customization_option_card.dart';
 import 'color_settings_screen.dart';
-import 'fonts_settings_screen.dart'; // 👈 AÑADE ESTA IMPORTACIÓN
+import 'fonts_settings_screen.dart';
+import 'number_format_screen.dart'; // 👈 AÑADE ESTA IMPORTACIÓN
 
 class CustomizationScreen extends StatelessWidget {
   const CustomizationScreen({super.key});
@@ -10,7 +11,7 @@ class CustomizationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-
+      
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
@@ -29,7 +30,7 @@ class CustomizationScreen extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-
+      
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 20),
         children: [
@@ -47,14 +48,13 @@ class CustomizationScreen extends StatelessWidget {
               );
             },
           ),
-
+          
           // === OPCIÓN 2: TIPOGRAFÍA ===
           CustomizationOptionCard(
             icon: Icons.text_fields,
             title: 'Tipografía',
             iconBackgroundColor: Colors.blue,
             onTap: () {
-              // 👇 ACTUALIZA ESTA FUNCIÓN
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -64,14 +64,19 @@ class CustomizationScreen extends StatelessWidget {
             },
           ),
 
-          // === OPCIÓN 3: FORMATO DE NÚMEROS ===
+          // === OPCIÓN 3: PREFERENCIAS DE VISUALIZACIÓN ===
           CustomizationOptionCard(
             icon: Icons.looks_one,
-            title: 'Formato de números',
+            title: 'Preferencias de visualización',
             iconBackgroundColor: Colors.blue,
             onTap: () {
-              // TODO: Navegar a la pantalla de formato de números
-              print('Navegar a Formato de números');
+              // 👇 ACTUALIZA ESTA FUNCIÓN
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NumberFormatScreen(),
+                ),
+              );
             },
           ),
         ],
