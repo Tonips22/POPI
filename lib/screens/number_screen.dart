@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_tts/flutter_tts.dart'; // 👈 asegurarse de importar
 import 'package:popi/screens/settings_screen.dart';
 import '../logic/game_controller.dart';
 import '../widget/number_grid.dart';
@@ -13,20 +13,14 @@ class NumberScreen extends StatefulWidget {
 
 class _NumberScreenState extends State<NumberScreen> {
   final GameController _controller = GameController();
-  final FlutterTts _flutterTts = FlutterTts();
+  final FlutterTts _flutterTts = FlutterTts(); // 👈 instancia TTS
   String _message = '';
 
   @override
   void initState() {
     super.initState();
     _controller.initGame();
-    _speakTarget();
-  }
-
-  void _speakTarget() async {
-    await _flutterTts.setLanguage("es-ES");
-    await _flutterTts.setSpeechRate(0.5);
-    await _flutterTts.speak("Selecciona el número ${_controller.targetNumber}");
+    _speakTarget(); // 👈 lee el primer número
   }
 
   void _handleAnswer(bool isCorrect) {
@@ -38,9 +32,15 @@ class _NumberScreenState extends State<NumberScreen> {
       setState(() {
         _controller.nextRound();
         _message = '';
-        _speakTarget(); // Dice el nuevo número
       });
+      _speakTarget(); // 👈 lee el nuevo número
     });
+  }
+
+  void _speakTarget() async {
+    await _flutterTts.setLanguage("es-ES"); // español
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.speak("Selecciona el número ${_controller.targetNumber}");
   }
 
   @override
@@ -60,9 +60,9 @@ class _NumberScreenState extends State<NumberScreen> {
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
               setState(() {
-                _controller.initGame();
-                _speakTarget();
+                _controller.initGame(); // actualiza la dificultad al volver
               });
+              _speakTarget(); // 👈 lee el número después de volver
             },
           ),
         ],
