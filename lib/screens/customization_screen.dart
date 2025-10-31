@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/customization_option_card.dart';
-import 'color_settings_screen.dart'; // 👈 AÑADE ESTA IMPORTACIÓN
+import 'color_settings_screen.dart';
+import 'fonts_settings_screen.dart'; // 👈 AÑADE ESTA IMPORTACIÓN
 
-/// Pantalla de Personalización
-///
-/// Permite al usuario acceder a diferentes opciones para personalizar
-/// la experiencia de la aplicación:
-/// - Colores favoritos
-/// - Tipo y tamaño de letra (Tipografía)
-/// - Formato de visualización de números
 class CustomizationScreen extends StatelessWidget {
   const CustomizationScreen({super.key});
 
@@ -45,7 +39,6 @@ class CustomizationScreen extends StatelessWidget {
             title: 'Colores',
             iconBackgroundColor: Colors.blue,
             onTap: () {
-              // 👇 ACTUALIZA ESTA FUNCIÓN
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -61,8 +54,13 @@ class CustomizationScreen extends StatelessWidget {
             title: 'Tipografía',
             iconBackgroundColor: Colors.blue,
             onTap: () {
-              // TODO: Navegar a la pantalla de tipografía
-              print('Navegar a Tipografía');
+              // 👇 ACTUALIZA ESTA FUNCIÓN
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FontSettingsScreen(),
+                ),
+              );
             },
           ),
 
