@@ -1,4 +1,4 @@
-name: popi
+name: POPI
 description: "Aplicación educativa para tablet desarrollada con Flutter y Firebase, centrada en juegos matemáticos sencillos diseñados para alumnos con diversidad funcional."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -55,6 +55,26 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # === FUENTES PERSONALIZADAS ===
+  # Estas fuentes mejoran la accesibilidad para estudiantes
+  # con discapacidad visual o dificultades de lectura
+  fonts:
+    # Fuente Amigable - Comic Neue
+    # Similar a Comic Sans pero más profesional y legible
+    - family: ComicNeue
+      fonts:
+        - asset: assets/fonts/ComicNeue-Regular.ttf
+        - asset: assets/fonts/ComicNeue-Bold.ttf
+          weight: 700
+
+    # Fuente Lectura Fácil - OpenDyslexic
+    # Diseñada específicamente para personas con dislexia
+    - family: OpenDyslexic
+      fonts:
+        - asset: assets/fonts/OpenDyslexic-Regular.otf
+        - asset: assets/fonts/OpenDyslexic-Bold.otf
+          weight: 700
 
   # To add assets to your application, add an assets section, like this:
   # assets:
