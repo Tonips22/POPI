@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'customization_screen.dart'; // Pantalla de ajustes (ya existe en el repo)
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
 
 /// Pantalla básica del minijuego "Ordena la secuencia"
 ///
-/// Cambios respecto a la versión anterior:
-/// - No hay texto de instrucciones ni botones de mezclar/reiniciar/comprobar.
-/// - El contenedor del juego está centrado (vertical y horizontalmente).
-/// - Las fichas son los números 0..9.
-/// - Cuando todas las casillas están llenas se comprueba automáticamente
-///   si la secuencia está ordenada (victoria/fallo).
-/// - Se permite intercambiar números entre casillas (drag desde casilla A a B).
+/// Cambios importantes en esta versión:
+/// - Añadido botón de ajustes (tres puntitos verticales) arriba a la derecha
+///   que navega a CustomizationScreen (donde se implementarán las opciones).
+/// - Al colocar un número en su posición correcta aparece un mensaje
+///   no modal (SnackBar verde) en la parte inferior que indica "vas por buen camino".
+/// - El resto de comportamientos (pool 0..9, intercambio entre casillas,
+///   comprobación automática al completar) se mantienen.
 class SortNumbersGame extends StatefulWidget {
   const SortNumbersGame({super.key});
 
@@ -72,6 +73,22 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
       }
     });
 
+    // Tras la actualización de estado, mostramos feedback de "vas por buen camino"
+    // si el número colocado está en su posición correcta (para 0..9 la posición
+    // correcta es que value == index). Esto es un mensaje NO modal (SnackBar).
+    final placedValue = targets[targetIndex];
+    if (placedValue != null && placedValue == targetIndex) {
+      // Mensaje verde breve indicando refuerzo positivo
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('¡Bien! El ${placedValue} va en su sitio.'),
+          backgroundColor: Colors.green.shade700,
+          duration: const Duration(milliseconds: 1200),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
     // Tras cualquier colocación comprobamos si el tablero está completo
     _checkCompletionAndShowResultIfNeeded();
   }
@@ -95,7 +112,7 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
 
     final list = targets.cast<int>().toList();
 
-    // Comprobamos orden ascendente estricto (cada elemento >= anterior)
+    // Comprobamos orden ascendente (cada elemento >= anterior)
     bool isAscending = true;
     for (var i = 1; i < list.length; i++) {
       if (list[i] < list[i - 1]) {
@@ -104,7 +121,7 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
       }
     }
 
-    // Mostramos resultado en un diálogo sencillo
+    // Mostramos resultado en un diálogo sencillo (modal pequeño)
     showDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -139,6 +156,23 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
           icon: const Icon(Icons.arrow_back, size: 28),
           onPressed: () => Navigator.pop(context),
         ),
+
+        // === BOTÓN DE AJUSTES (tres puntitos verticales) ===
+        // Al pulsarlo navegaremos a la pantalla de personalización/ajustes.
+        // Tu compañero puede completar esa pantalla; aquí solo hacemos la navegación.
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Ajustes',
+            onPressed: () {
+              // Navega a CustomizationScreen (ya existente en el repo).
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CustomizationScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: ConstrainedBox(
