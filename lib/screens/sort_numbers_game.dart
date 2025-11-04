@@ -6,12 +6,9 @@ import '../widgets/target_slot.dart';
 /// Pantalla básica del minijuego "Ordena la secuencia"
 ///
 /// Cambios importantes en esta versión:
-/// - Añadido botón de ajustes (tres puntitos verticales) arriba a la derecha
-///   que navega a CustomizationScreen (donde se implementarán las opciones).
-/// - Al colocar un número en su posición correcta aparece un mensaje
-///   no modal (SnackBar verde) en la parte inferior que indica "vas por buen camino".
-/// - El resto de comportamientos (pool 0..9, intercambio entre casillas,
-///   comprobación automática al completar) se mantienen.
+/// - Botón de ajustes arriba a la derecha (navega a CustomizationScreen).
+/// - Al colocar un número en su posición correcta aparece un mensaje NO modal
+///   que es una pastilla (pill) centrada abajo con el mismo color que los botones.
 class SortNumbersGame extends StatefulWidget {
   const SortNumbersGame({super.key});
 
@@ -73,24 +70,50 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
       }
     });
 
-    // Tras la actualización de estado, mostramos feedback de "vas por buen camino"
-    // si el número colocado está en su posición correcta (para 0..9 la posición
-    // correcta es que value == index). Esto es un mensaje NO modal (SnackBar).
+    // Tras la actualización de estado mostramos feedback si la ficha está en su posición correcta
     final placedValue = targets[targetIndex];
     if (placedValue != null && placedValue == targetIndex) {
-      // Mensaje verde breve indicando refuerzo positivo
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('¡Bien! El ${placedValue} va en su sitio.'),
-          backgroundColor: Colors.green.shade700,
-          duration: const Duration(milliseconds: 1200),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showPositivePill();
     }
 
     // Tras cualquier colocación comprobamos si el tablero está completo
     _checkCompletionAndShowResultIfNeeded();
+  }
+
+  /// Muestra un "pill" centrado en la parte baja de la pantalla.
+  /// - Usa el color primario del Theme para que coincida con los botones.
+  /// - Tiene borderRadius grande para apariencia circular/pastilla.
+  /// - No ocupa todo el ancho (margin calculada para centrarlo).
+  void _showPositivePill() {
+    final messenger = ScaffoldMessenger.of(context);
+    // Limpiamos cualquier SnackBar previo para evitar colas largas
+    messenger.clearSnackBars();
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Usamos una anchura aproximada del 50% de la pantalla para tablets
+    final horizontalMargin = screenWidth * 0.25;
+
+    // SnackBar con estilo "pill" y color primario del theme
+    messenger.showSnackBar(
+      SnackBar(
+        // Texto motivador
+        content: Text(
+          '¡Correcto',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16, color: Colors.white),
+        ),
+        duration: const Duration(milliseconds: 1200),
+        behavior: SnackBarBehavior.floating,
+        // Margin permite controlar la anchura y la posición horizontal; bottom fija la distancia desde el final
+        margin: EdgeInsets.fromLTRB(horizontalMargin, 0, horizontalMargin, 24),
+        backgroundColor: Colors.blue.shade400,
+        // Forma con borderRadius alto para que parezca una pastilla (pill)
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(100),
+        ),
+        elevation: 6,
+      ),
+    );
   }
 
   /// Vacía una casilla y devuelve su valor al pool (p. ej. al tocar la ficha).
@@ -158,8 +181,6 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
         ),
 
         // === BOTÓN DE AJUSTES (tres puntitos verticales) ===
-        // Al pulsarlo navegaremos a la pantalla de personalización/ajustes.
-        // Tu compañero puede completar esa pantalla; aquí solo hacemos la navegación.
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
@@ -200,6 +221,7 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
                             if (emptyIndex != -1) {
                               _handleDrop(DragItem(value: value, fromIndex: -1), emptyIndex);
                             } else {
+                              // Mensaje simple si no hay huecos (usa SnackBar normal)
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('No quedan casillas libres')),
                               );
