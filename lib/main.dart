@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'screens/customization_screen.dart'; // Importa tu pantalla
 import 'screens/sort_numbers_game.dart'; // Asegúrate de importar otras pantallas si es necesario
 
 void main() {
