@@ -1,19 +1,16 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
 
 /// Pantalla básica del minijuego "Ordena la secuencia"
 ///
-/// - Genera una lista de números únicos aleatorios según `count` y `range`.
-/// - Muestra las fichas en la parte superior (pool) como Draggables/tocables.
-/// - Muestra las casillas objetivo (targets) en la parte inferior.
-/// - Permite colocar, reemplazar y retirar números.
-/// - Botones: Comprobar (si están ordenados de forma ascendente), Mezclar, Reiniciar.
-///
-/// Esta implementación prioriza claridad y legibilidad para principiantes.
-/// No usa patrones avanzados de estado.
+/// Cambios respecto a la versión anterior:
+/// - No hay texto de instrucciones ni botones de mezclar/reiniciar/comprobar.
+/// - El contenedor del juego está centrado (vertical y horizontalmente).
+/// - Las fichas son los números 0..9.
+/// - Cuando todas las casillas están llenas se comprueba automáticamente
+///   si la secuencia está ordenada (victoria/fallo).
+/// - Se permite intercambiar números entre casillas (drag desde casilla A a B).
 class SortNumbersGame extends StatefulWidget {
   const SortNumbersGame({super.key});
 
@@ -22,13 +19,11 @@ class SortNumbersGame extends StatefulWidget {
 }
 
 class _SortNumbersGameState extends State<SortNumbersGame> {
-  // Configuración básica del juego (más adelante podría ser configurable)
-  final int count = 9; // número de elementos a ordenar
-  final int rangeMax = 20; // números aleatorios entre 1..rangeMax
+  // Número de fichas (0..9)
+  final int count = 10;
 
-  // Estado del juego:
-  // - pool: fichas disponibles para colocar (valores únicos)
-  // - targets: lista de longitud `count` con `int?` (null = vacío)
+  // pool: fichas disponibles para colocar (valores únicos)
+  // targets: casillas objetivo (int? null = vacía)
   late List<int> pool;
   late List<int?> targets;
 
@@ -39,46 +34,49 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
   }
 
   void _initializeGame() {
-    final generated = _generateUniqueRandomNumbers(count, rangeMax);
-    // Mostramos los números DESORDENADOS (mezclados)
-    pool = List<int>.from(generated)..shuffle();
+    // Generamos 0..(count-1) y los mezclamos
+    pool = List<int>.generate(count, (i) => i)..shuffle();
     targets = List<int?>.filled(count, null);
     setState(() {});
   }
 
-  List<int> _generateUniqueRandomNumbers(int n, int maxExclusive) {
-    // Genera una lista de n valores únicos entre 1 y maxExclusive (inclusive)
-    final rnd = Random();
-    final set = <int>{};
-    while (set.length < n) {
-      set.add(1 + rnd.nextInt(maxExclusive)); // 1..maxExclusive
-    }
-    return set.toList();
-  }
-
-  // Coloca un valor en el target index. Si el target ya tenía un valor,
-  // lo devuelve al pool.
-  void _placeValueInTarget(int value, int targetIndex, {int fromTargetIndex = -1}) {
+  /// Lógica central para procesar una entrega (drop) sobre una casilla:
+  /// - Si viene desde otra casilla (fromIndex >= 0) -> intercambia/mueve.
+  /// - Si viene del pool (fromIndex == -1) -> mueve desde pool a la casilla,
+  ///   y si la casilla ya tenía un valor, ese valor vuelve al pool.
+  void _handleDrop(DragItem dragItem, int targetIndex) {
     setState(() {
-      // Si venía desde otro target, limpiamos ese origen
-      if (fromTargetIndex >= 0 && fromTargetIndex < targets.length) {
-        targets[fromTargetIndex] = null;
+      final sourceIndex = dragItem.fromIndex;
+      final sourceValue = dragItem.value;
+      final targetPrev = targets[targetIndex];
+
+      // Si viene desde otra casilla
+      if (sourceIndex >= 0) {
+        // Si es la misma casilla, no hacemos nada
+        if (sourceIndex == targetIndex) return;
+
+        // Intercambiamos: la casilla destino recibe el valor arrastrado
+        // y la casilla origen recibe lo que antes había en la destino
+        targets[targetIndex] = sourceValue;
+        targets[sourceIndex] = targetPrev;
       } else {
-        // Si venía del pool, lo removemos del pool
-        pool.remove(value);
-      }
+        // Viene del pool: removemos el valor del pool
+        pool.remove(sourceValue);
 
-      // Si el target ya tenía algo, lo devolvemos al pool
-      final previous = targets[targetIndex];
-      if (previous != null) {
-        pool.add(previous);
-      }
+        // Si la casilla destino tenía un valor, lo devolvemos al pool
+        if (targetPrev != null) {
+          pool.add(targetPrev);
+        }
 
-      targets[targetIndex] = value;
+        targets[targetIndex] = sourceValue;
+      }
     });
+
+    // Tras cualquier colocación comprobamos si el tablero está completo
+    _checkCompletionAndShowResultIfNeeded();
   }
 
-  // Quita el valor de un target y lo devuelve al pool
+  /// Vacía una casilla y devuelve su valor al pool (p. ej. al tocar la ficha).
   void _removeFromTarget(int targetIndex) {
     setState(() {
       final value = targets[targetIndex];
@@ -89,49 +87,47 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
     });
   }
 
-  // Mueve un valor del pool al primer target vacío (si existe)
-  void _placeInFirstEmptyTarget(int value) {
-    final emptyIndex = targets.indexOf(null);
-    if (emptyIndex != -1) {
-      _placeValueInTarget(value, emptyIndex);
-    } else {
-      // Si no hay vacíos, muestra un mensaje corto
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No quedan casillas libres')),
-      );
-    }
-  }
-
-  // Comprueba si la secuencia en targets está ordenada de forma ascendente y sin huecos
-  bool _isCorrectOrder() {
-    // Si hay casillas vacías -> no está completo
-    if (targets.any((e) => e == null)) return false;
+  /// Comprueba si todas las casillas están llenas; si lo están, evalúa
+  /// si la secuencia es ascendiente (ganado) o no (fallo), y muestra un diálogo.
+  void _checkCompletionAndShowResultIfNeeded() {
+    // Si hay alguna casilla vacía, no hacemos nada
+    if (targets.any((e) => e == null)) return;
 
     final list = targets.cast<int>().toList();
+
+    // Comprobamos orden ascendente estricto (cada elemento >= anterior)
+    bool isAscending = true;
     for (var i = 1; i < list.length; i++) {
-      if (list[i] < list[i - 1]) return false;
-    }
-    return true;
-  }
-
-  // Mezcla pool (vuelve a poner en pool todos los valores y los desordena)
-  void _shuffleGame() {
-    setState(() {
-      // mover todo a pool
-      for (final v in targets) {
-        if (v != null) pool.add(v);
+      if (list[i] < list[i - 1]) {
+        isAscending = false;
+        break;
       }
-      targets = List<int?>.filled(count, null);
-      pool.shuffle();
-    });
-  }
+    }
 
-  // Reinicia generando nuevos números
-  void _resetGame() => _initializeGame();
+    // Mostramos resultado en un diálogo sencillo
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        title: Text(isAscending ? '¡Ganado!' : 'No está correcto'),
+        content: Text(isAscending
+            ? '¡Enhorabuena! La secuencia está ordenada.'
+            : 'La secuencia no está ordenada. Puedes volver a intentar.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Para tablets, usamos mucho espacio horizontal; por eso centramos y limitamos ancho
+    // CENTRADO: usamos Center con Column mainAxisSize.min para centrar todo
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -147,30 +143,34 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1000),
+          // Column con mainAxisSize.min hace que su tamaño sea el mínimo
+          // necesario, así el Center lo colocará correctamente centrado.
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // INSTRUCCIÓN SIMPLE
-                const Text(
-                  'Arrastra o toca las fichas para colocarlas en las casillas abajo en orden creciente.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18),
-                ),
-                const SizedBox(height: 20),
-
-                // --- POOL (fichas disponibles) ---
+                // POOL: fichas disponibles (0..9)
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: pool.map((value) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: NumberTile(
                           value: value,
-                          // Al tocar la ficha la colocamos en la primera casilla libre
-                          onTap: () => _placeInFirstEmptyTarget(value),
-                          // Cuando se arrastra desde el pool, data indica value y fromTargetIndex = -1
+                          onTap: () {
+                            // Al tocar una ficha del pool, la colocamos en la primera casilla vacía
+                            final emptyIndex = targets.indexOf(null);
+                            if (emptyIndex != -1) {
+                              _handleDrop(DragItem(value: value, fromIndex: -1), emptyIndex);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('No quedan casillas libres')),
+                              );
+                            }
+                          },
                           draggableData: DragItem(value: value, fromIndex: -1),
                         ),
                       );
@@ -180,7 +180,7 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
 
                 const SizedBox(height: 32),
 
-                // --- CASILLAS TARGET ---
+                // CASILLAS: ahora son 'count' casillas que aceptan arrastres y permiten intercambios
                 Wrap(
                   spacing: 16,
                   runSpacing: 16,
@@ -190,52 +190,10 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
                     return TargetSlot(
                       index: index,
                       value: val,
-                      // Aceptamos DragItem y lo procesamos
-                      onAccept: (dragItem) {
-                        // Si viene desde otro target, pasamos su index
-                        _placeValueInTarget(dragItem.value, index, fromTargetIndex: dragItem.fromIndex);
-                      },
+                      onAccept: (dragItem) => _handleDrop(dragItem, index),
                       onRemove: () => _removeFromTarget(index),
                     );
                   }),
-                ),
-
-                const SizedBox(height: 32),
-
-                // --- BOTONES DE ACCIÓN ---
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Mezclar'),
-                      onPressed: _shuffleGame,
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.restore),
-                      label: const Text('Reiniciar'),
-                      onPressed: _resetGame,
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Comprobar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
-                      onPressed: () {
-                        final ok = _isCorrectOrder();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(ok ? '¡Correcto! Secuencia ordenada.' : 'Aún no está correcto.'),
-                            backgroundColor: ok ? Colors.green : Colors.redAccent,
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -249,6 +207,7 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
 /// Estructura simple que transporta el valor arrastrado y su origen
 class DragItem {
   final int value;
+
   /// fromIndex = -1 indica que viene del "pool" de fichas; >=0 indica el index del target origen
   final int fromIndex;
 

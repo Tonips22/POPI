@@ -4,6 +4,12 @@ import 'number_tile.dart';
 
 /// Casilla objetivo que acepta fichas arrastradas y también permite
 /// arrastrar la ficha cuando ya contiene un valor.
+///
+/// Cambios realizados:
+/// - Siempre actúa como DragTarget (aunque tenga valor). Esto permite
+///   soltar sobre una casilla ocupada para intercambiar valores.
+/// - Dentro del builder, si tiene valor, mostramos la ficha y la hacemos
+///   LongPressDraggable para poder arrastrarla a otra casilla.
 class TargetSlot extends StatelessWidget {
   final int index;
   final int? value;
@@ -20,32 +26,61 @@ class TargetSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slotSize = 90.0;
-    // Si tiene valor, mostramos la ficha dentro y la hacemos Draggable
-    if (value != null) {
-      // Draggable desde target: indicamos fromIndex = index
-      final dragItem = DragItem(value: value!, fromIndex: index);
-      return LongPressDraggable<DragItem>(
-        data: dragItem,
-        feedback: Material(
-          color: Colors.transparent,
-          elevation: 8,
-          child: NumberTile(value: value!, draggableData: dragItem),
-        ),
-        childWhenDragging: _emptyBox(slotSize),
-        child: GestureDetector(
-          onTap: onRemove, // Tocando la casilla vaciamos (devuelve al pool)
-          child: NumberTile(value: value!, draggableData: dragItem),
-        ),
-      );
-    }
+    const slotSize = 90.0;
 
-    // Si está vacía, es un DragTarget que acepta DragItem
     return DragTarget<DragItem>(
       onWillAccept: (data) => data != null,
       onAccept: (data) => onAccept(data),
       builder: (context, candidateData, rejectedData) {
         final highlight = candidateData.isNotEmpty;
+
+        // Si tiene valor mostramos la ficha (draggable dentro del DragTarget).
+        if (value != null) {
+          final dragItem = DragItem(value: value!, fromIndex: index);
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Fondo de la casilla (resalta si hay un candidate)
+              Container(
+                width: slotSize,
+                height: slotSize,
+                decoration: BoxDecoration(
+                  color: highlight ? Colors.blue.shade50 : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.grey.shade400,
+                    width: 2,
+                  ),
+                ),
+              ),
+
+              // Ficha draggable: usamos LongPressDraggable para evitar arrastres accidentales
+              LongPressDraggable<DragItem>(
+                data: dragItem,
+                feedback: Material(
+                  color: Colors.transparent,
+                  elevation: 8,
+                  child: NumberTile(value: value!, draggableData: dragItem),
+                ),
+                childWhenDragging: Container(
+                  width: slotSize,
+                  height: slotSize,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade400, width: 2),
+                  ),
+                ),
+                child: GestureDetector(
+                  onTap: onRemove, // tocar la ficha la devuelve al pool
+                  child: NumberTile(value: value!, draggableData: dragItem),
+                ),
+              ),
+            ],
+          );
+        }
+
+        // Si está vacía, mostramos el cuadro vacío (resaltado si hay candidate)
         return Container(
           width: slotSize,
           height: slotSize,
@@ -59,21 +94,6 @@ class TargetSlot extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _emptyBox(double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey.shade400,
-          width: 2,
-        ),
-      ),
     );
   }
 }
