@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'POPI - Personalización',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade400),
       ),
       // CAMBIA TEMPORALMENTE ESTA LÍNEA PARA PROBAR TU PANTALLA
       home: const SortNumbersGame(), // <-- Cambia esto temporalmente
