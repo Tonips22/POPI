@@ -90,8 +90,8 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
     messenger.clearSnackBars();
 
     final screenWidth = MediaQuery.of(context).size.width;
-    // Usamos una anchura aproximada del 50% de la pantalla para tablets
-    final horizontalMargin = screenWidth * 0.25;
+    // Usamos una anchura aproximada del 30% de la pantalla para tablets
+    final horizontalMargin = screenWidth * 0.35;
 
     // SnackBar con estilo "pill" y color primario del theme
     messenger.showSnackBar(
