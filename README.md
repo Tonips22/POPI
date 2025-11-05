@@ -30,69 +30,116 @@ POPI propone una serie de minijuegos pensados para tabletas, con enfoque en acce
 
 ## 2. Estado actual (qué hay en el repositorio)
 
-El proyecto ya contiene varias pantallas y widgets base, en español, con diseño pensado para tabletas:
+El proyecto ya contiene varias pantallas y widgets funcionales, en español, con diseño pensado para tabletas:
 
-- Pantallas:
-  - CustomizationScreen (pantalla principal de personalización)
-  - ColorSettingsScreen (selección de color)
-  - FontSettingsScreen (tipografías y tamaño)
-  - NumberFormatScreen (preferencias de visualización de números)
+### Pantallas principales:
+  - **CustomizationScreen**: Pantalla principal de personalización
+  - **ColorSettingsScreen**: Selección de colores personalizados
+  - **FontsSettingsScreen**: Configuración de tipografías y tamaño de texto
+  - **NumberFormatScreen**: Preferencias de visualización de números
+  - **SettingsScreen**: Configuración general del juego
+  - **DifficultyScreen**: Ajuste de dificultad y rangos numéricos
 
-- Widgets reutilizables:
-  - CustomizationOptionCard, ColorSettingCard, ColorPickerDialog
-  - NumberFormatOptionCard, UploadOptionCard
+### Pantallas de gestión y administración:
+  - **AdminScreen**: Panel principal del administrador
+  - **ManageUsersScreen**: Gestión de usuarios (crear, desactivar, eliminar)
+  - **CreateUsersScreen**: Creación de nuevas cuentas
+  - **DesactivateUsersScreen**: Desactivación de usuarios
+  - **DeleteUsersScreen**: Eliminación de usuarios del sistema
+  - **ResetPasswordsScreen**: Restablecimiento de contraseñas
+  - **ChangePasswordsScreen**: Cambio de contraseñas
 
-- Modelos:
-  - number_format_preferences.dart (modelo para preferencias de visualización)
+### Pantallas de creación de perfiles:
+  - **CreateProfileScreen** (1-4): Flujo completo de creación de perfil de estudiante con selección de avatar, datos personales y configuración
 
-- Utilidades:
-  - color_constants.dart
+### Pantallas de juegos:
+  - **GameSelectorScreen**: Selector de minijuegos disponibles
+  - **NumberScreen**: Minijuego "Toca el número que suena" (implementado con TTS)
 
-- Archivo principal:
-  - main.dart (app shell / ejemplo)
+### Widgets reutilizables:
+  - **CustomizationOptionCard**, **ColorSettingCard**, **ColorPickerDialog**: Personalización visual
+  - **NumberFormatOptionCard**, **UploadOptionCard**: Preferencias de formato
+  - **NumberGrid**, **NumberCircle**: Componentes del juego de números
 
-Es una base limpia y comentada, pensada para un equipo de principiantes.
+### Lógica de juego:
+  - **GameController**: Controlador singleton para gestión de dificultad, rangos numéricos y generación de números aleatorios
+
+### Modelos:
+  - **number_format_preferences.dart**: Modelo para preferencias de visualización de números
+
+### Utilidades:
+  - **color_constants.dart**: Constantes de colores de la aplicación
+
+### Archivo principal:
+  - **main.dart**: Punto de entrada de la aplicación
+
+Es una base funcional con múltiples características ya implementadas, pensada para un equipo de principiantes.
 
 ---
 
 ## 3. Funcionalidades actuales y planificadas
 
-Funcionalidades ya implementadas (prototipo / UI):
+### Funcionalidades ya implementadas:
 
-- Navegación básica entre pantallas de personalización.
-- Selección visual de colores y tipografías (UI y diálogos).
-- Interfaz para escoger cómo mostrar números (grafía, pictograma, audio, dibujo).
-- Tarjetas para subir imagen/audio (funcionalidad simulada, no subida real aún).
-- Modelos para serializar preferencias (toMap / fromMap).
+#### Interfaz y personalización:
+- Navegación completa entre pantallas de personalización
+- Selección visual de colores y tipografías (UI y diálogos funcionales)
+- Interfaz para escoger cómo mostrar números (grafía, pictograma, audio, dibujo)
+- Tarjetas para subir imagen/audio (UI preparada)
+- Modelos para serializar preferencias (toMap / fromMap)
+- Ajuste de dificultad con slider y selección de rangos numéricos
 
-Funcionalidades planeadas (priorizadas):
+#### Gestión de usuarios:
+- Panel de administrador completo
+- Flujo de creación de perfiles de estudiantes (4 pantallas)
+- Selección de avatares personalizados (16 opciones)
+- Gestión de usuarios: crear, desactivar, eliminar
+- Sistema de restablecimiento y cambio de contraseñas
 
-1. Integración con Firebase:
-   - Autenticación (admin / tutor / estudiante).
-   - Firestore para datos de perfiles, preferencias y progreso.
-   - Firebase Storage para imágenes y audios personalizados.
+#### Minijuegos funcionales:
+- **"Toca el número que suena"**: Implementado con Text-to-Speech (flutter_tts)
+  - Generación aleatoria de números según dificultad
+  - Grid adaptativo según cantidad de números
+  - Retroalimentación visual (✅/❌)
+  - Control de dificultad (3-12 números)
+  - Rangos configurables (0-10, 0-20, 0-100, 0-1000)
 
-2. Implementación completa de subida y reproducción:
-   - image_picker + firebase_storage para imágenes.
-   - record (o flutter_sound) + firebase_storage para audios.
-   - Reproducción de audio (a partir de URL) y control básico.
+#### Lógica de juego:
+- GameController singleton para gestión centralizada
+- Sistema de generación de números únicos aleatorios
+- Validación de respuestas correctas/incorrectas
 
-3. Minijuegos:
-   - “Toca el número que suena”
-   - “Ordena la secuencia”
-   - “Reparte/Deja el mismo número en cada recipiente”
-   - Lógica por niveles y aleatorización (5 repeticiones por juego)
+### Funcionalidades planeadas (priorizadas):
 
-4. Ayuda multimedia por juego (vídeo + subtítulos) y mensajes de refuerzo.
+1. **Integración con Firebase**:
+   - Autenticación (admin / tutor / estudiante)
+   - Firestore para datos de perfiles, preferencias y progreso
+   - Firebase Storage para imágenes y audios personalizados
 
-5. Panel de tutor y administrador:
-   - Crear y vincular cuentas
-   - Visualización de progreso (gráficas simples)
-   - Chat accesible tutor-estudiante (mensajes simples)
+2. **Implementación completa de subida y reproducción**:
+   - image_picker + firebase_storage para imágenes
+   - record (o flutter_sound) + firebase_storage para audios
+   - Reproducción de audio (a partir de URL) y control básico
 
-6. Accesibilidad:
-   - Contraste configurables, tamaños de toque y áreas táctiles grandes.
-   - Navegación simplificada y soporte para asistencia por hardware si se requiere.
+3. **Minijuegos adicionales**:
+   - "Ordena la secuencia" (en desarrollo)
+   - "Reparte/Deja el mismo número en cada recipiente"
+   - Sistema de niveles progresivos
+   - Aleatorización (5 repeticiones por juego)
+
+4. **Ayuda multimedia por juego**:
+   - Vídeos tutoriales con subtítulos
+   - Mensajes de refuerzo personalizados
+
+5. **Panel de tutor ampliado**:
+   - Visualización de progreso con gráficas
+   - Sistema de vinculación de cuentas tutor-estudiante
+   - Chat accesible tutor-estudiante
+
+6. **Accesibilidad mejorada**:
+   - Aplicación completa de contrastes configurables
+   - Optimización de áreas táctiles
+   - Soporte para asistencia por hardware
 
 ---
 
@@ -103,7 +150,9 @@ Sencilla y pensada para un equipo de seis principiantes:
 - lib/
   - main.dart
   - screens/           # Pantallas (cada pantalla en su archivo)
-  - widgets/           # Widgets reutilizables
+  - widgets/           # Widgets reutilizables (carpeta widgets/)
+  - widget/            # Widgets específicos de juegos (carpeta widget/)
+  - logic/             # Lógica de juego (GameController, etc.)
   - models/            # Modelos de datos (ej: NumberFormatPreferences)
   - services/          # Lógica de servicios (Firebase, storage, audio)
   - utils/             # Constantes y utilidades (colores, helpers)
@@ -114,7 +163,7 @@ Sencilla y pensada para un equipo de seis principiantes:
   - fonts/
 - test/                 # Test básicos (unit y widget tests)
 
-Mantén la lógica separada de la UI: los servicios (subidas, autenticación, consulta a Firestore) van en /services.
+Mantén la lógica separada de la UI: los servicios (subidas, autenticación, consulta a Firestore) van en /services, y la lógica de juego en /logic.
 
 ---
 ## 5. Autores
