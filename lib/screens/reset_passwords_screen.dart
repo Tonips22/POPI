@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'change_passwords_screen.dart'; // 👈 NUEVO
+import 'change_passwords_screen.dart';
 
 class ResetPasswordsScreen extends StatelessWidget {
   const ResetPasswordsScreen({super.key});
 
-  // Colores coherentes con el resto
   static const _blueAppBar = Color(0xFF77A9F4);
   static const _bluePill   = Color(0xFF77A9F4);
   static const _theadBg    = Color(0xFFD9D9D9);
@@ -46,7 +45,6 @@ class ResetPasswordsScreen extends StatelessWidget {
           double clamp(double v, double min, double max) =>
               v < min ? min : (v > max ? max : v);
 
-          // Márgenes y escalas responsivas
           final pagePad   = clamp(w * 0.08, 24, 60);
 
           final pillPadH  = clamp(w * 0.03, 14, 22);
@@ -83,7 +81,7 @@ class ResetPasswordsScreen extends StatelessWidget {
             _User(color: const Color(0xFFCFCBEA), emoji: '🐘', name: 'Pedro',  role: 'Profesor'),
           ];
 
-          // Cabecera (banda gris única; la zona del avatar queda blanca)
+          // Cabecera
           Widget headerBar() {
             return Container(
               height: rowH,

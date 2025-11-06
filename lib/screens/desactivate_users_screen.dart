@@ -15,7 +15,7 @@ class DesactivateUsersScreen extends StatelessWidget {
     final accion = isActive ? 'desactivar' : 'activar';
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // fondo lo pone el route (barrierColor)
+      backgroundColor: Colors.transparent,
       body: Center(
         child: _DialogCard(
           text: '¿Estás seguro de que quieres\n$accion a $userName?',

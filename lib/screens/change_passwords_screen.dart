@@ -17,7 +17,6 @@ class ChangePasswordsScreen extends StatefulWidget {
 }
 
 class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
-  // Colores coherentes con el resto
   static const _blueAppBar = Color(0xFF77A9F4);
   static const _bluePill   = Color(0xFF77A9F4);
   static const _blueBox    = Color(0xFF77A9F4);
@@ -176,7 +175,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                       _PasswordSlot(
                         size: slotSize,
                         radius: slotR.toDouble(),
-                        // si hay símbolo, usar su MISMO color de fondo y el emoji
                         filled: _pwd.length > i
                             ? (_SlotFill(emoji: _animals[_pwd[i]].emoji, bg: _animals[_pwd[i]].bg))
                             : null,
@@ -209,8 +207,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
             );
           }
 
-
-          // Widget: etiqueta izquierda + cajetín a la derecha (como el boceto)
           Widget passwordRow() {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -236,7 +232,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
             );
           }
 
-          // Widget: grid de animalitos (12) como botones
           Widget animalsGrid() {
             return Center(
               child: Container(
@@ -310,10 +305,8 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                 // Grid animalitos
                 animalsGrid(),
 
-                // espacio final para que no “ahogue” en pantallas pequeñas
                 SizedBox(height: clamp(base * 0.04, 18, 28)),
 
-                // (Opcional) aviso al completar 4
                 if (_pwd.length == 4)
                   Center(
                     child: Padding(

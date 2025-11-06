@@ -11,15 +11,15 @@ class ManageUsersScreen extends StatelessWidget {
   static const _bluePill   = Color(0xFF77A9F4);
   static const _theadBg    = Color(0xFFD9D9D9);
 
-  static const _btnDelete  = Color(0xFFE53935); // rojo
-  static const _btnDisable = Color(0xFFBDBDBD); // gris
-  static const _btnEnable  = Color(0xFFFFEB3B); // amarillo
-  static const _btnCreate  = Color(0xFF2E7D32); // verde
+  static const _btnDelete  = Color(0xFFE53935);
+  static const _btnDisable = Color(0xFFBDBDBD);
+  static const _btnEnable  = Color(0xFFFFEB3B);
+  static const _btnCreate  = Color(0xFF2E7D32);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // fondo blanco uniforme
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: _blueAppBar,
         leading: IconButton(
@@ -52,7 +52,6 @@ class ManageUsersScreen extends StatelessWidget {
           double clamp(double v, double min, double max) =>
               v < min ? min : (v > max ? max : v);
 
-          // Márgenes y medidas responsivas (márgenes laterales más grandes)
           final pagePad   = clamp(w * 0.08, 24, 60);
 
           final pillPadH  = clamp(w * 0.03, 14, 22);
@@ -67,7 +66,7 @@ class ManageUsersScreen extends StatelessWidget {
           final headFont  = clamp(base * 0.025, 13, 17);
           final cellFont  = clamp(base * 0.026, 14, 18);
 
-          final colGap    = clamp(w * 0.02, 12, 24);   // separación entre columnas
+          final colGap    = clamp(w * 0.02, 12, 24);
           final btnH      = clamp(rowH * 0.62, 26, 40);
           final btnFont   = clamp(base * 0.022, 12, 15);
           final btnRadius = clamp(20, 14, 20);
@@ -146,7 +145,6 @@ class ManageUsersScreen extends StatelessWidget {
             );
           }
 
-          // Botón “cápsula” reutilizable con onTap opcional
           Widget actionPill({
             required String label,
             required Color bg,
@@ -334,7 +332,7 @@ class ManageUsersScreen extends StatelessWidget {
                 headerBar(),
                 ...users.map(rowItem),
                 const Spacer(),
-                // Botón “Crear usuario” grande y abajo a la izquierda
+
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Padding(

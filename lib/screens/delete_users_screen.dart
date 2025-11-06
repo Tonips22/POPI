@@ -11,16 +11,16 @@ class DeleteUsersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent, // el fondo semitransparente lo pone el route (barrierColor)
+      backgroundColor: Colors.transparent,
       body: Center(
         child: _DialogCard(
           text: '¿Estás seguro de que quieres\neliminar a $userName?',
           onYes: () {
             // TODO: aquí va la lógica real de borrado (API/estado)
-            Navigator.pop(context); // cierra el modal
+            Navigator.pop(context);
           },
           onNo: () {
-            Navigator.pop(context); // cierra el modal
+            Navigator.pop(context);
           },
         ),
       ),
@@ -90,7 +90,6 @@ class _DialogCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Botón "Sí" en rojo para enfatizar eliminación
               _DialogButton(
                 label: 'Sí',
                 width: btnW,

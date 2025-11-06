@@ -97,7 +97,7 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Píldora título (misma posición / estilo que gestionar)
+                // Píldora título
                 Container(
                   decoration: BoxDecoration(
                     color: _bluePill,
@@ -118,7 +118,6 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                 ),
                 SizedBox(height: clamp(base * 0.050, 24, 36)),
 
-                // 🔹 Bloque central centrado, pero contenido alineado a la izquierda
                 Center(
                   child: SizedBox(
                     width: contentW,
@@ -135,7 +134,7 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                                 decoration: BoxDecoration(
                                   color: Colors.grey.shade300,
                                   borderRadius: BorderRadius.circular(photoRad.toDouble()),
-                                  border: Border.all(color: Colors.black, width: 1), // borde negro
+                                  border: Border.all(color: Colors.black, width: 1),
                                   boxShadow: const [
                                     BoxShadow(
                                       color: Colors.black26,
@@ -160,7 +159,6 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
 
                         SizedBox(height: clamp(base * 0.045, 20, 34)),
 
-                        // Campos (alineados más a la izquierda dentro del bloque)
                         _FieldRow(
                           label: 'Nombre',
                           labelWidth: labelW,
@@ -196,7 +194,6 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
 
                         const SizedBox(height: 24),
 
-                        // Botón "Crear usuario" (mismo tamaño que gestionar) y centrado
                         Center(
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -266,10 +263,8 @@ class _FieldRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Para forzar la altura exacta sin perder estilo del contenedor gris,
-    // envolvemos el TextField en un SizedBox.
     return Row(
-      mainAxisAlignment: MainAxisAlignment.start, // 👈 alineado a la izquierda
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         SizedBox(
           width: labelWidth,
@@ -284,7 +279,7 @@ class _FieldRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        // El campo ocupa el resto dentro del ancho del bloque centrado
+
         Expanded(
           child: SizedBox(
             height: fieldHeight,
@@ -292,7 +287,7 @@ class _FieldRow extends StatelessWidget {
               controller: controller,
               textInputAction: textInputAction,
               style: TextStyle(
-                fontSize: labelFont, // mismo orden de magnitud que etiquetas
+                fontSize: labelFont,
                 color: Colors.black87,
                 height: 1.1,
               ),
@@ -304,7 +299,7 @@ class _FieldRow extends StatelessWidget {
                 fillColor: Colors.grey.shade300,
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: 14,
-                  vertical: (fieldHeight - labelFont) * 0.28, // centrado visual
+                  vertical: (fieldHeight - labelFont) * 0.28,
                 ),
                 // Bordes redondeados sin línea visible (como tu caja gris)
                 enabledBorder: OutlineInputBorder(

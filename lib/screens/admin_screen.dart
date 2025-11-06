@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'manage_users_screen.dart'; // 👈 import de la nueva pantalla
+import 'manage_users_screen.dart';
 import 'reset_passwords_screen.dart';
 
 class AdminScreen extends StatelessWidget {
@@ -37,7 +37,7 @@ class AdminScreen extends StatelessWidget {
         ],
         elevation: 0,
       ),
-      // El truco: calcular tamaños con el alto/ancho real del BODY
+
       body: LayoutBuilder(
         builder: (context, constraints) {
           // Siempre 2x2 como en el boceto
@@ -98,7 +98,6 @@ class AdminScreen extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(), // sin scroll
                 childAspectRatio: childAspectRatio,
                 children: [
-                  // 👉 Aquí añadimos la navegación
                   _AdminCard(
                     icon: Icons.settings_outlined,
                     label: 'Gestionar usuarios',
@@ -179,7 +178,7 @@ class _AdminCard extends StatelessWidget {
     required this.borderRadius,
     required this.innerPadding,
     required this.gapY,
-    this.onTap, // 👈 NUEVO
+    this.onTap,
   });
 
   final IconData icon;
@@ -190,7 +189,7 @@ class _AdminCard extends StatelessWidget {
   final double borderRadius;
   final double innerPadding;
   final double gapY;
-  final VoidCallback? onTap; // 👈 NUEVO
+  final VoidCallback? onTap;
 
   static const _blueTile   = AdminScreen._blueTile;
   static const _blueCircle = AdminScreen._blueCircle;
@@ -203,7 +202,7 @@ class _AdminCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(borderRadius),
       child: InkWell(
         borderRadius: BorderRadius.circular(borderRadius),
-        onTap: onTap, // 👈 ahora usa la callback si viene
+        onTap: onTap,
         child: Padding(
           padding: EdgeInsets.all(innerPadding),
           child: Column(
