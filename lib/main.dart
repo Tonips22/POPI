@@ -6,6 +6,7 @@ import 'screens/fonts_settings_screen.dart';
 import 'screens/number_format_screen.dart';
 import 'screens/color_settings_screen.dart';
 import 'screens/create_profile_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const ChooseGameScreen(),
+      home: const LoginScreen(),
     );
   }
 }
