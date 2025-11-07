@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/sort_numbers_game.dart'; // Asegúrate de importar otras pantallas si es necesario
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,15 +11,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'POPI - Personalización',
+      debugShowCheckedModeBanner: false,
+      title: 'Demo Flutter',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade400),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      // CAMBIA TEMPORALMENTE ESTA LÍNEA PARA PROBAR TU PANTALLA
-      home: const SortNumbersGame(), // <-- Cambia esto temporalmente
-      // home: const MyHomePage(title: 'POPI | Inicio'), // <-- Línea original
+      home: const LoginScreen(),
     );
   }
 }
-
-// ... resto del código igual
