@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'customization_screen.dart'; // Pantalla de ajustes (ya existe en el repo)
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
+import 'settings_screen.dart'; // Pantalla de ajustes (ya existe en el repo)
 
 /// Pantalla básica del minijuego "Ordena la secuencia"
 ///
 /// Cambios importantes en esta versión:
-/// - Botón de ajustes arriba a la derecha (navega a CustomizationScreen).
+/// - Botón de ajustes arriba a la derecha (navega a SettingsScreen).
 /// - Al colocar un número en su posición correcta aparece un mensaje NO modal
 ///   que es una pastilla (pill) centrada abajo con el mismo color que los botones.
 class SortNumbersGame extends StatefulWidget {
@@ -186,10 +186,10 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
             icon: const Icon(Icons.more_vert),
             tooltip: 'Ajustes',
             onPressed: () {
-              // Navega a CustomizationScreen (ya existente en el repo).
+              // Navega a settings_screen (ya existente en el repo).
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CustomizationScreen()),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
           ),
