@@ -55,11 +55,17 @@ El proyecto ya contiene varias pantallas y widgets funcionales, en español, con
 ### Pantallas de juegos:
   - **GameSelectorScreen**: Selector de minijuegos disponibles
   - **NumberScreen**: Minijuego "Toca el número que suena" (implementado con TTS)
+  - **SortNumbersGame**: Minijuego "Ordena la secuencia" con drag & drop
+
+### Pantallas de autenticación:
+  - **LoginScreen**: Pantalla de inicio de sesión con selección de usuario
+  - **PasswordScreen**: Pantalla de contraseña con sistema de animales y colores
 
 ### Widgets reutilizables:
   - **CustomizationOptionCard**, **ColorSettingCard**, **ColorPickerDialog**: Personalización visual
   - **NumberFormatOptionCard**, **UploadOptionCard**: Preferencias de formato
   - **NumberGrid**, **NumberCircle**: Componentes del juego de números
+  - **NumberTile**, **TargetSlot**: Componentes para el juego de ordenar números con drag & drop
 
 ### Lógica de juego:
   - **GameController**: Controlador singleton para gestión de dificultad, rangos numéricos y generación de números aleatorios
@@ -104,6 +110,18 @@ Es una base funcional con múltiples características ya implementadas, pensada 
   - Control de dificultad (3-12 números)
   - Rangos configurables (0-10, 0-20, 0-100, 0-1000)
 
+- **"Ordena la secuencia"**: Implementado con sistema drag & drop
+  - Arrastrar y soltar números en casillas
+  - Intercambio de fichas entre casillas
+  - Retroalimentación visual con "pill" cuando se coloca correctamente
+  - Validación automática al completar la secuencia
+  - 10 números (0-9) para ordenar
+
+#### Sistema de autenticación:
+- Pantalla de login con selección visual de usuario
+- Sistema de contraseña con animales y colores (accesible)
+- Navegación según rol (administrador/tutor/estudiante)
+
 #### Lógica de juego:
 - GameController singleton para gestión centralizada
 - Sistema de generación de números únicos aleatorios
@@ -122,10 +140,10 @@ Es una base funcional con múltiples características ya implementadas, pensada 
    - Reproducción de audio (a partir de URL) y control básico
 
 3. **Minijuegos adicionales**:
-   - "Ordena la secuencia" (en desarrollo)
    - "Reparte/Deja el mismo número en cada recipiente"
    - Sistema de niveles progresivos
    - Aleatorización (5 repeticiones por juego)
+   - Mejoras en retroalimentación y animaciones
 
 4. **Ayuda multimedia por juego**:
    - Vídeos tutoriales con subtítulos
@@ -166,7 +184,23 @@ Sencilla y pensada para un equipo de seis principiantes:
 Mantén la lógica separada de la UI: los servicios (subidas, autenticación, consulta a Firestore) van en /services, y la lógica de juego en /logic.
 
 ---
-## 5. Autores
+
+## 5. Dependencias principales
+
+El proyecto utiliza las siguientes dependencias clave:
+
+- **flutter_tts** (^3.6.0): Text-to-Speech para el minijuego "Toca el número que suena"
+- **cupertino_icons** (^1.0.8): Iconos del sistema iOS/Material
+
+### Dependencias planeadas:
+- Firebase Authentication
+- Cloud Firestore
+- Firebase Storage
+- image_picker
+- flutter_sound o record
+
+---
+## 6. Autores
 
 - Juan Ramón Gallardo Casado
 - Jose Manuel Medina Horta
