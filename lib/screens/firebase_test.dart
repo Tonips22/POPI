@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class UsuariosScreen extends StatefulWidget {
-  const UsuariosScreen({super.key});
+class FirebaseTest extends StatefulWidget {
+  const FirebaseTest({super.key});
 
   @override
-  State<UsuariosScreen> createState() => _UsuariosScreenState();
+  State<FirebaseTest> createState() => _FirebaseTestState();
 }
 
-class _UsuariosScreenState extends State<UsuariosScreen> {
+class _FirebaseTestState extends State<FirebaseTest> {
   // Controladores para el formulario
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _tutorController = TextEditingController();
@@ -138,3 +138,26 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     );
   }
 }
+
+
+
+/**
+==========================================================================
+Inicialización de Firebase (lib/main.dart)
+==========================================================================
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart'; // generado por flutterfire configure
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  print('🔥 Iniciando Firebase...');
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  print('✅ Firebase inicializado correctamente.');
+
+  runApp(const MyApp());
+}
+ * **/
