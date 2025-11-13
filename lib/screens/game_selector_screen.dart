@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'number_screen.dart';
+import 'sort_numbers_game.dart';
 
 class ChooseGameScreen extends StatelessWidget {
   const ChooseGameScreen({super.key});
@@ -46,7 +47,12 @@ class ChooseGameScreen extends StatelessWidget {
                 context,
                 icon: Icons.open_with,
                 label: 'Ordena los números',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SortNumbersGame()),
+                  );
+                },
               ),
               _buildGameButton(
                 context,

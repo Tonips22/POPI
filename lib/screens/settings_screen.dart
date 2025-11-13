@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'difficulty_screen.dart';
+import 'customization_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -24,7 +25,17 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 20),
-            _buildOptionButton(context, 'Personalización'),
+            _buildOptionButton(context,
+                'Personalización',
+              onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                  builder: (context) => const CustomizationScreen(),
+                ),
+              );
+              }
+            ),
             const SizedBox(height: 20),
             _buildOptionButton(context, 'Accesibilidad'),
             const SizedBox(height: 40),
