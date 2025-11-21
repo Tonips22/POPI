@@ -22,9 +22,9 @@ class CustomizationScreen extends StatelessWidget {
           'Personalizar',
           style: TextStyle(
             fontSize: 32,
-            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -37,7 +37,7 @@ class CustomizationScreen extends StatelessWidget {
             crossAxisCount: 3,
             crossAxisSpacing: 20,
             mainAxisSpacing: 20,
-            childAspectRatio: 1.1,
+            childAspectRatio: 1.3,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             children: [
@@ -163,10 +163,10 @@ class _GridOptionCard extends StatelessWidget {
               // Icono grande en blanco
               Icon(
                 icon,
-                size: 64,
+                size: 56,
                 color: Colors.white,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               // Título debajo del icono
               Text(
                 title,
