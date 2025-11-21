@@ -8,106 +8,118 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
+      
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, size: 32),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: const Text(
+          'Ajustes',
+          style: TextStyle(
+            fontSize: 32,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildOptionButton(
-              context,
-              'Dificultad',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DifficultyScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            _buildOptionButton(context,
-                'Personalización',
-              onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                  builder: (context) => const CustomizationScreen(),
-                ),
-              );
-              }
-            ),
-            const SizedBox(height: 20),
-            _buildOptionButton(context, 'Accesibilidad'),
-            const SizedBox(height: 40),
-            IconButton(
-              iconSize: 40,
-              color: Colors.black,
-              onPressed: () => Navigator.pop(context),
-              icon: Container(
-                color: Colors.grey[300],
-                padding: const EdgeInsets.all(8),
-                child: const Icon(Icons.arrow_back),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // === OPCIÓN 1: DIFICULTAD ===
+              _SettingsOptionCard(
+                icon: Icons.tune,
+                title: 'Dificultad',
+                backgroundColor: Colors.blue,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DifficultyScreen(),
+                    ),
+                  );
+                },
               ),
-            ),
-          ],
+              
+              const SizedBox(height: 30),
+              
+              // === OPCIÓN 2: PERSONALIZACIÓN ===
+              _SettingsOptionCard(
+                icon: Icons.palette,
+                title: 'Personalización',
+                backgroundColor: Colors.purple,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CustomizationScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-
-  Widget _buildOptionButton(BuildContext context, String label,
-      {VoidCallback? onTap}) {
-    return _HoverButton(
-      label: label,
-      onTap: onTap,
-    );
-  }
 }
 
-class _HoverButton extends StatefulWidget {
-  final String label;
-  final VoidCallback? onTap;
+/// Widget personalizado para cada opción de ajustes
+class _SettingsOptionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color backgroundColor;
+  final VoidCallback onTap;
 
-  const _HoverButton({required this.label, this.onTap});
-
-  @override
-  State<_HoverButton> createState() => _HoverButtonState();
-}
-
-class _HoverButtonState extends State<_HoverButton> {
-  bool _isHovered = false;
+  const _SettingsOptionCard({
+    required this.icon,
+    required this.title,
+    required this.backgroundColor,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 250,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: _isHovered ? Colors.grey[400] : Colors.grey[300],
-            boxShadow: _isHovered
-                ? [
-              BoxShadow(
-                color: Colors.black,
-                offset: const Offset(0, 3),
-                blurRadius: 5,
+    return Material(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 400,
+          padding: const EdgeInsets.all(32.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icono grande en blanco
+              Icon(
+                icon,
+                size: 56,
+                color: Colors.white,
               ),
-            ]
-                : [],
-          ),
-          child: Text(
-            widget.label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: _isHovered ? Colors.black : Colors.black87,
-            ),
+              const SizedBox(width: 24),
+              // Título al lado del icono
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ),
       ),
