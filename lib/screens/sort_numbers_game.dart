@@ -181,6 +181,7 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text('Ordena la secuencia'),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
