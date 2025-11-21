@@ -39,15 +39,22 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
   }
 
   /// Lógica central para procesar una entrega (drop) sobre una casilla:
-  /// - Si viene desde otra casilla (fromIndex >= 0) -> intercambia/mueve.
-  /// - Si viene del pool (fromIndex == -1) -> mueve desde pool a la casilla,
+  /// - Solo permite colocar un número si coincide con el índice de la casilla.
+  /// - Si viene desde otra casilla (fromIndex >= 0) -> intercambia/mueve solo si ambos están en posiciones correctas.
+  /// - Si viene del pool (fromIndex == -1) -> mueve desde pool a la casilla solo si el número coincide con el índice,
   ///   y si la casilla ya tenía un valor, ese valor vuelve al pool.
   void _handleDrop(DragItem dragItem, int targetIndex) {
-    setState(() {
-      final sourceIndex = dragItem.fromIndex;
-      final sourceValue = dragItem.value;
-      final targetPrev = targets[targetIndex];
+    final sourceIndex = dragItem.fromIndex;
+    final sourceValue = dragItem.value;
+    final targetPrev = targets[targetIndex];
 
+    // VALIDACIÓN: Solo permitimos colocar el número si coincide con su posición
+    if (sourceValue != targetIndex) {
+      // El número no corresponde a esta posición, rechazamos el drop
+      return;
+    }
+
+    setState(() {
       // Si viene desde otra casilla
       if (sourceIndex >= 0) {
         // Si es la misma casilla, no hacemos nada
@@ -70,11 +77,8 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
       }
     });
 
-    // Tras la actualización de estado mostramos feedback si la ficha está en su posición correcta
-    final placedValue = targets[targetIndex];
-    if (placedValue != null && placedValue == targetIndex) {
-      _showPositivePill();
-    }
+    // Tras la actualización de estado mostramos feedback (siempre es correcto si llegamos aquí)
+    _showPositivePill();
 
     // Tras cualquier colocación comprobamos si el tablero está completo
     _checkCompletionAndShowResultIfNeeded();
@@ -127,32 +131,20 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
     });
   }
 
-  /// Comprueba si todas las casillas están llenas; si lo están, evalúa
-  /// si la secuencia es ascendiente (ganado) o no (fallo), y muestra un diálogo.
+  /// Comprueba si todas las casillas están llenas; si lo están,
+  /// muestra un diálogo de victoria (ya que por lógica siempre están correctas).
   void _checkCompletionAndShowResultIfNeeded() {
     // Si hay alguna casilla vacía, no hacemos nada
     if (targets.any((e) => e == null)) return;
 
-    final list = targets.cast<int>().toList();
-
-    // Comprobamos orden ascendente (cada elemento >= anterior)
-    bool isAscending = true;
-    for (var i = 1; i < list.length; i++) {
-      if (list[i] < list[i - 1]) {
-        isAscending = false;
-        break;
-      }
-    }
-
-    // Mostramos resultado en un diálogo sencillo (modal pequeño)
+    // Si todas las casillas están llenas, el jugador ha ganado
+    // (ya que solo se permiten números en sus posiciones correctas)
     showDialog<void>(
       context: context,
       barrierDismissible: true,
       builder: (context) => AlertDialog(
-        title: Text(isAscending ? '¡Ganado!' : 'No está correcto'),
-        content: Text(isAscending
-            ? '¡Enhorabuena! La secuencia está ordenada.'
-            : 'La secuencia no está ordenada. Puedes volver a intentar.'),
+        title: const Text('¡Ganado!'),
+        content: const Text('¡Enhorabuena! Has completado la secuencia correctamente.'),
         actions: [
           TextButton(
             onPressed: () {
@@ -216,14 +208,14 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
                         child: NumberTile(
                           value: value,
                           onTap: () {
-                            // Al tocar una ficha del pool, la colocamos en la primera casilla vacía
-                            final emptyIndex = targets.indexOf(null);
-                            if (emptyIndex != -1) {
-                              _handleDrop(DragItem(value: value, fromIndex: -1), emptyIndex);
+                            // Al tocar una ficha del pool, la colocamos en SU casilla correspondiente
+                            // Solo si está vacía o si podemos intercambiar
+                            if (targets[value] == null) {
+                              _handleDrop(DragItem(value: value, fromIndex: -1), value);
                             } else {
-                              // Mensaje simple si no hay huecos (usa SnackBar normal)
+                              // La casilla correcta ya está ocupada
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('No quedan casillas libres')),
+                                const SnackBar(content: Text('La casilla correcta ya está ocupada')),
                               );
                             }
                           },
