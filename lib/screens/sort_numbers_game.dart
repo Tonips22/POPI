@@ -31,6 +31,7 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
   // Para la animación de temblor
   late AnimationController _shakeController;
   int? _shakingValue; // Qué número está temblando
+  bool _showCheckIcon = false; // Controla la visibilidad del icono de check
 
   @override
   void initState() {
@@ -101,40 +102,20 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
     _checkCompletionAndShowResultIfNeeded();
   }
 
-  /// Muestra un "pill" centrado en la parte baja de la pantalla.
-  /// - Usa el color primario del Theme para que coincida con los botones.
-  /// - Tiene borderRadius grande para apariencia circular/pastilla.
-  /// - No ocupa todo el ancho (margin calculada para centrarlo).
+  /// Muestra un icono de check grande en el centro de la pantalla
   void _showPositivePill() {
-    final messenger = ScaffoldMessenger.of(context);
-    // Limpiamos cualquier SnackBar previo para evitar colas largas
-    messenger.clearSnackBars();
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    // Usamos una anchura aproximada del 30% de la pantalla para tablets
-    final horizontalMargin = screenWidth * 0.35;
-
-    // SnackBar con estilo "pill" y color primario del theme
-    messenger.showSnackBar(
-      SnackBar(
-        // Texto motivador
-        content: Text(
-          '¡Correcto',
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 16, color: Colors.white),
-        ),
-        duration: const Duration(milliseconds: 1200),
-        behavior: SnackBarBehavior.floating,
-        // Margin permite controlar la anchura y la posición horizontal; bottom fija la distancia desde el final
-        margin: EdgeInsets.fromLTRB(horizontalMargin, 0, horizontalMargin, 24),
-        backgroundColor: Colors.blue.shade400,
-        // Forma con borderRadius alto para que parezca una pastilla (pill)
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(100),
-        ),
-        elevation: 6,
-      ),
-    );
+    setState(() {
+      _showCheckIcon = true;
+    });
+    
+    // Ocultarlo después de 800ms
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        setState(() {
+          _showCheckIcon = false;
+        });
+      }
+    });
   }
 
   /// Anima un temblor para indicar que el número no puede colocarse ahí
@@ -222,18 +203,20 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
           ),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
-          // Column con mainAxisSize.min hace que su tamaño sea el mínimo
-          // necesario, así el Center lo colocará correctamente centrado.
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // POOL: fichas disponibles (0..9)
-                SingleChildScrollView(
+      body: Stack(
+        children: [
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              // Column con mainAxisSize.min hace que su tamaño sea el mínimo
+              // necesario, así el Center lo colocará correctamente centrado.
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // POOL: fichas disponibles (0..9)
+                    SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -303,6 +286,23 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
           ),
         ),
       ),
+      
+      // Overlay con el icono de check
+      if (_showCheckIcon)
+        Positioned(
+          bottom: 40,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Icon(
+              Icons.check_circle,
+              color: Colors.blue.shade400,
+              size: 120,
+            ),
+          ),
+        ),
+      ],
+    ),
     );
   }
 }
