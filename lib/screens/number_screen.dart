@@ -24,17 +24,23 @@ class _NumberScreenState extends State<NumberScreen> {
   }
 
   void _handleAnswer(bool isCorrect) {
-    setState(() {
-      _message = isCorrect ? '✅ ¡Correcto!' : '❌ Incorrecto';
-    });
-
-    Future.delayed(const Duration(milliseconds: 800), () {
+    if (isCorrect) {
       setState(() {
-        _controller.nextRound();
-        _message = '';
+        _message = '✅ ¡Correcto!';
       });
-      _speakInstruction();
-    });
+
+      Future.delayed(const Duration(milliseconds: 800), () {
+        setState(() {
+          _controller.nextRound();
+          _message = '';
+        });
+        _speakInstruction();
+      });
+    } else {
+      setState(() {
+        _message = '❌ Incorrecto';
+      });
+    }
   }
 
   void _speakTarget() async {
@@ -46,7 +52,7 @@ class _NumberScreenState extends State<NumberScreen> {
   void _speakInstruction() async {
     await _flutterTts.setLanguage("es-ES");
     await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak("Selecciona el número ${_controller.targetNumber}");
+    await _flutterTts.speak("Toca el número ${_controller.targetNumber}");
   }
 
   @override
@@ -59,6 +65,18 @@ class _NumberScreenState extends State<NumberScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+
+        // ---------- AHORA EL TÍTULO ESTÁ EN EL APPBAR ----------
+        title: const Text(
+          "Toca el número que suena",
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        centerTitle: true,
+
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
@@ -75,8 +93,30 @@ class _NumberScreenState extends State<NumberScreen> {
           ),
         ],
       ),
+
       body: Column(
         children: [
+          const SizedBox(height: 30),
+
+          // ---------- AHORA AQUÍ VA EL BOTÓN DE ALTAVOZ ----------
+          Center(
+            child: IconButton(
+              iconSize: screenWidth * 0.05,
+              color: Colors.black,
+              onPressed: _speakTarget,
+              icon: Container(
+                padding: EdgeInsets.all(screenWidth * 0.02),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.volume_up),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 30),
+
           Expanded(
             flex: 7,
             child: Padding(
@@ -93,28 +133,11 @@ class _NumberScreenState extends State<NumberScreen> {
             child: Text(
               _message,
               style: TextStyle(
-                fontSize: screenWidth * 0.04,
+                fontSize: screenWidth * 0.045,
                 fontWeight: FontWeight.bold,
                 color: _message.contains('Correcto')
                     ? Colors.green
                     : Colors.red,
-              ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: IconButton(
-              iconSize: screenWidth * 0.08,
-              color: Colors.black,
-              onPressed: _speakTarget,
-              icon: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: EdgeInsets.all(screenWidth * 0.015),
-                child: const Icon(Icons.volume_up),
               ),
             ),
           ),
