@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
 import 'settings_screen.dart'; // Pantalla de ajustes (ya existe en el repo)
@@ -16,7 +17,7 @@ class SortNumbersGame extends StatefulWidget {
   State<SortNumbersGame> createState() => _SortNumbersGameState();
 }
 
-class _SortNumbersGameState extends State<SortNumbersGame> {
+class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProviderStateMixin {
   // Número de fichas (0..9)
   final int count = 10;
 
@@ -24,11 +25,25 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
   // targets: casillas objetivo (int? null = vacía)
   late List<int> pool;
   late List<int?> targets;
+  
+  // Para la animación de temblor
+  late AnimationController _shakeController;
+  int? _shakingValue; // Qué número está temblando
 
   @override
   void initState() {
     super.initState();
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
     _initializeGame();
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    super.dispose();
   }
 
   void _initializeGame() {
@@ -120,6 +135,18 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
     );
   }
 
+  /// Anima un temblor para indicar que el número no puede colocarse ahí
+  void _shakeNumber(int value) {
+    setState(() {
+      _shakingValue = value;
+    });
+    _shakeController.forward(from: 0.0).then((_) {
+      setState(() {
+        _shakingValue = null;
+      });
+    });
+  }
+
   /// Vacía una casilla y devuelve su valor al pool (p. ej. al tocar la ficha).
   void _removeFromTarget(int targetIndex) {
     setState(() {
@@ -203,23 +230,43 @@ class _SortNumbersGameState extends State<SortNumbersGame> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: pool.map((value) {
+                      final isShaking = _shakingValue == value;
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: NumberTile(
+                        child: AnimatedBuilder(
+                          animation: _shakeController,
+                          builder: (context, child) {
+                            final offset = isShaking
+                                ? math.sin(_shakeController.value * math.pi * 4) * 10
+                                : 0.0;
+                            return Transform.translate(
+                              offset: Offset(offset, 0),
+                              child: child,
+                            );
+                          },
+                          child: NumberTile(
                           value: value,
                           onTap: () {
-                            // Al tocar una ficha del pool, la colocamos en SU casilla correspondiente
-                            // Solo si está vacía o si podemos intercambiar
-                            if (targets[value] == null) {
-                              _handleDrop(DragItem(value: value, fromIndex: -1), value);
+                            // Al tocar una ficha del pool, intentamos colocarla en la próxima casilla vacía
+                            final emptyIndex = targets.indexOf(null);
+                            if (emptyIndex != -1) {
+                              // Verificamos si el número coincide con la posición vacía
+                              if (value == emptyIndex) {
+                                // Es la posición correcta, colocamos
+                                _handleDrop(DragItem(value: value, fromIndex: -1), emptyIndex);
+                              } else {
+                                // No es la posición correcta, hacemos temblar el número
+                                _shakeNumber(value);
+                              }
                             } else {
-                              // La casilla correcta ya está ocupada
+                              // No hay casillas vacías
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('La casilla correcta ya está ocupada')),
+                                const SnackBar(content: Text('No quedan casillas libres')),
                               );
                             }
                           },
                           draggableData: DragItem(value: value, fromIndex: -1),
+                          ),
                         ),
                       );
                     }).toList(),
