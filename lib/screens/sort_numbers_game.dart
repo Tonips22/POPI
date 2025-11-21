@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
 import 'settings_screen.dart'; // Pantalla de ajustes (ya existe en el repo)
+import 'game_victory_screen.dart';
+import 'game_selector_screen.dart';
 
 /// Pantalla básica del minijuego "Ordena la secuencia"
 ///
@@ -159,27 +161,33 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
   }
 
   /// Comprueba si todas las casillas están llenas; si lo están,
-  /// muestra un diálogo de victoria (ya que por lógica siempre están correctas).
+  /// navega a la pantalla de victoria (ya que por lógica siempre están correctas).
   void _checkCompletionAndShowResultIfNeeded() {
     // Si hay alguna casilla vacía, no hacemos nada
     if (targets.any((e) => e == null)) return;
 
     // Si todas las casillas están llenas, el jugador ha ganado
     // (ya que solo se permiten números en sus posiciones correctas)
-    showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => AlertDialog(
-        title: const Text('¡Ganado!'),
-        content: const Text('¡Enhorabuena! Has completado la secuencia correctamente.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cerrar'),
-          ),
-        ],
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => GameVictoryScreen(
+          onRestart: () {
+            // Volver a esta pantalla y reiniciar el juego
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const SortNumbersGame(),
+              ),
+            );
+          },
+          onHome: () {
+            // Ir a la pantalla de selección de juegos
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const ChooseGameScreen(),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
