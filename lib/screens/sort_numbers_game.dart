@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
+import '../widgets/check_icon_overlay.dart';
 import 'settings_screen.dart'; // Pantalla de ajustes (ya existe en el repo)
 import 'game_victory_screen.dart';
 import 'game_selector_screen.dart';
@@ -289,17 +290,8 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
       
       // Overlay con el icono de check
       if (_showCheckIcon)
-        Positioned(
-          bottom: 40,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Icon(
-              Icons.check_circle,
-              color: Colors.blue.shade400,
-              size: 120,
-            ),
-          ),
+        CheckIconOverlay(
+          color: Colors.blue.shade400,
         ),
       ],
     ),
