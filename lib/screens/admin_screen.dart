@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'manage_users_screen.dart';
 import 'reset_passwords_screen.dart';
+import 'vinculate_users_screen.dart';
+import 'upload_resources_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -125,6 +127,14 @@ class AdminScreen extends StatelessWidget {
                     borderRadius: borderR,
                     innerPadding: innerPad,
                     gapY: gapY,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const UploadResourcesScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _AdminCard(
                     icon: Icons.folder_open_outlined,
