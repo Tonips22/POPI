@@ -15,11 +15,10 @@ class _UploadResourcesScreenState extends State<UploadResourcesScreen> {
   static const _bluePill = Color(0xFF77A9F4);
   static const _greenButton = Color(0xFF2E7D32);
 
-  // Un solo archivo cargado (imagen o audio)
   String? _fileName;
   ResourceType? _resourceType;
 
-  // Rutas a tus iconos (ajusta si usas otra carpeta/nombre)
+  // Rutas a tus iconos
   static const _imageAssetPath = 'assets/icons/upload_image.png';
   static const _audioAssetPath = 'assets/icons/upload_audio.png';
 
@@ -81,7 +80,6 @@ class _UploadResourcesScreenState extends State<UploadResourcesScreen> {
       return;
     }
 
-    // Aquí iría la llamada real al backend.
     _showSnack('Recurso "${_fileName!}" subido correctamente (simulación).');
   }
 
@@ -133,7 +131,11 @@ class _UploadResourcesScreenState extends State<UploadResourcesScreen> {
           final pillRad = clamp(w * 0.02, 10, 16);
           final pillFont = clamp(base * 0.026, 14, 20);
 
-          final iconSize = clamp(base * 0.18, 80, 130.0);
+          // ICONOS MÁS GRANDES
+          final iconSize = clamp(base * 0.34, 150, 260.0);
+          // SEPARACIÓN MAYOR ENTRE ICONOS
+          final iconsSpacing = clamp(w * 0.20, 70, 140);
+
           final btnHeight = clamp(base * 0.09, 44, 56);
           final btnFont = clamp(base * 0.028, 15, 19);
           final btnWidth = clamp(w * 0.35, 160, 220);
@@ -179,14 +181,16 @@ class _UploadResourcesScreenState extends State<UploadResourcesScreen> {
                           assetPath: _imageAssetPath,
                           size: iconSize,
                           onTap: _pickImage,
-                          disabled: _hasFileLoaded && _resourceType != ResourceType.image,
+                          disabled: _hasFileLoaded &&
+                              _resourceType != ResourceType.image,
                         ),
-                        SizedBox(width: clamp(w * 0.12, 40, 80)),
+                        SizedBox(width: iconsSpacing),
                         _UploadIcon(
                           assetPath: _audioAssetPath,
                           size: iconSize,
                           onTap: _pickAudio,
-                          disabled: _hasFileLoaded && _resourceType != ResourceType.audio,
+                          disabled: _hasFileLoaded &&
+                              _resourceType != ResourceType.audio,
                         ),
                       ],
                     ),
@@ -227,8 +231,9 @@ class _UploadResourcesScreenState extends State<UploadResourcesScreen> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
+                            // AQUÍ CAMBIO LA FLECHA POR UNA X
                             icon: const Icon(
-                              Icons.arrow_back_rounded,
+                              Icons.close_rounded,
                               size: 20,
                             ),
                             tooltip: 'Eliminar archivo',
@@ -278,7 +283,7 @@ class _UploadResourcesScreenState extends State<UploadResourcesScreen> {
 }
 
 /// Icono grande usando las imágenes que has pasado
-class _UploadIcon extends StatelessWidget {
+class _UploadIcon extends StatefulWidget {
   const _UploadIcon({
     required this.assetPath,
     required this.size,
@@ -292,25 +297,43 @@ class _UploadIcon extends StatelessWidget {
   final bool disabled;
 
   @override
-  Widget build(BuildContext context) {
-    final cardRadius = size * 0.25;
+  State<_UploadIcon> createState() => _UploadIconState();
+}
 
-    return Opacity(
-      opacity: disabled ? 0.4 : 1.0,
+class _UploadIconState extends State<_UploadIcon> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: widget.disabled
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
+      onEnter: (_) {
+        if (!widget.disabled) {
+          setState(() => _hovering = true);
+        }
+      },
+      onExit: (_) {
+        if (!widget.disabled) {
+          setState(() => _hovering = false);
+        }
+      },
       child: GestureDetector(
-        onTap: disabled ? null : onTap,
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(cardRadius),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(cardRadius),
-            child: Image.asset(
-              assetPath,
+        onTap: widget.disabled ? null : widget.onTap,
+        child: AnimatedScale(
+          scale: _hovering && !widget.disabled ? 1.08 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          child: SizedBox(
+            width: widget.size,
+            height: widget.size,
+            // Sin fondo, sin borde, solo tu PNG con su forma
+            child: FittedBox(
               fit: BoxFit.contain,
+              child: Image.asset(
+                widget.assetPath,
+              ),
             ),
           ),
         ),
@@ -318,3 +341,4 @@ class _UploadIcon extends StatelessWidget {
     );
   }
 }
+
