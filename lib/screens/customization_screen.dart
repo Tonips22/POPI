@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'color_settings_screen.dart';
 import 'fonts_settings_screen.dart';
 import 'number_format_screen.dart';
-import 'example_screen.dart';
 
 // Añadir import del servicio
 import '../services/user_service.dart';
@@ -16,7 +15,6 @@ class CustomizationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userService = UserService(); // instancia sencilla
     // Obtenemos las preferencias del usuario
     final prefs = PreferenceProvider.of(context);
 
@@ -124,16 +122,39 @@ class CustomizationScreen extends StatelessWidget {
                 fontSize: prefs?.getFontSizeValue() ?? 18.0,
                 fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ExampleScreen(),
-                    ),
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Configuración de sonido - Próximamente')),
                   );
                 },
               ),
 
-              // ... resto sin cambios ...
+              // === OPCIÓN 5: REACCIONES ===
+              _GridOptionCard(
+                icon: Icons.emoji_emotions,
+                title: 'Reacciones',
+                backgroundColor: Colors.pink,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Configuración de reacciones - Próximamente')),
+                  );
+                },
+              ),
+
+              // === OPCIÓN 6: JUEGOS ===
+              _GridOptionCard(
+                icon: Icons.sports_esports,
+                title: 'Juegos',
+                backgroundColor: Colors.red,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Configuración de juegos - Próximamente')),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -161,39 +182,38 @@ class _GridOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 48,
-              color: backgroundColor,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: fontSize * 0.9, // Ajustado al 90% del tamaño base
-                fontWeight: FontWeight.w500,
-                fontFamily: fontFamily,
+    return Material(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icono grande en blanco
+              Icon(
+                icon,
+                size: 56,
+                color: Colors.white,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 12),
+              // Título debajo del icono
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: fontSize * 0.9,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: fontFamily,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
