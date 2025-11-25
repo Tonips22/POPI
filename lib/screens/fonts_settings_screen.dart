@@ -67,7 +67,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     switch (fontFamily) {
       case 'opendyslexic':
         return FontType.lecturaFacil;
-      case 'arial':
+      case 'comicneue':
         return FontType.amigable;
       default:
         return FontType.predeterminada;
@@ -96,7 +96,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
       case FontType.lecturaFacil:
         return 'opendyslexic';
       case FontType.amigable:
-        return 'arial';
+        return 'comicneue';
       default:
         return 'default';
     }
@@ -273,7 +273,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
             Expanded(
               child: _FontTypeButton(
                 label: 'Predeterminada',
-                fontFamily: 'Roboto',
+                fontFamily: 'Roboto', // Esta es la fuente por defecto
                 isSelected: selectedFontType == FontType.predeterminada,
                 onTap: () {
                   setState(() {
@@ -286,7 +286,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
             Expanded(
               child: _FontTypeButton(
                 label: 'Amigable',
-                fontFamily: 'ComicNeue',
+                fontFamily: 'ComicNeue', // Esta es la fuente ComicNeue
                 isSelected: selectedFontType == FontType.amigable,
                 onTap: () {
                   setState(() {
@@ -299,7 +299,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
             Expanded(
               child: _FontTypeButton(
                 label: 'Lectura Fácil',
-                fontFamily: 'OpenDyslexic',
+                fontFamily: 'OpenDyslexic', // Esta es la fuente OpenDyslexic
                 isSelected: selectedFontType == FontType.lecturaFacil,
                 onTap: () {
                   setState(() {

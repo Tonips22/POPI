@@ -7,7 +7,7 @@ class UserProfile {
   final DateTime createdAt;
   
   // === PREFERENCIAS DE VISUALIZACIÓN ===
-  final String fontFamily;   // 'default', 'opendyslexic', 'arial'
+  final String fontFamily;   // 'default', 'opendyslexic', 'comicneue'
   final String fontSize;      // 'small', 'medium', 'large', 'extra_large'
   final String primaryColor;  // Formato hexadecimal "#4CAF50"
   final String secondaryColor; // Formato hexadecimal "#2196F3"
@@ -93,8 +93,8 @@ class UserProfile {
     switch (fontFamily) {
       case 'opendyslexic':
         return 'OpenDyslexic';
-      case 'arial':
-        return 'Arial';
+      case 'comicneue':
+        return 'ComicNeue';
       default:
         return 'Roboto'; // Fuente por defecto de Flutter
     }
