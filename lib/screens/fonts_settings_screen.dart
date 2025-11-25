@@ -160,6 +160,9 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final prefs = PreferenceProvider.of(context);
+
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.grey[100],
@@ -168,11 +171,12 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
             icon: const Icon(Icons.arrow_back, size: 32),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
+          title: Text(
             'Tipografía',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: prefs?.getFontSizeValue() ?? 32,
               fontWeight: FontWeight.bold,
+              fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
             ),
           ),
           backgroundColor: Colors.white,
@@ -194,11 +198,12 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
           icon: const Icon(Icons.arrow_back, size: 32),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Tipografía',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: prefs?.getFontSizeValue() ?? 32,
             fontWeight: FontWeight.bold,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
           ),
         ),
         backgroundColor: Colors.white,
@@ -242,11 +247,12 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
+                    : Text(
                         'Guardar cambios',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: prefs?.getFontSizeValue() ?? 20,
                           fontWeight: FontWeight.bold,
+                          fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                           color: Colors.white,
                         ),
                       ),
