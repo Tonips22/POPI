@@ -2,7 +2,6 @@
 // Modificamos el onTap de la opción "Tipografía" para crear/asegurar usuario demo y pasarlo.
 
 import 'package:flutter/material.dart';
-import 'package:popi/screens/example_screen.dart';
 import 'color_settings_screen.dart';
 import 'fonts_settings_screen.dart';
 import 'number_format_screen.dart';

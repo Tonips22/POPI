@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/user_preferences_service.dart';
-import '../models/user_preferences.dart';
+import '../services/user_service.dart';
+import '../models/user_profile.dart';
 import '../widgets/preference_provider.dart';
 
 /// Pantalla de configuración de tipografía
@@ -16,7 +16,7 @@ class FontSettingsScreen extends StatefulWidget {
 
 class _FontSettingsScreenState extends State<FontSettingsScreen> {
   // === ESTADO DE LA PANTALLA ===
-  final UserPreferencesService _preferencesService = UserPreferencesService();
+  final UserService _userService = UserService();
 
   // Tipo de fuente seleccionado
   FontType selectedFontType = FontType.predeterminada;
@@ -37,17 +37,23 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     _loadPreferences();
   }
 
-  /// Carga las preferencias desde Firebase
+  /// Carga las preferencias desde Firebase (tabla users)
   Future<void> _loadPreferences() async {
     try {
-      final prefs = await _preferencesService.getPreferences(effectiveUserId);
-      setState(() {
-        // Convertir fontFamily a FontType
-        selectedFontType = _fontFamilyToType(prefs.fontFamily);
-        // Convertir fontSize a valor del slider
-        fontSizeValue = _fontSizeToSliderValue(prefs.fontSize);
-        _isLoading = false;
-      });
+      final userProfile = await _userService.getUserProfile(effectiveUserId);
+      if (userProfile != null) {
+        setState(() {
+          // Convertir fontFamily a FontType
+          selectedFontType = _fontFamilyToType(userProfile.fontFamily);
+          // Convertir fontSize a valor del slider
+          fontSizeValue = _fontSizeToSliderValue(userProfile.fontSize);
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       print('Error al cargar preferencias: $e');
       setState(() {
@@ -104,25 +110,19 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     return 'extra_large';
   }
 
-  /// Guarda las preferencias en Firebase
+  /// Guarda las preferencias en Firebase (tabla users)
   Future<void> _savePreferences() async {
     setState(() {
       _isSaving = true;
     });
 
     try {
-      // Obtener preferencias actuales para mantener los colores
-      final currentPrefs = await _preferencesService.getPreferences(effectiveUserId);
-      
-      // Crear nuevas preferencias con los valores actualizados
-      final newPrefs = currentPrefs.copyWith(
+      // Actualizar las preferencias en la tabla users
+      await _userService.updateUserPreferences(
+        effectiveUserId,
         fontFamily: _fontTypeToFamily(selectedFontType),
         fontSize: _sliderValueToFontSize(fontSizeValue),
-        lastUpdated: DateTime.now(),
       );
-
-      // Guardar en Firebase
-      await _preferencesService.savePreferences(effectiveUserId, newPrefs);
 
       // Recargar las preferencias en toda la aplicación
       if (mounted) {
