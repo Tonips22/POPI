@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
+import 'widgets/preference_provider.dart';
 
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
@@ -21,14 +22,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Demo Flutter',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade400),
-        useMaterial3: true,
+    // Envolvemos toda la app con PreferenceLoader
+    return PreferenceLoader(
+      userId: 'demo', // Usuario demo por defecto
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Demo Flutter',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade400),
+          useMaterial3: true,
+        ),
+        home: const LoginScreen(),
       ),
-      home: const LoginScreen(),
     );
   }
 }

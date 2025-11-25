@@ -22,6 +22,14 @@ class PreferenceProvider extends InheritedWidget {
         ?.preferences;
   }
 
+  /// Método estático para recargar las preferencias
+  static Future<void> reload(BuildContext context) async {
+    final state = context.findAncestorStateOfType<_PreferenceLoaderState>();
+    if (state != null) {
+      await state.reloadPreferences();
+    }
+  }
+
   @override
   bool updateShouldNotify(PreferenceProvider oldWidget) {
     // Se notifica si las preferencias han cambiado
@@ -61,6 +69,11 @@ class _PreferenceLoaderState extends State<PreferenceLoader> {
       _preferences = prefs;
       _isLoading = false;
     });
+  }
+
+  /// Método público para recargar las preferencias
+  Future<void> reloadPreferences() async {
+    await _loadPreferences();
   }
 
   @override

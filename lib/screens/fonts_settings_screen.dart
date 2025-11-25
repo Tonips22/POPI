@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/user_preferences_service.dart';
+import '../models/user_preferences.dart';
+import '../widgets/preference_provider.dart';
 
 /// Pantalla de configuración de tipografía
 class FontSettingsScreen extends StatefulWidget {
@@ -13,7 +16,7 @@ class FontSettingsScreen extends StatefulWidget {
 
 class _FontSettingsScreenState extends State<FontSettingsScreen> {
   // === ESTADO DE LA PANTALLA ===
-  // Estos valores deberían cargarse y guardarse en Firebase más adelante
+  final UserPreferencesService _preferencesService = UserPreferencesService();
 
   // Tipo de fuente seleccionado
   FontType selectedFontType = FontType.predeterminada;
@@ -21,6 +24,9 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   // Tamaño de letra (de 0.0 a 1.0)
   // 0.0 = pequeño, 0.5 = medio, 1.0 = grande
   double fontSizeValue = 0.5;
+  
+  bool _isLoading = true;
+  bool _isSaving = false;
 
   // userId efectivo (fallback a 'demo')
   String get effectiveUserId => widget.userId ?? 'demo';
@@ -28,12 +34,157 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // Aquí podrías cargar las preferencias desde Firestore usando effectiveUserId
-    // por ejemplo: PreferencesService.getPreferences(effectiveUserId)
+    _loadPreferences();
+  }
+
+  /// Carga las preferencias desde Firebase
+  Future<void> _loadPreferences() async {
+    try {
+      final prefs = await _preferencesService.getPreferences(effectiveUserId);
+      setState(() {
+        // Convertir fontFamily a FontType
+        selectedFontType = _fontFamilyToType(prefs.fontFamily);
+        // Convertir fontSize a valor del slider
+        fontSizeValue = _fontSizeToSliderValue(prefs.fontSize);
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error al cargar preferencias: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Convierte el fontFamily del modelo a FontType
+  FontType _fontFamilyToType(String fontFamily) {
+    switch (fontFamily) {
+      case 'opendyslexic':
+        return FontType.lecturaFacil;
+      case 'arial':
+        return FontType.amigable;
+      default:
+        return FontType.predeterminada;
+    }
+  }
+
+  /// Convierte el fontSize del modelo a valor del slider
+  double _fontSizeToSliderValue(String fontSize) {
+    switch (fontSize) {
+      case 'small':
+        return 0.0;
+      case 'medium':
+        return 0.5;
+      case 'large':
+        return 0.75;
+      case 'extra_large':
+        return 1.0;
+      default:
+        return 0.5;
+    }
+  }
+
+  /// Convierte el FontType a fontFamily del modelo
+  String _fontTypeToFamily(FontType type) {
+    switch (type) {
+      case FontType.lecturaFacil:
+        return 'opendyslexic';
+      case FontType.amigable:
+        return 'arial';
+      default:
+        return 'default';
+    }
+  }
+
+  /// Convierte el valor del slider a fontSize del modelo
+  String _sliderValueToFontSize(double value) {
+    if (value <= 0.25) return 'small';
+    if (value <= 0.6) return 'medium';
+    if (value <= 0.85) return 'large';
+    return 'extra_large';
+  }
+
+  /// Guarda las preferencias en Firebase
+  Future<void> _savePreferences() async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // Obtener preferencias actuales para mantener los colores
+      final currentPrefs = await _preferencesService.getPreferences(effectiveUserId);
+      
+      // Crear nuevas preferencias con los valores actualizados
+      final newPrefs = currentPrefs.copyWith(
+        fontFamily: _fontTypeToFamily(selectedFontType),
+        fontSize: _sliderValueToFontSize(fontSizeValue),
+        lastUpdated: DateTime.now(),
+      );
+
+      // Guardar en Firebase
+      await _preferencesService.savePreferences(effectiveUserId, newPrefs);
+
+      // Recargar las preferencias en toda la aplicación
+      if (mounted) {
+        await PreferenceProvider.reload(context);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Preferencias guardadas correctamente'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error al guardar preferencias: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Error al guardar preferencias: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.grey[100],
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, size: 32),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Tipografía',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
 
@@ -70,18 +221,35 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
             _buildFontSizeSelector(),
 
             const SizedBox(height: 24),
-            // Botón de ejemplo para guardar (aquí debes conectar con tu servicio de preferencias)
+            // Botón para guardar preferencias
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Ejemplo: guardar usando effectiveUserId
-                  // await preferencesService.savePreferences(effectiveUserId, ...);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Guardar preferencias para: $effectiveUserId')),
-                  );
-                },
-                child: const Text('Guardar (demo)'),
+                onPressed: _isSaving ? null : _savePreferences,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Guardar cambios',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],
