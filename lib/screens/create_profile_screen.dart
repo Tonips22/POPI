@@ -9,7 +9,6 @@ class CreateProfileScreen extends StatefulWidget {
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
 
   int? _selectedImageIndex;
 
@@ -68,15 +67,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                             label: 'Nombre del alumno',
                             hint: 'Introduce nombre del alumno',
                             controller: _nameController,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'Edad del alumno',
-                            hint: 'Introduce edad del alumno',
-                            controller: _ageController,
-                            keyboardType: TextInputType.number,
                           ),
                         ),
                       ],

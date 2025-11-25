@@ -51,59 +51,16 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+
+              // 🔵 BLOQUE AZUL: IMÁGENES DISPONIBLES
               _buildSectionContainer(
                 title: 'Inicio de sesión accesible',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Pro tip: Selecciona 4 animales en un orden concreto para definir la contraseña del alumno',
+                      'Pro tip: Selecciona hasta 4 animales en un orden concreto para definir la contraseña del alumno',
                       style: TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 12),
-
-                    const Text(
-                      'Contraseña seleccionada',
-                      style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Contraseña seleccionada con imágenes
-                    Row(
-                      children: [
-                        ...List.generate(4, (index) {
-                          return Container(
-                            width: itemSize,
-                            height: itemSize,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border:
-                              Border.all(color: Colors.black, width: 2),
-                              borderRadius: BorderRadius.circular(8),
-                              image: index < _selectedIndexes.length
-                                  ? DecorationImage(
-                                image: AssetImage(_imagePaths[
-                                _selectedIndexes[index]]),
-                                fit: BoxFit.cover,
-                              )
-                                  : null,
-                            ),
-                          );
-                        }),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.black87),
-                          onPressed: () {
-                            setState(() {
-                              if (_selectedIndexes.isNotEmpty) {
-                                _selectedIndexes.removeLast();
-                              }
-                            });
-                          },
-                        ),
-                      ],
                     ),
 
                     const SizedBox(height: 20),
@@ -117,7 +74,6 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Contenedor igual que en la Pantalla1
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: SizedBox(
@@ -164,6 +120,51 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
                 ),
               ),
 
+              const SizedBox(height: 20),
+
+              // 🔵 NUEVO BLOQUE AZUL: CONTRASEÑA SELECCIONADA
+              _buildSectionContainer(
+                title: 'Contraseña seleccionada',
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        ...List.generate(4, (index) {
+                          return Container(
+                            width: itemSize,
+                            height: itemSize,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.black, width: 2),
+                              borderRadius: BorderRadius.circular(8),
+                              image: index < _selectedIndexes.length
+                                  ? DecorationImage(
+                                image: AssetImage(_imagePaths[
+                                _selectedIndexes[index]]),
+                                fit: BoxFit.cover,
+                              )
+                                  : null,
+                            ),
+                          );
+                        }),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.black87),
+                          onPressed: () {
+                            setState(() {
+                              if (_selectedIndexes.isNotEmpty) {
+                                _selectedIndexes.removeLast();
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 40),
 
               // Botones inferiores
@@ -201,7 +202,8 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const CreateProfileScreen3()),
+                        MaterialPageRoute(
+                            builder: (_) => const CreateProfileScreen3()),
                       );
                     },
                     child: const Text(
@@ -234,8 +236,8 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style:
-              const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 17)),
           const Divider(color: Colors.black),
           child,
         ],
