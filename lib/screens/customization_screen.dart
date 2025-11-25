@@ -9,6 +9,7 @@ import 'example_screen.dart';
 
 // Añadir import del servicio
 import '../services/user_service.dart';
+import '../widgets/preference_provider.dart';
 
 class CustomizationScreen extends StatelessWidget {
   const CustomizationScreen({super.key});
@@ -16,6 +17,8 @@ class CustomizationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userService = UserService(); // instancia sencilla
+    // Obtenemos las preferencias del usuario
+    final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -26,10 +29,12 @@ class CustomizationScreen extends StatelessWidget {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
+        title: Text(
           'Personalizar',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: prefs?.getFontSizeValue() ?? 18.0,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
@@ -53,6 +58,8 @@ class CustomizationScreen extends StatelessWidget {
                 icon: Icons.palette,
                 title: 'Colores',
                 backgroundColor: Colors.blue,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -68,6 +75,8 @@ class CustomizationScreen extends StatelessWidget {
                 icon: Icons.text_fields,
                 title: 'Tipografía',
                 backgroundColor: Colors.purple,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                 onTap: () async {
                   const demoId = 'demo';
                   final userService = UserService(); // creado aquí, no como campo del widget
@@ -96,6 +105,8 @@ class CustomizationScreen extends StatelessWidget {
                 icon: Icons.looks_one,
                 title: 'Formato de números',
                 backgroundColor: Colors.green,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -110,6 +121,8 @@ class CustomizationScreen extends StatelessWidget {
                 icon: Icons.volume_up,
                 title: 'Sonido',
                 backgroundColor: Colors.orange,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -133,12 +146,16 @@ class _GridOptionCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final Color backgroundColor;
+  final double fontSize;
+  final String fontFamily;
   final VoidCallback onTap;
 
   const _GridOptionCard({
     required this.icon,
     required this.title,
     required this.backgroundColor,
+    required this.fontSize,
+    required this.fontFamily,
     required this.onTap,
   });
 
@@ -169,9 +186,10 @@ class _GridOptionCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 16,
+              style: TextStyle(
+                fontSize: fontSize * 0.9, // Ajustado al 90% del tamaño base
                 fontWeight: FontWeight.w500,
+                fontFamily: fontFamily,
               ),
               textAlign: TextAlign.center,
             ),
