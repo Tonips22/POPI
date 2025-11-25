@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'difficulty_screen.dart';
 import 'customization_screen.dart';
+import '../widgets/preference_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final prefs = PreferenceProvider.of(context);
+    
     return Scaffold(
       backgroundColor: Colors.grey[100],
       
@@ -17,10 +20,11 @@ class SettingsScreen extends StatelessWidget {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
+        title: Text(
           'Ajustes',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
           ),
         ),
         centerTitle: true,
@@ -40,6 +44,8 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.tune,
                 title: 'Dificultad',
                 backgroundColor: Colors.blue,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -57,6 +63,8 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.palette,
                 title: 'Personalización',
                 backgroundColor: Colors.purple,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -79,12 +87,16 @@ class _SettingsOptionCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final Color backgroundColor;
+  final double fontSize;
+  final String fontFamily;
   final VoidCallback onTap;
 
   const _SettingsOptionCard({
     required this.icon,
     required this.title,
     required this.backgroundColor,
+    required this.fontSize,
+    required this.fontFamily,
     required this.onTap,
   });
 
@@ -113,9 +125,10 @@ class _SettingsOptionCard extends StatelessWidget {
               // Título al lado del icono
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 28,
+                style: TextStyle(
+                  fontSize: fontSize * 1.2,
                   fontWeight: FontWeight.w600,
+                  fontFamily: fontFamily,
                   color: Colors.white,
                 ),
               ),

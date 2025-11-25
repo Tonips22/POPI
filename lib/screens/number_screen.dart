@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../logic/game_controller.dart';
 import '../widget/number_grid.dart';
+import '../widgets/preference_provider.dart';
 
 class NumberScreen extends StatefulWidget {
   const NumberScreen({super.key});
@@ -57,6 +58,7 @@ class _NumberScreenState extends State<NumberScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final prefs = PreferenceProvider.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -67,11 +69,12 @@ class _NumberScreenState extends State<NumberScreen> {
         ),
 
         // ---------- AHORA EL TÍTULO ESTÁ EN EL APPBAR ----------
-        title: const Text(
+        title: Text(
           "Toca el número que suena",
           style: TextStyle(
-            fontSize: 26,
+            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.3,
             fontWeight: FontWeight.bold,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
           ),
           textAlign: TextAlign.center,
         ),

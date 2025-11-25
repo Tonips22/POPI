@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../logic/game_controller.dart';
+import '../widgets/preference_provider.dart';
 
 class DifficultyScreen extends StatefulWidget {
   const DifficultyScreen({super.key});
@@ -36,6 +37,8 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final prefs = PreferenceProvider.of(context);
+    
     // Calculamos el máximo permitido del slider según el rango seleccionado
     double maxValue = 12;
     if (_ranges[_selectedRangeIndex]['max'] == 10) {
@@ -47,9 +50,13 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'Selecciona dificultad',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.4,
+                fontWeight: FontWeight.bold,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+              ),
             ),
             const SizedBox(height: 40),
 

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
 import '../widgets/check_icon_overlay.dart';
+import '../widgets/preference_provider.dart';
 import 'settings_screen.dart'; // Pantalla de ajustes (ya existe en el repo)
 import 'game_victory_screen.dart';
 import 'game_selector_screen.dart';
@@ -176,11 +177,19 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+    final prefs = PreferenceProvider.of(context);
+    
     // CENTRADO: usamos Center con Column mainAxisSize.min para centrar todo
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Ordena la secuencia'),
+        title: Text(
+          'Ordena la secuencia',
+          style: TextStyle(
+            fontSize: prefs?.getFontSizeValue() ?? 18.0,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
