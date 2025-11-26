@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../logic/game_controller.dart';
+import '../logic/game_controller_ordenar.dart';
 import '../widgets/preference_provider.dart';
 
 class OrdenarDifficultyScreen extends StatefulWidget {
@@ -10,7 +10,8 @@ class OrdenarDifficultyScreen extends StatefulWidget {
 }
 
 class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
-  final GameController _controller = GameController();
+  final OrdenarGameController _controller = OrdenarGameController();
+
   late double _sliderValue;
   int _selectedRangeIndex = 0;
 
@@ -26,7 +27,6 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
     super.initState();
     _sliderValue = _controller.difficulty.toDouble();
 
-    // Encuentra el rango actual si coincide
     for (int i = 0; i < _ranges.length; i++) {
       if (_ranges[i]['min'] == _controller.minRange &&
           _ranges[i]['max'] == _controller.maxRange) {
@@ -39,10 +39,7 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
   Widget build(BuildContext context) {
     final prefs = PreferenceProvider.of(context);
 
-    double maxValue = 12;
-    if (_ranges[_selectedRangeIndex]['max'] == 10) {
-      maxValue = 10;
-    }
+    double maxValue = (_ranges[_selectedRangeIndex]['max'] == 10) ? 10 : 12;
 
     return Scaffold(
       body: Center(
@@ -65,54 +62,48 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
                 fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
               ),
             ),
+
             const SizedBox(height: 40),
 
             SizedBox(
               width: 400,
               child: Column(
                 children: [
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 8,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14),
-                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 28),
-                    ),
-                    child: Slider(
-                      value: _sliderValue.clamp(1, maxValue),
-                      min: 1,
-                      max: maxValue,
-                      divisions: (maxValue - 1).toInt(),
-                      label: _sliderValue.round().toString(),
-                      onChanged: (value) {
-                        setState(() {
-                          _sliderValue = value;
-                          _controller.setDifficulty(value.toInt());
-                        });
-                      },
-                    ),
+                  Slider(
+                    value: _sliderValue.clamp(1, maxValue),
+                    min: 1,
+                    max: maxValue,
+                    divisions: (maxValue - 1).toInt(),
+                    label: _sliderValue.round().toString(),
+                    onChanged: (v) {
+                      setState(() {
+                        _sliderValue = v;
+                        _controller.setDifficulty(v.toInt());
+                      });
+                    },
                   ),
-                  const SizedBox(height: 10),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(
                       maxValue.toInt(),
-                          (index) => Text(
-                        '${index + 1}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          (i) => Text("${i + 1}",
+                        style: const TextStyle(fontSize: 15),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 50),
 
             Wrap(
               spacing: 20,
               runSpacing: 15,
               children: List.generate(_ranges.length, (index) {
-                bool selected = _selectedRangeIndex == index;
-                String label = '${_ranges[index]['min']}-${_ranges[index]['max']}';
+                bool selected = index == _selectedRangeIndex;
+
                 return GestureDetector(
                   onTap: () {
                     setState(() {
@@ -124,6 +115,7 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
 
                       if (_ranges[index]['max'] == 10 && _sliderValue > 10) {
                         _sliderValue = 10;
+                        _controller.setDifficulty(10);
                       }
                     });
                   },
@@ -132,14 +124,14 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
                     width: 90,
                     height: 90,
                     decoration: BoxDecoration(
-                      color: selected ? Colors.grey[400] : Colors.white,
                       shape: BoxShape.circle,
+                      color: selected ? Colors.grey[400] : Colors.white,
                       border: Border.all(color: Colors.black, width: 1.8),
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      label,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      '${_ranges[index]['min']}-${_ranges[index]['max']}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     ),
                   ),
                 );
@@ -147,7 +139,7 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
             ),
 
             Padding(
-              padding: const EdgeInsets.only(top: 60.0, left: 20.0, right: 20.0, bottom: 20.0),
+              padding: const EdgeInsets.only(top: 60, bottom: 20),
               child: IconButton(
                 iconSize: 45,
                 color: Colors.black,

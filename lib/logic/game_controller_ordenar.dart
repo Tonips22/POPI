@@ -1,76 +1,54 @@
 import 'dart:math';
+import 'dart:math' as math;
 
-class GameControllerOrdenar {
-  late List<int> numerosDesordenados;
-  late List<int?> numerosOrdenados;
-  late int min;
-  late int max;
-  late int cantidad;
+class OrdenarGameController {
+  // --- SINGLETON ---
+  static final OrdenarGameController _instance = OrdenarGameController._internal();
+  factory OrdenarGameController() => _instance;
+  OrdenarGameController._internal();
 
-  GameControllerOrdenar({
-    required this.min,
-    required this.max,
-    required this.cantidad,
-  }) {
-    generarNuevaSecuencia();
+  // --- CONFIGURACIÓN ---
+  int difficulty = 4; // Tamaño de la secuencia
+  int minRange = 0;
+  int maxRange = 10;
+
+  // --- LISTAS DEL JUEGO ---
+  List<int> pool = [];
+  List<int> sorted = [];
+
+  // Cambiar dificultad
+  void setDifficulty(int d) {
+    difficulty = d;
   }
 
-  /// Genera una nueva secuencia aleatoria
-  void generarNuevaSecuencia() {
-    final random = Random();
-
-    // Generar lista aleatoria dentro del rango
-    List<int> lista = List.generate(
-      cantidad,
-          (_) => min + random.nextInt(max - min + 1),
-    );
-
-    // Mezclar la lista
-    lista.shuffle();
-
-    numerosDesordenados = List.from(lista);
-
-    // Lista donde el jugador colocará los números (vacías)
-    numerosOrdenados = List.filled(cantidad, null);
+  // Cambiar rangos
+  void setRange(int min, int max) {
+    minRange = min;
+    maxRange = max;
   }
 
-  /// Verifica si todos los números fueron colocados correctamente
-  bool secuenciaCorrecta() {
-    // Si aún quedan null, no está completa
-    if (numerosOrdenados.contains(null)) return false;
+  // Crea nueva ronda
+  void initGame() {
+    sorted.clear();
+    pool.clear();
 
-    for (int i = 0; i < numerosOrdenados.length - 1; i++) {
-      if (numerosOrdenados[i]! > numerosOrdenados[i + 1]!) {
-        return false;
-      }
+    final rand = math.Random();
+
+    // Conjunto para evitar repetidos
+    final Set<int> generated = {};
+
+    while (generated.length < difficulty) {
+      final n = minRange + rand.nextInt(maxRange - minRange + 1);
+      generated.add(n); // si ya existe, no se añade
     }
-    return true;
+
+    pool = generated.toList();
+    sorted = List<int>.from(pool)..sort();
   }
 
-  /// Colocar un número en una posición inferior
-  bool colocarNumero(int numero, int posicion) {
-    if (posicion < 0 || posicion >= cantidad) return false;
 
-    // Evita sobrescribir casillas ya llenas
-    if (numerosOrdenados[posicion] != null) return false;
-
-    numerosOrdenados[posicion] = numero;
-    numerosDesordenados.remove(numero);
-
-    return true;
-  }
-
-  /// Quitar un número ya colocado (por si el jugador se equivoca)
-  void quitarNumero(int posicion) {
-    if (numerosOrdenados[posicion] == null) return;
-
-    int numero = numerosOrdenados[posicion]!;
-    numerosOrdenados[posicion] = null;
-    numerosDesordenados.add(numero);
-  }
-
-  /// Reinicia la partida generando nueva secuencia
-  void reiniciar() {
-    generarNuevaSecuencia();
+  // Verifica si el número colocado es correcto
+  bool isCorrectPlacement(int value, int index) {
+    return sorted[index] == value;
   }
 }
