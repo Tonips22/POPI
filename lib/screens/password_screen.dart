@@ -54,23 +54,24 @@ class _PasswordScreenState extends State<PasswordScreen> {
               v < min ? min : (v > max ? max : v);
 
           // === Ajustes de tamaño ===
-          final pagePad   = clamp(w * 0.08, 24, 60);
+          final pagePad   = clamp(w * 0.06, 24, 50);
 
-          final avatar    = clamp(base * 0.32, 140, 200); // más grande
-          final boxH      = clamp(base * 0.18, 90, 130); // rectángulo más alto
-          final slotSize  = clamp(boxH * 0.70, 52, 70);
-          final slotGap   = clamp(base * 0.025, 14, 20);
+          final avatar    = clamp(base * 0.26, 120, 180);
+          final boxH      = clamp(base * 0.16, 80, 120);
+          final slotSize  = clamp(boxH * 0.70, 52, 68);
+          final slotGap   = clamp(base * 0.02, 12, 18);
           final slotR     = 12.0;
           final boxR      = 16.0;
-          final boxPadX   = clamp(base * 0.03, 20, 28);
+          final boxPadX   = clamp(base * 0.03, 18, 26);
 
-          // grid más pequeño para restar protagonismo
-          final gridW     = clamp(w * 0.70, 480, 680);
-          final gridPad   = clamp(base * 0.02, 10, 14);
-          final cellSize  = clamp(base * 0.10, 64, 78);
+          // 👉 teclado más pequeño
+          final gridW     = clamp(w * 0.50, 360, 480);
+          final gridPad   = clamp(base * 0.015, 6, 10);
+          final cellSize  = clamp(base * 0.07, 48, 60);
           final cellR     = 14.0;
-          final cellGap   = clamp(base * 0.012, 8, 12);
-          final emojiSize = clamp(cellSize * 0.48, 24, 34);
+          final cellGap   = clamp(base * 0.009, 5, 8);
+          final emojiSize = clamp(cellSize * 0.42, 20, 26);
+
 
           // ===== Avatar (icono grande arriba) =====
           Widget topAvatar() {
@@ -81,11 +82,19 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 color: const Color(0xFF2596BE),
                 shape: BoxShape.circle,
                 boxShadow: const [
-                  BoxShadow(color: Colors.black26, offset: Offset(0, 1), blurRadius: 2),
+                  BoxShadow(
+                    color: Colors.black26,
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                  ),
                 ],
               ),
               alignment: Alignment.center,
-              child: Icon(Icons.account_circle, size: avatar * 1, color: Colors.white),
+              child: Icon(
+                Icons.account_circle,
+                size: avatar * 1,
+                color: Colors.white,
+              ),
             );
           }
 
@@ -93,7 +102,11 @@ class _PasswordScreenState extends State<PasswordScreen> {
           Widget passwordBox() {
             final delGap   = clamp(base * 0.012, 6, 10);
             final delSize  = slotSize * 0.92;
-            final innerW   = (slotSize * 4) + (slotGap * 3) + delGap + delSize + (boxPadX * 2);
+            final innerW   = (slotSize * 4) +
+                (slotGap * 3) +
+                delGap +
+                delSize +
+                (boxPadX * 2);
 
             return SizedBox(
               width: innerW,
@@ -104,7 +117,11 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   color: const Color(0xFF77A9F4),
                   borderRadius: BorderRadius.circular(boxR),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black12, offset: Offset(0, 2), blurRadius: 3),
+                    BoxShadow(
+                      color: Colors.black12,
+                      offset: Offset(0, 2),
+                      blurRadius: 3,
+                    ),
                   ],
                 ),
                 child: Row(
@@ -136,10 +153,16 @@ class _PasswordScreenState extends State<PasswordScreen> {
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(slotR),
-                            border: Border.all(color: Colors.black54, width: 1.5),
+                            border: Border.all(
+                              color: Colors.black54,
+                              width: 1.5,
+                            ),
                           ),
-                          child: const Icon(Icons.backspace_outlined,
-                              size: 22, color: Colors.black),
+                          child: const Icon(
+                            Icons.backspace_outlined,
+                            size: 22,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ),
@@ -164,7 +187,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2596BE),
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -181,8 +205,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
             );
           }
 
-
-          // ===== Teclado de animalitos =====
+          // ===== Teclado de animalitos (más compacto) =====
           Widget animalsGrid() {
             final disabled = _pwd.length >= 4;
 
@@ -217,31 +240,43 @@ class _PasswordScreenState extends State<PasswordScreen> {
             );
           }
 
-          // ===== Layout final =====
-          return SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: pagePad, vertical: pagePad * 0.8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                topAvatar(),
-                SizedBox(height: clamp(base * 0.04, 20, 30)),
-                passwordBox(),
-                SizedBox(height: clamp(base * 0.04, 22, 34)),
-                loginButton(context), // 👈 botón nuevo
-                SizedBox(height: clamp(base * 0.04, 20, 30)),
-                animalsGrid(),
-                if (_pwd.length == 4) ...[
-                  const SizedBox(height: 14),
-                  const Text('Contraseña lista (4 símbolos)',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                ],
-              ],
+          // ===== Layout final SIN scroll =====
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: pagePad,
+                vertical: pagePad * 0.7,
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    topAvatar(),
+                    SizedBox(height: clamp(base * 0.035, 18, 26)),
+                    passwordBox(),
+                    SizedBox(height: clamp(base * 0.035, 20, 30)),
+                    loginButton(context),
+                    SizedBox(height: clamp(base * 0.035, 18, 26)),
+                    animalsGrid(),
+                    if (_pwd.length == 4) ...[
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Contraseña lista (4 símbolos)',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           );
         },
       ),
     );
   }
+
 }
 
 // ======= Clases auxiliares =======
