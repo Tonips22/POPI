@@ -1,0 +1,128 @@
+import 'package:flutter/material.dart';
+import 'difficulty_screen.dart';
+import 'customization_screen.dart';
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, size: 32),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: const Text(
+          'Ajustes',
+          style: TextStyle(
+            fontSize: 32,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // === OPCIÓN 1: DIFICULTAD ===
+              _SettingsOptionCard(
+                icon: Icons.tune,
+                title: 'Dificultad',
+                backgroundColor: Colors.blue,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DifficultyScreen(),
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 30),
+              
+              // === OPCIÓN 2: PERSONALIZACIÓN ===
+              _SettingsOptionCard(
+                icon: Icons.palette,
+                title: 'Personalización',
+                backgroundColor: Colors.purple,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CustomizationScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Widget personalizado para cada opción de ajustes
+class _SettingsOptionCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color backgroundColor;
+  final VoidCallback onTap;
+
+  const _SettingsOptionCard({
+    required this.icon,
+    required this.title,
+    required this.backgroundColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 400,
+          padding: const EdgeInsets.all(32.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icono grande en blanco
+              Icon(
+                icon,
+                size: 56,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 24),
+              // Título al lado del icono
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

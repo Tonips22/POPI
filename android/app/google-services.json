@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "412365289515",
+    "project_id": "popi-38412",
+    "storage_bucket": "popi-38412.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412365289515:android:1fa173711702acef6b926e",
+        "android_client_info": {
+          "package_name": "com.example.popi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCi_7ZzgYeZt6KxUGIVDHxfkvGOolBgrwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412365289515:android:0e9bc36b8910d1066b926e",
+        "android_client_info": {
+          "package_name": "com.popi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCi_7ZzgYeZt6KxUGIVDHxfkvGOolBgrwY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
