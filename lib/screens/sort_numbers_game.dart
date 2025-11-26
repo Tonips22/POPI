@@ -114,18 +114,16 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => GameVictoryScreen(
+        builder: (victoryContext) => GameVictoryScreen(
           onRestart: () {
-            _controller.initGame();
-            _startRound();
             Navigator.pushReplacement(
-              context,
+              victoryContext,
               MaterialPageRoute(builder: (_) => const SortNumbersGame()),
             );
           },
           onHome: () {
             Navigator.pushReplacement(
-              context,
+              victoryContext,
               MaterialPageRoute(builder: (_) => const ChooseGameScreen()),
             );
           },

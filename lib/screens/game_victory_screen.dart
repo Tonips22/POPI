@@ -3,13 +3,13 @@ import '../widgets/preference_provider.dart';
 
 /// Pantalla de victoria que se muestra al completar un juego
 class GameVictoryScreen extends StatelessWidget {
-  final VoidCallback onRestart;
-  final VoidCallback onHome;
+  final VoidCallback? onRestart;
+  final VoidCallback? onHome;
 
   const GameVictoryScreen({
     super.key,
-    required this.onRestart,
-    required this.onHome,
+    this.onRestart,
+    this.onHome,
   });
 
   @override
@@ -44,7 +44,11 @@ class GameVictoryScreen extends StatelessWidget {
                 _VictoryButton(
                   icon: Icons.refresh,
                   label: 'Reiniciar',
-                  onPressed: onRestart,
+                  onPressed: () {
+                    if (onRestart != null) {
+                      onRestart!();
+                    }
+                  },
                 ),
                 
                 const SizedBox(width: 40),
@@ -53,7 +57,11 @@ class GameVictoryScreen extends StatelessWidget {
                 _VictoryButton(
                   icon: Icons.home,
                   label: 'Inicio',
-                  onPressed: onHome,
+                  onPressed: () {
+                    if (onHome != null) {
+                      onHome!();
+                    }
+                  },
                 ),
               ],
             ),
@@ -86,7 +94,10 @@ class _VictoryButton extends StatelessWidget {
           shape: const CircleBorder(),
           elevation: 8,
           child: InkWell(
-            onTap: onPressed,
+            onTap: () {
+              print('Button tapped: $label'); // Debug
+              onPressed();
+            },
             customBorder: const CircleBorder(),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
