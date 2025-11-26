@@ -1,25 +1,26 @@
-// lib/screens/customization_screen.dart
-// Modificamos el onTap de la opción "Tipografía" para crear/asegurar usuario demo y pasarlo.
-
 import 'package:flutter/material.dart';
+import 'package:popi/screens/voice_screen.dart';
 import 'color_settings_screen.dart';
 import 'fonts_settings_screen.dart';
 import 'number_format_screen.dart';
 
-// Añadir import del servicio
 import '../services/user_service.dart';
 import '../widgets/preference_provider.dart';
+import '../widgets/voice_text.dart';
 
 class CustomizationScreen extends StatelessWidget {
   const CustomizationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Obtenemos las preferencias del usuario
     final prefs = PreferenceProvider.of(context);
+
+    final double titleFontSize = prefs?.getFontSizeValue() ?? 18.0;
+    final String titleFontFamily = prefs?.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
+
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
@@ -27,11 +28,11 @@ class CustomizationScreen extends StatelessWidget {
             Navigator.pop(context);
           },
         ),
-        title: Text(
+        title: VoiceText(
           'Personalizar',
           style: TextStyle(
-            fontSize: prefs?.getFontSizeValue() ?? 18.0,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontSize: titleFontSize,
+            fontFamily: titleFontFamily,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -40,6 +41,7 @@ class CustomizationScreen extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
+
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -51,13 +53,12 @@ class CustomizationScreen extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             children: [
-              // === OPCIÓN 1: COLORES ===
               _GridOptionCard(
                 icon: Icons.palette,
                 title: 'Colores',
                 backgroundColor: Colors.blue,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -68,43 +69,45 @@ class CustomizationScreen extends StatelessWidget {
                 },
               ),
 
-              // === OPCIÓN 2: TIPOGRAFÍA ===
               _GridOptionCard(
                 icon: Icons.text_fields,
                 title: 'Tipografía',
                 backgroundColor: Colors.purple,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () async {
                   const demoId = 'demo';
-                  final userService = UserService(); // creado aquí, no como campo del widget
+                  final userService = UserService();
 
                   try {
-                    // Aseguramos que exista el usuario demo en Firestore (crea el documento si no existe)
-                    await userService.ensureUserExists(demoId, name: 'Alumno Demo');
+                    await userService.ensureUserExists(
+                      demoId,
+                      name: 'Alumno Demo',
+                    );
 
-                    // Navegamos a la pantalla de tipografías pasando el userId demo
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FontSettingsScreen(userId: demoId), // quita const
+                        builder: (context) => const FontSettingsScreen(),
                       ),
                     );
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error al preparar el usuario demo: $e')),
+                      SnackBar(
+                        content:
+                        Text('Error al preparar el usuario demo: $e'),
+                      ),
                     );
                   }
                 },
               ),
 
-              // === OPCIÓN 3: FORMATO DE NÚMEROS ===
               _GridOptionCard(
                 icon: Icons.looks_one,
                 title: 'Formato de números',
                 backgroundColor: Colors.green,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -114,44 +117,53 @@ class CustomizationScreen extends StatelessWidget {
                   );
                 },
               ),
-              // === OPCIÓN 4: SONIDO ===
+
               _GridOptionCard(
                 icon: Icons.volume_up,
                 title: 'Sonido',
                 backgroundColor: Colors.orange,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Configuración de sonido - Próximamente')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const VoiceScreen(),
+                    ),
                   );
                 },
               ),
 
-              // === OPCIÓN 5: REACCIONES ===
               _GridOptionCard(
                 icon: Icons.emoji_emotions,
                 title: 'Reacciones',
                 backgroundColor: Colors.pink,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Configuración de reacciones - Próximamente')),
+                    const SnackBar(
+                      content: Text(
+                        'Configuración de reacciones - Próximamente',
+                      ),
+                    ),
                   );
                 },
               ),
 
-              // === OPCIÓN 6: JUEGOS ===
               _GridOptionCard(
                 icon: Icons.sports_esports,
                 title: 'Juegos',
                 backgroundColor: Colors.red,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Configuración de juegos - Próximamente')),
+                    const SnackBar(
+                      content: Text(
+                        'Configuración de juegos - Próximamente',
+                      ),
+                    ),
                   );
                 },
               ),
@@ -194,15 +206,13 @@ class _GridOptionCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icono grande en blanco
               Icon(
                 icon,
                 size: 56,
                 color: Colors.white,
               ),
               const SizedBox(height: 12),
-              // Título debajo del icono
-              Text(
+              VoiceText(
                 title,
                 textAlign: TextAlign.center,
                 style: TextStyle(

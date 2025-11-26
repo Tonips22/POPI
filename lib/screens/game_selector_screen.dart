@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'number_screen.dart';
 import 'sort_numbers_game.dart';
-import '../widgets/preference_provider.dart';
 
 class ChooseGameScreen extends StatelessWidget {
   const ChooseGameScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Juegos',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontSize: 32,
           ),
         ),
         centerTitle: true,
@@ -136,20 +133,14 @@ class ChooseGameScreen extends StatelessWidget {
               ),
               SizedBox(height: size.height * 0.01),
               // Texto del juego
-              Builder(
-                builder: (context) {
-                  final prefs = PreferenceProvider.of(context);
-                  return Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: prefs?.getFontSizeValue() ?? fontSize,
-                      fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
-                      color: Colors.white,
-                    ),
-                  );
-                },
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: fontSize,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),

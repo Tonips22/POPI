@@ -3,8 +3,6 @@ import 'create_profile_screen.dart';
 import 'password_screen.dart';
 import 'admin_screen.dart';
 import 'dart:math' as math;
-import '../widgets/preference_provider.dart';
-import 'home_tutor_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,8 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
-    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -30,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             // Solo desktop/tablet
             final bool isDesktop = w >= 1200;
+            final bool isTablet  = w < 1200;
 
             // Mantener estética en pantallas grandes
             const double kMaxContentWidth = 1200.0;
@@ -37,9 +34,11 @@ class _LoginScreenState extends State<LoginScreen> {
             // Márgenes laterales del card azul
             final double hMargin = (w * 0.08).clamp(24, 250);
 
-            // Tipos y espaciados (más "pegado" arriba; más hueco con el card)
+            // Tipos y espaciados (más “pegado” arriba; más hueco con el card)
             final double titleFont = (w * 0.08).clamp(60, 100);
             final double titleLetterSpacing = (w * 0.012).clamp(8, 20);
+            final double sectionTitle = (w * 0.025).clamp(18, 24);
+            final double linksFont = (w * 0.02).clamp(16, 18);
             final double gridSpacing = (w * 0.015).clamp(12, 20);
             final double bluePadV = (w * 0.02).clamp(16, 28);
             final double bluePadH = (w * 0.025).clamp(16, 28);
@@ -111,9 +110,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Iniciar sesión',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.2,
+                                fontSize: sectionTitle,
                                 fontWeight: FontWeight.w700,
-                                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                               ),
                             ),
                             const Padding(
@@ -197,21 +195,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const TutorHomeScreen()),
+                                  MaterialPageRoute(builder: (_) => const CreateProfileScreen()),
                                 );
                               },
                               child: Text(
                                 'Iniciar sesión como tutor',
                                 style: TextStyle(
                                   color: Colors.blue,
-                                  fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                                  fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                                  fontSize: linksFont,
                                   decoration: TextDecoration.underline,
                                   decorationColor: Colors.blue,
                                 ),
                               ),
                             ),
-
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
@@ -223,8 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Iniciar sesión como administrador',
                                 style: TextStyle(
                                   color: Colors.blue,
-                                  fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                                  fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                                  fontSize: linksFont,
                                   decoration: TextDecoration.underline,
                                   decorationColor: Colors.blue,
                                 ),

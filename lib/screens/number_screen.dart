@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../logic/game_controller.dart';
+import '../logic/voice_controller.dart';
 import '../widget/number_grid.dart';
-import '../widgets/preference_provider.dart';
+import '../widgets/voice_text.dart';
 
 class NumberScreen extends StatefulWidget {
   const NumberScreen({super.key});
@@ -14,7 +14,7 @@ class NumberScreen extends StatefulWidget {
 
 class _NumberScreenState extends State<NumberScreen> {
   final GameController _controller = GameController();
-  final FlutterTts _flutterTts = FlutterTts();
+  final VoiceController _voiceController = VoiceController();
   String _message = '';
 
   @override
@@ -44,21 +44,18 @@ class _NumberScreenState extends State<NumberScreen> {
     }
   }
 
-  void _speakTarget() async {
-    await _flutterTts.setLanguage("es-ES");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak("${_controller.targetNumber}");
+  Future<void> _speakTarget() async {
+    await _voiceController.speak('${_controller.targetNumber}');
   }
 
-  void _speakInstruction() async {
-    await _flutterTts.setLanguage("es-ES");
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak("Toca el número ${_controller.targetNumber}");
+  Future<void> _speakInstruction() async {
+    await _voiceController.speak(
+      'Toca el número ${_controller.targetNumber}',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -68,13 +65,11 @@ class _NumberScreenState extends State<NumberScreen> {
           onPressed: () => Navigator.pop(context),
         ),
 
-        // ---------- AHORA EL TÍTULO ESTÁ EN EL APPBAR ----------
-        title: Text(
+        title: const VoiceText(
           "Toca el número que suena",
           style: TextStyle(
-            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.3,
+            fontSize: 26,
             fontWeight: FontWeight.bold,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
           ),
           textAlign: TextAlign.center,
         ),
@@ -86,7 +81,9 @@ class _NumberScreenState extends State<NumberScreen> {
             onPressed: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
               );
               setState(() {
                 _controller.initGame();
@@ -101,7 +98,7 @@ class _NumberScreenState extends State<NumberScreen> {
         children: [
           const SizedBox(height: 30),
 
-          // ---------- AHORA AQUÍ VA EL BOTÓN DE ALTAVOZ ----------
+          // Botón de altavoz para repetir el número
           Center(
             child: IconButton(
               iconSize: screenWidth * 0.05,
@@ -133,7 +130,7 @@ class _NumberScreenState extends State<NumberScreen> {
 
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(
+            child: VoiceText(
               _message,
               style: TextStyle(
                 fontSize: screenWidth * 0.045,

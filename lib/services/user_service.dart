@@ -28,9 +28,20 @@ class UserService {
       }
     } on FirebaseException catch (e) {
       print('FirebaseException en ensureUserExists: ${e.message}');
+
+      // 🔴 Si Firestore no está disponible (sin red / servicio caído),
+      // NO reventamos la app: dejamos seguir y devolvemos false.
+      if (e.code == 'unavailable') {
+        print('Firestore unavailable en ensureUserExists, continúo sin relanzar.');
+        return false;
+      }
+
+      // Para otros códigos de error, sí relanzamos para no ocultar bugs de lógica.
       rethrow;
     } catch (e) {
       print('Error genérico en ensureUserExists: $e');
+      // Si quieres que absolutamente nunca crashee aquí, puedes devolver false en vez de rethrow:
+      // return false;
       rethrow;
     }
   }
@@ -53,22 +64,22 @@ class UserService {
 
   /// Actualiza las preferencias de un usuario
   Future<void> updateUserPreferences(
-    String userId, {
-    String? fontFamily,
-    String? fontSize,
-    String? primaryColor,
-    String? secondaryColor,
-  }) async {
+      String userId, {
+        String? fontFamily,
+        String? fontSize,
+        String? primaryColor,
+        String? secondaryColor,
+      }) async {
     try {
       final docRef = _fs.collection(_collection).doc(userId);
-      
+
       // Construir el mapa de actualización solo con los campos proporcionados
       final Map<String, dynamic> updates = {};
       if (fontFamily != null) updates['fontFamily'] = fontFamily;
       if (fontSize != null) updates['fontSize'] = fontSize;
       if (primaryColor != null) updates['primaryColor'] = primaryColor;
       if (secondaryColor != null) updates['secondaryColor'] = secondaryColor;
-      
+
       if (updates.isNotEmpty) {
         await docRef.update(updates);
         print('✅ Preferencias actualizadas para el usuario: $userId');
@@ -109,11 +120,11 @@ class UserService {
         .doc(userId)
         .snapshots()
         .map((snapshot) {
-          if (snapshot.exists) {
-            return UserProfile.fromMap(snapshot.data() as Map<String, dynamic>);
-          } else {
-            return null;
-          }
-        });
+      if (snapshot.exists) {
+        return UserProfile.fromMap(snapshot.data() as Map<String, dynamic>);
+      } else {
+        return null;
+      }
+    });
   }
 }

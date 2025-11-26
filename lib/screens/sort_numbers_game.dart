@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
 import '../widgets/check_icon_overlay.dart';
-import '../widgets/preference_provider.dart';
-
-import '../logic/game_controller_ordenar.dart';
-import 'settings_screen_ordenar.dart';
-import 'game_selector_screen.dart';
+import 'settings_screen.dart'; // Pantalla de ajustes (ya existe en el repo)
 import 'game_victory_screen.dart';
+import 'game_selector_screen.dart';
 
+/// Pantalla básica del minijuego "Ordena la secuencia"
+///
+/// Cambios importantes en esta versión:
+/// - Botón de ajustes arriba a la derecha (navega a SettingsScreen).
+/// - Al colocar un número en su posición correcta aparece un mensaje NO modal
+///   que es una pastilla (pill) centrada abajo con el mismo color que los botones.
 class SortNumbersGame extends StatefulWidget {
   const SortNumbersGame({super.key});
 
@@ -18,40 +20,28 @@ class SortNumbersGame extends StatefulWidget {
   State<SortNumbersGame> createState() => _SortNumbersGameState();
 }
 
-class _SortNumbersGameState extends State<SortNumbersGame>
-    with SingleTickerProviderStateMixin {
+class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProviderStateMixin {
+  // Número de fichas (0..9)
+  final int count = 10;
 
-  final OrdenarGameController _controller = OrdenarGameController();
-
+  // pool: fichas disponibles para colocar (valores únicos)
+  // targets: casillas objetivo (int? null = vacía)
   late List<int> pool;
   late List<int?> targets;
-  late int count;
-
+  
+  // Para la animación de temblor
   late AnimationController _shakeController;
-  int? _shakingValue;
-
-  bool _showCheckIcon = false;
+  int? _shakingValue; // Qué número está temblando
+  bool _showCheckIcon = false; // Controla la visibilidad del icono de check
 
   @override
   void initState() {
     super.initState();
-
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-
-    _controller.initGame();
-    _startRound();
-  }
-
-  void _startRound() {
-    count = _controller.difficulty;
-
-    pool = List<int>.from(_controller.pool)..shuffle();
-    targets = List<int?>.filled(count, null);
-
-    setState(() {});
+    _initializeGame();
   }
 
   @override
@@ -60,73 +50,123 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     super.dispose();
   }
 
-  void _handleDrop(DragItem dragItem, int targetIndex) {
-    final value = dragItem.value;
+  void _initializeGame() {
+    // Generamos 0..(count-1) y los mezclamos
+    pool = List<int>.generate(count, (i) => i)..shuffle();
+    targets = List<int?>.filled(count, null);
+    setState(() {});
+  }
 
-    if (!_controller.isCorrectPlacement(value, targetIndex)) {
-      _shakeNumber(value);
+  /// Lógica central para procesar una entrega (drop) sobre una casilla:
+  /// - Solo permite colocar un número si coincide con el índice de la casilla.
+  /// - Si viene desde otra casilla (fromIndex >= 0) -> intercambia/mueve solo si ambos están en posiciones correctas.
+  /// - Si viene del pool (fromIndex == -1) -> mueve desde pool a la casilla solo si el número coincide con el índice,
+  ///   y si la casilla ya tenía un valor, ese valor vuelve al pool.
+  void _handleDrop(DragItem dragItem, int targetIndex) {
+    final sourceIndex = dragItem.fromIndex;
+    final sourceValue = dragItem.value;
+    final targetPrev = targets[targetIndex];
+
+    // VALIDACIÓN: Solo permitimos colocar el número si coincide con su posición
+    if (sourceValue != targetIndex) {
+      // El número no corresponde a esta posición, rechazamos el drop
       return;
     }
 
     setState(() {
-      if (dragItem.fromIndex >= 0) {
-        final prev = targets[targetIndex];
-        targets[targetIndex] = value;
-        targets[dragItem.fromIndex] = prev;
+      // Si viene desde otra casilla
+      if (sourceIndex >= 0) {
+        // Si es la misma casilla, no hacemos nada
+        if (sourceIndex == targetIndex) return;
+
+        // Intercambiamos: la casilla destino recibe el valor arrastrado
+        // y la casilla origen recibe lo que antes había en la destino
+        targets[targetIndex] = sourceValue;
+        targets[sourceIndex] = targetPrev;
       } else {
-        final prev = targets[targetIndex];
-        pool.remove(value);
-        if (prev != null) pool.add(prev);
-        targets[targetIndex] = value;
+        // Viene del pool: removemos el valor del pool
+        pool.remove(sourceValue);
+
+        // Si la casilla destino tenía un valor, lo devolvemos al pool
+        if (targetPrev != null) {
+          pool.add(targetPrev);
+        }
+
+        targets[targetIndex] = sourceValue;
       }
     });
 
+    // Tras la actualización de estado mostramos feedback (siempre es correcto si llegamos aquí)
     _showPositivePill();
-    _checkCompletion();
+
+    // Tras cualquier colocación comprobamos si el tablero está completo
+    _checkCompletionAndShowResultIfNeeded();
   }
 
+  /// Muestra un icono de check grande en el centro de la pantalla
   void _showPositivePill() {
-    setState(() => _showCheckIcon = true);
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) setState(() => _showCheckIcon = false);
+    setState(() {
+      _showCheckIcon = true;
+    });
+    
+    // Ocultarlo después de 800ms
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        setState(() {
+          _showCheckIcon = false;
+        });
+      }
     });
   }
 
+  /// Anima un temblor para indicar que el número no puede colocarse ahí
   void _shakeNumber(int value) {
-    setState(() => _shakingValue = value);
-    _shakeController.forward(from: 0).then((_) {
-      if (mounted) setState(() => _shakingValue = null);
+    setState(() {
+      _shakingValue = value;
+    });
+    _shakeController.forward(from: 0.0).then((_) {
+      setState(() {
+        _shakingValue = null;
+      });
     });
   }
 
-  void _removeFromTarget(int index) {
-    final value = targets[index];
-    if (value != null) pool.add(value);
-    targets[index] = null;
-    setState(() {});
+  /// Vacía una casilla y devuelve su valor al pool (p. ej. al tocar la ficha).
+  void _removeFromTarget(int targetIndex) {
+    setState(() {
+      final value = targets[targetIndex];
+      if (value != null) {
+        pool.add(value);
+      }
+      targets[targetIndex] = null;
+    });
   }
 
-  void _checkCompletion() {
-    for (int i = 0; i < count; i++) {
-      if (targets[i] != _controller.sorted[i]) return;
-    }
+  /// Comprueba si todas las casillas están llenas; si lo están,
+  /// navega a la pantalla de victoria (ya que por lógica siempre están correctas).
+  void _checkCompletionAndShowResultIfNeeded() {
+    // Si hay alguna casilla vacía, no hacemos nada
+    if (targets.any((e) => e == null)) return;
 
-    Navigator.pushReplacement(
-      context,
+    // Si todas las casillas están llenas, el jugador ha ganado
+    // (ya que solo se permiten números en sus posiciones correctas)
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => GameVictoryScreen(
+        builder: (context) => GameVictoryScreen(
           onRestart: () {
-            _controller.initGame();
-            _startRound();
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const SortNumbersGame()),
+            // Volver a esta pantalla y reiniciar el juego
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const SortNumbersGame(),
+              ),
             );
           },
           onHome: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const ChooseGameScreen()),
+            // Ir a la pantalla de selección de juegos
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const ChooseGameScreen(),
+              ),
             );
           },
         ),
@@ -136,135 +176,136 @@ class _SortNumbersGameState extends State<SortNumbersGame>
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
-
+    // CENTRADO: usamos Center con Column mainAxisSize.min para centrar todo
     return Scaffold(
       backgroundColor: Colors.grey[50],
-
       appBar: AppBar(
-        title: Text(
-          'Ordena la secuencia',
-          style: TextStyle(
-            fontSize: prefs?.getFontSizeValue() ?? 18,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
-          ),
-        ),
+        title: const Text('Ordena la secuencia'),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, size: 28),
           onPressed: () => Navigator.pop(context),
         ),
 
+        // === BOTÓN DE AJUSTES (tres puntitos verticales) ===
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
-            onPressed: () async {
-              await Navigator.push(
+            tooltip: 'Ajustes',
+            onPressed: () {
+              // Navega a settings_screen (ya existente en el repo).
+              Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const SettingsScreenOrdenar(),
-                ),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
-
-              _controller.initGame();
-              _startRound();
             },
           ),
         ],
       ),
-
       body: Stack(
         children: [
           Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1000),
+              // Column con mainAxisSize.min hace que su tamaño sea el mínimo
+              // necesario, así el Center lo colocará correctamente centrado.
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // POOL
+                    // POOL: fichas disponibles (0..9)
                     SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: pool.map((value) {
-                          final shake = value == _shakingValue;
-
-                          return Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: AnimatedBuilder(
-                              animation: _shakeController,
-                              builder: (context, child) {
-                                final offset = shake
-                                    ? math.sin(_shakeController.value * math.pi * 4) * 10
-                                    : 0.0;
-
-                                return Transform.translate(
-                                  offset: Offset(offset, 0),
-                                  child: child,
-                                );
-                              },
-                              child: NumberTile(
-                                value: value,
-                                onTap: () {
-                                  final idx = targets.indexOf(null);
-                                  if (idx == -1) return;
-
-                                  if (_controller.isCorrectPlacement(value, idx)) {
-                                    _handleDrop(
-                                      DragItem(value: value, fromIndex: -1),
-                                      idx,
-                                    );
-                                  } else {
-                                    _shakeNumber(value);
-                                  }
-                                },
-                                draggableData:
-                                DragItem(value: value, fromIndex: -1),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: List.generate(count, (i) {
-                        return TargetSlot(
-                          index: i,
-                          value: targets[i],
-                          onAccept: (drag) => _handleDrop(drag, i),
-                          onRemove: () => _removeFromTarget(i),
-                        );
-                      }),
-                    ),
-                  ],
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: pool.map((value) {
+                      final isShaking = _shakingValue == value;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: AnimatedBuilder(
+                          animation: _shakeController,
+                          builder: (context, child) {
+                            final offset = isShaking
+                                ? math.sin(_shakeController.value * math.pi * 4) * 10
+                                : 0.0;
+                            return Transform.translate(
+                              offset: Offset(offset, 0),
+                              child: child,
+                            );
+                          },
+                          child: NumberTile(
+                          value: value,
+                          onTap: () {
+                            // Al tocar una ficha del pool, intentamos colocarla en la próxima casilla vacía
+                            final emptyIndex = targets.indexOf(null);
+                            if (emptyIndex != -1) {
+                              // Verificamos si el número coincide con la posición vacía
+                              if (value == emptyIndex) {
+                                // Es la posición correcta, colocamos
+                                _handleDrop(DragItem(value: value, fromIndex: -1), emptyIndex);
+                              } else {
+                                // No es la posición correcta, hacemos temblar el número
+                                _shakeNumber(value);
+                              }
+                            } else {
+                              // No hay casillas vacías
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('No quedan casillas libres')),
+                              );
+                            }
+                          },
+                          draggableData: DragItem(value: value, fromIndex: -1),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 32),
+
+                // CASILLAS: ahora son 'count' casillas que aceptan arrastres y permiten intercambios
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  alignment: WrapAlignment.center,
+                  children: List.generate(targets.length, (index) {
+                    final val = targets[index];
+                    return TargetSlot(
+                      index: index,
+                      value: val,
+                      onAccept: (dragItem) => _handleDrop(dragItem, index),
+                      onRemove: () => _removeFromTarget(index),
+                    );
+                  }),
+                ),
+              ],
             ),
           ),
-
-          if (_showCheckIcon)
-            CheckIconOverlay(color: Colors.blue.shade400),
-        ],
+        ),
       ),
+      
+      // Overlay con el icono de check
+      if (_showCheckIcon)
+        CheckIconOverlay(
+          color: Colors.blue.shade400,
+        ),
+      ],
+    ),
     );
   }
 }
 
+/// Estructura simple que transporta el valor arrastrado y su origen
 class DragItem {
   final int value;
-  final int fromIndex; // -1 si viene del pool
 
-  DragItem({
-    required this.value,
-    required this.fromIndex,
-  });
+  /// fromIndex = -1 indica que viene del "pool" de fichas; >=0 indica el index del target origen
+  final int fromIndex;
+
+  DragItem({required this.value, required this.fromIndex});
 }
