@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popi/screens/settings_screen_ordenar.dart';
 import 'dart:math' as math;
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
@@ -208,7 +209,7 @@ class _SortNumbersGameState extends State<SortNumbersGame> with SingleTickerProv
               // Navega a settings_screen (ya existente en el repo).
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                MaterialPageRoute(builder: (context) => const SettingsScreenOrdenar()),
               );
             },
           ),

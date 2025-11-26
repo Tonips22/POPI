@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'create_profile_screen_4.dart';
+
 class CreateProfileScreen3 extends StatefulWidget {
   const CreateProfileScreen3({super.key});
 
@@ -15,9 +16,9 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
   double textSize = 18;
 
   final List<String> fonts = [
-    'Roboto',        // Predeterminada
-    'ComicNeue',     // Amigable
-    'OpenDyslexic',  // Lectura fácil
+    'Roboto',
+    'ComicNeue',
+    'OpenDyslexic',
   ];
 
   @override
@@ -26,27 +27,21 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
       appBar: AppBar(
         title: const Text(
           'Preferencias visuales',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 8.0),
-            child: Icon(Icons.more_vert),
-          ),
-        ],
       ),
       body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // === SECCIÓN COLORES ===
+              // === COLORES ===
               _buildSectionContainer(
                 title: 'Colores del perfil',
                 child: Column(
@@ -60,7 +55,7 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                         if (newColor != null) setState(() => primaryColor = newColor);
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
                     _buildColorSelector(
                       label: 'Color secundario',
                       color: secondaryColor,
@@ -69,7 +64,7 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                         if (newColor != null) setState(() => secondaryColor = newColor);
                       },
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 6),
                     _buildColorSelector(
                       label: 'Color de fondo',
                       color: backgroundColor,
@@ -82,9 +77,9 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 12),
 
-              // === SECCIÓN TIPOGRAFÍA ===
+              // === TIPOGRAFÍA ===
               _buildSectionContainer(
                 title: 'Tipografía del texto',
                 child: Column(
@@ -92,9 +87,9 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                   children: [
                     const Text(
                       'Fuente del texto',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     DropdownButton<String>(
                       value: selectedFont,
                       isExpanded: true,
@@ -107,7 +102,7 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                                 : font == 'ComicNeue'
                                 ? 'Amigable'
                                 : 'Lectura Fácil',
-                            style: TextStyle(fontFamily: font, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontFamily: font, fontWeight: FontWeight.bold, fontSize: 12),
                           ),
                         );
                       }).toList(),
@@ -117,10 +112,10 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                         }
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 8),
                     const Text(
                       'Tamaño del texto',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                     Slider(
                       value: textSize,
@@ -132,7 +127,7 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                         setState(() => textSize = value);
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 8),
                     Center(
                       child: Text(
                         'Vista previa del texto',
@@ -147,9 +142,9 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                 ),
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 12),
 
-              // === BOTONES INFERIORES ===
+              // === BOTONES ===
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -157,21 +152,21 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                     onPressed: () => Navigator.pop(context),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       textStyle: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     child: const Text('Cancelar'),
                   ),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5CA7FF),
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                     ),
                     onPressed: () {
@@ -182,11 +177,7 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
                     },
                     child: const Text(
                       'Continuar',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -209,17 +200,17 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
         ),
         GestureDetector(
           onTap: onTap,
           child: Container(
-            width: 40,
-            height: 40,
+            width: 30,
+            height: 30,
             decoration: BoxDecoration(
               color: color,
-              border: Border.all(color: Colors.black, width: 2),
-              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.black, width: 1),
+              borderRadius: BorderRadius.circular(6),
             ),
           ),
         ),
@@ -245,18 +236,18 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
       builder: (_) => AlertDialog(
         title: const Text('Selecciona un color'),
         content: Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 6,
+          runSpacing: 6,
           children: colors.map((c) {
             return GestureDetector(
               onTap: () => Navigator.pop(context, c),
               child: Container(
-                width: 40,
-                height: 40,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
                   color: c,
                   border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
               ),
             );
@@ -273,19 +264,16 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: const Color(0xFF5CA7FF),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-          ),
-          const Divider(color: Colors.black),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          const Divider(color: Colors.black, height: 6, thickness: 1),
           child,
         ],
       ),

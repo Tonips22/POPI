@@ -4,6 +4,7 @@ import 'password_screen.dart';
 import 'admin_screen.dart';
 import 'dart:math' as math;
 import '../widgets/preference_provider.dart';
+import 'home_tutor_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -196,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const CreateProfileScreen()),
+                                  MaterialPageRoute(builder: (_) => const TutorHomeScreen()),
                                 );
                               },
                               child: Text(
@@ -210,6 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
+
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(

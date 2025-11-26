@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../logic/game_controller.dart';
 import '../widgets/preference_provider.dart';
 
-class DifficultyScreen extends StatefulWidget {
-  const DifficultyScreen({super.key});
+class OrdenarDifficultyScreen extends StatefulWidget {
+  const OrdenarDifficultyScreen({super.key});
 
   @override
-  State<DifficultyScreen> createState() => _DifficultyScreenState();
+  State<OrdenarDifficultyScreen> createState() => _OrdenarDifficultyScreenState();
 }
 
-class _DifficultyScreenState extends State<DifficultyScreen> {
+class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
   final GameController _controller = GameController();
   late double _sliderValue;
   int _selectedRangeIndex = 0;
@@ -38,8 +38,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
   @override
   Widget build(BuildContext context) {
     final prefs = PreferenceProvider.of(context);
-    
-    // Calculamos el máximo permitido del slider según el rango seleccionado
+
     double maxValue = 12;
     if (_ranges[_selectedRangeIndex]['max'] == 10) {
       maxValue = 10;
@@ -51,7 +50,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Toca el numero que suena',
+              'Ordena la secuencia',
               style: TextStyle(
                 fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.4,
                 fontWeight: FontWeight.bold,
@@ -68,15 +67,14 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             ),
             const SizedBox(height: 40),
 
-            // Slider más grande
             SizedBox(
-              width: 400, // antes 300
+              width: 400,
               child: Column(
                 children: [
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
-                      trackHeight: 8, // aumenta el grosor de la barra
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14), // más grande
+                      trackHeight: 8,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14),
                       overlayShape: const RoundSliderOverlayShape(overlayRadius: 28),
                     ),
                     child: Slider(
@@ -94,8 +92,6 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-
-                  // Números más grandes debajo
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(
@@ -111,7 +107,6 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             ),
             const SizedBox(height: 50),
 
-            // Botones de rango
             Wrap(
               spacing: 20,
               runSpacing: 15,
@@ -127,7 +122,6 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                         _ranges[index]['max']!,
                       );
 
-                      // Ajusta el slider si queda fuera del rango
                       if (_ranges[index]['max'] == 10 && _sliderValue > 10) {
                         _sliderValue = 10;
                       }
@@ -152,7 +146,6 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
               }),
             ),
 
-            // Botón de retroceso con más espaciado
             Padding(
               padding: const EdgeInsets.only(top: 60.0, left: 20.0, right: 20.0, bottom: 20.0),
               child: IconButton(
