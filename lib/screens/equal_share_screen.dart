@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:popi/screens/settings_screen.dart';
+import '../widgets/check_icon_overlay.dart';
+import '../widgets/preference_provider.dart';
 
 /// ---------------------------------------------------------------------------
 /// CONTROLADOR DEL JUEGO: SUMAS EN CADA RECIPIENTE
@@ -229,12 +231,6 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
     final ballsInJar = controller.containers[index];
     final int target = controller.targetValues[index];
 
-    Color indicatorColor = Colors.grey;
-    if (controller.isPoolEmpty) {
-      indicatorColor =
-      controller.jarMatchesTarget(index) ? Colors.green : Colors.red;
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -313,17 +309,24 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.all(12),
+          width: 90,
+          height: 90,
           decoration: BoxDecoration(
-            color: indicatorColor,
+            color: Colors.grey.shade200,
             shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.grey.shade400,
+              width: 2,
+            ),
           ),
-          child: Text(
-            '$target',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 36,
+          child: Center(
+            child: Text(
+              '$target',
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 36,
+              ),
             ),
           ),
         ),
@@ -337,16 +340,28 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
     final bool isSelected = _selectedBallId == id;
     final bool isInPool = controller.ballsInPool.contains(id);
 
-    final visual = CircleAvatar(
-      radius: 40,
-      backgroundColor:
-      isSelected ? Colors.blue.shade200 : Colors.grey.shade300,
-      child: Text(
-        '$value',
-        style: const TextStyle(
-          fontSize: 30,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
+    final visual = Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.blue.shade200 : Colors.blue.shade400,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          '$value',
+          style: const TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -413,9 +428,8 @@ class EqualShareScreen extends StatefulWidget {
 class _EqualShareScreenState extends State<EqualShareScreen> {
   final EqualShareController _controller = EqualShareController();
 
-  String _message = '';
-  String _equation = '';
-  bool _showEquation = false;
+  bool _showCheckIcon = false;
+  bool _showErrorIcon = false;
 
   int _hits = 0;
   int _errors = 0;
@@ -432,9 +446,8 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
   void _restartRound() {
     setState(() {
       _controller.nextRound();
-      _message = '';
-      _equation = '';
-      _showEquation = false;
+      _showCheckIcon = false;
+      _showErrorIcon = false;
       _roundStart = DateTime.now();
       _roundIndex++;
     });
@@ -446,38 +459,52 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
     if (isCorrect) {
       setState(() {
         _hits++;
-        _message = '✅ ¡Correcto!';
-        _equation = equation;
-        _showEquation = true;
+        _showCheckIcon = true;
       });
 
       // Aquí registrarías acierto + tiempo
       debugPrint('Acierto $_hits, tiempo: ${elapsed.inSeconds}s');
 
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(milliseconds: 800), () {
         if (!mounted) return;
         _restartRound();
       });
     } else {
       setState(() {
         _errors++;
-        _message =
-        '💡 Intenta que la suma en cada bote sea igual al número que aparece debajo.';
-        _showEquation = false;
-        _equation = '';
+        _showErrorIcon = true;
       });
 
       // Aquí registrarías el error + tiempo
       debugPrint('Error $_errors, tiempo hasta el fallo: ${elapsed.inSeconds}s');
+
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (!mounted) return;
+        setState(() {
+          _showErrorIcon = false;
+        });
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
+
       appBar: AppBar(
+        title: Text(
+          'Reparto de sumas',
+          style: TextStyle(
+            fontSize: prefs?.getFontSizeValue() ?? 18,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -494,9 +521,8 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
               );
               setState(() {
                 _controller.initGame();
-                _message = '';
-                _equation = '';
-                _showEquation = false;
+                _showCheckIcon = false;
+                _showErrorIcon = false;
                 _roundStart = DateTime.now();
                 _roundIndex++;
               });
@@ -504,63 +530,30 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
           ),
         ],
       ),
-      body: Column(
+
+      body: Stack(
         children: [
-          // INSTRUCCIONES ARRIBA
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Text(
-              'Lleva las bolas a las jarras para alcanzar la cantidad deseada',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: screenWidth * 0.02,
-                fontWeight: FontWeight.w600,
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: EqualShareBoard(
+                  key: ValueKey(_roundIndex),
+                  controller: _controller,
+                  onRoundEnd: _handleRoundEnd,
+                ),
               ),
             ),
           ),
 
-          // TABLERO
-          Expanded(
-            flex: 7,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: EqualShareBoard(
-                key: ValueKey(_roundIndex),
-                controller: _controller,
-                onRoundEnd: _handleRoundEnd,
-              ),
-            ),
-          ),
+          if (_showCheckIcon)
+            CheckIconOverlay(color: Colors.blue.shade400),
 
-          // MENSAJE (pista / correcto)
-          if (_message.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                _message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.035,
-                  fontWeight: FontWeight.bold,
-                  color: _message.startsWith('✅')
-                      ? Colors.green
-                      : Colors.orange,
-                ),
-              ),
-            ),
-
-          // ECUACIÓN FINAL
-          if (_showEquation)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text(
-                _equation,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+          if (_showErrorIcon)
+            CheckIconOverlay(
+              color: Colors.red,
+              icon: Icons.cancel,
             ),
         ],
       ),

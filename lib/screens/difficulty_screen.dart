@@ -46,75 +46,133 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
     }
 
     return Scaffold(
-      body: Center(
+      backgroundColor: Colors.grey[100],
+      
+      // === BARRA SUPERIOR ===
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, size: 32),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Dificultad',
+          style: TextStyle(
+            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
+            fontWeight: FontWeight.bold,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      
+      // === CONTENIDO DE LA PANTALLA ===
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Subtítulo
             Text(
-              'Toca el numero que suena',
+              'Toca el número que suena',
               style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.4,
-                fontWeight: FontWeight.bold,
+                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.2,
+                fontWeight: FontWeight.w600,
                 fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
               ),
             ),
+            const SizedBox(height: 8),
             Text(
-              'Selecciona dificultad',
+              'Selecciona la cantidad de números',
               style: TextStyle(
                 fontSize: (prefs?.getFontSizeValue() ?? 18.0),
-                fontWeight: FontWeight.bold,
                 fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                color: Colors.grey[700],
               ),
             ),
             const SizedBox(height: 40),
 
-            // Slider más grande
-            SizedBox(
-              width: 400, // antes 300
-              child: Column(
-                children: [
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 8, // aumenta el grosor de la barra
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14), // más grande
-                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 28),
-                    ),
-                    child: Slider(
-                      value: _sliderValue.clamp(1, maxValue),
-                      min: 1,
-                      max: maxValue,
-                      divisions: (maxValue - 1).toInt(),
-                      label: _sliderValue.round().toString(),
-                      onChanged: (value) {
-                        setState(() {
-                          _sliderValue = value;
-                          _controller.setDifficulty(value.toInt());
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Números más grandes debajo
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(
-                      maxValue.toInt(),
-                          (index) => Text(
-                        '${index + 1}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            // === SECCIÓN: SLIDER DE DIFICULTAD ===
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  children: [
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: Colors.blue,
+                        inactiveTrackColor: Colors.grey[300],
+                        thumbColor: Colors.blue,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 16,
+                        ),
+                        overlayShape: const RoundSliderOverlayShape(
+                          overlayRadius: 28,
+                        ),
+                        trackHeight: 8,
+                      ),
+                      child: Slider(
+                        value: _sliderValue.clamp(1, maxValue),
+                        min: 1,
+                        max: maxValue,
+                        divisions: (maxValue - 1).toInt(),
+                        label: _sliderValue.round().toString(),
+                        onChanged: (value) {
+                          setState(() {
+                            _sliderValue = value;
+                            _controller.setDifficulty(value.toInt());
+                          });
+                        },
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+
+                    // Números más grandes debajo
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(
+                        maxValue.toInt(),
+                        (index) => Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 50),
+            
+            const SizedBox(height: 40),
 
-            // Botones de rango
-            Wrap(
-              spacing: 20,
-              runSpacing: 15,
+            // === SECCIÓN: RANGO DE NÚMEROS ===
+            Text(
+              'Rango de números',
+              style: TextStyle(
+                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.1,
+                fontWeight: FontWeight.bold,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Botones de rango en grid
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 4,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.0,
               children: List.generate(_ranges.length, (index) {
                 bool selected = _selectedRangeIndex == index;
                 String label = '${_ranges[index]['min']}-${_ranges[index]['max']}';
@@ -133,38 +191,28 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                       }
                     });
                   },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 90,
-                    height: 90,
+                  child: Container(
                     decoration: BoxDecoration(
-                      color: selected ? Colors.grey[400] : Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 1.8),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: selected ? Colors.blue : Colors.grey.shade300,
+                        width: selected ? 3 : 1.5,
+                      ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      label,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    child: Center(
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                          fontSize: 18,
+                          fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                        ),
+                      ),
                     ),
                   ),
                 );
               }),
-            ),
-
-            // Botón de retroceso con más espaciado
-            Padding(
-              padding: const EdgeInsets.only(top: 60.0, left: 20.0, right: 20.0, bottom: 20.0),
-              child: IconButton(
-                iconSize: 45,
-                color: Colors.black,
-                onPressed: () => Navigator.pop(context),
-                icon: Container(
-                  color: Colors.grey[300],
-                  padding: const EdgeInsets.all(18),
-                  child: const Icon(Icons.arrow_back),
-                ),
-              ),
             ),
           ],
         ),

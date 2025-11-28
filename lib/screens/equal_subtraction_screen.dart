@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:popi/screens/settings_screen.dart';
+import '../widgets/check_icon_overlay.dart';
+import '../widgets/preference_provider.dart';
 
 /// ---------------------------------------------------------------------------
 /// CONTROLADOR DEL JUEGO: RESTAS PARA IGUALAR RECIPIENTES
@@ -144,7 +146,6 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
   }) {
     final ballsInJar = controller.ballsInJar(index);
     final int currentCount = controller.countForJar(index);
-    final int initial = controller.initialCounts[index];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -180,25 +181,25 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
         const SizedBox(height: 8),
         // Debajo mostramos la cantidad actual en grande
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
-            color: Colors.blue.shade100,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            '$currentCount',
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+            color: Colors.grey.shade200,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.grey.shade400,
+              width: 2,
             ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Inicial: $initial',
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.black54,
+          child: Center(
+            child: Text(
+              '$currentCount',
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
           ),
         ),
       ],
@@ -208,9 +209,20 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
   Widget _buildBall(int id, int jarIndex) {
     final controller = widget.controller;
 
-    final visual = CircleAvatar(
-      radius: 32,
-      backgroundColor: Colors.grey.shade300,
+    final visual = Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.blue.shade400,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
     );
 
     return GestureDetector(
@@ -260,9 +272,7 @@ class EqualSubtractionScreen extends StatefulWidget {
 class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
   final EqualSubtractionController _controller = EqualSubtractionController();
 
-  String _message = '';
-  String _equation = '';
-  bool _showEquation = false;
+  bool _showCheckIcon = false;
 
   int _attempts = 0;     // nº de acciones (taps) en la ronda
   int _successes = 0;    // nº de rondas completadas
@@ -279,9 +289,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
   void _restartRound() {
     setState(() {
       _controller.nextRound();
-      _message = '';
-      _equation = '';
-      _showEquation = false;
+      _showCheckIcon = false;
       _roundStart = DateTime.now();
       _roundIndex++;
       _attempts = 0;
@@ -295,9 +303,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
     if (isCorrect) {
       setState(() {
         _successes++;
-        _message = '✅ ¡Muy bien!';
-        _equation = equation;
-        _showEquation = true;
+        _showCheckIcon = true;
       });
 
       // Registro de progreso
@@ -306,17 +312,12 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
             'tiempo: ${elapsed.inSeconds}s',
       );
 
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(milliseconds: 800), () {
         if (!mounted) return;
         _restartRound();
       });
     } else {
       // Sin pista visual, solo registro interno
-      setState(() {
-        _showEquation = false;
-        _equation = '';
-      });
-
       debugPrint(
         'Restas - intento $_attempts, tiempo actual: ${elapsed.inSeconds}s',
       );
@@ -325,10 +326,22 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
+
       appBar: AppBar(
+        title: Text(
+          'Resta para igualar',
+          style: TextStyle(
+            fontSize: prefs?.getFontSizeValue() ?? 18,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -345,9 +358,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
               );
               setState(() {
                 _controller.initGame();
-                _message = '';
-                _equation = '';
-                _showEquation = false;
+                _showCheckIcon = false;
                 _roundStart = DateTime.now();
                 _roundIndex++;
                 _attempts = 0;
@@ -356,76 +367,25 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
           ),
         ],
       ),
-      body: Column(
+
+      body: Stack(
         children: [
-          // INSTRUCCIONES ARRIBA
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Text(
-              'Quita bolas hasta que todas las jarras tengan el mismo número',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: screenWidth * 0.02,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-
-          // OBJETIVO
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-            child: Text(
-              'Objetivo: ${_controller.target}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: screenWidth * 0.025,
-                fontWeight: FontWeight.w700,
-                color: Colors.blueAccent,
-              ),
-            ),
-          ),
-
-          // TABLERO
-          Expanded(
-            flex: 7,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: EqualSubtractionBoard(
-                key: ValueKey(_roundIndex),
-                controller: _controller,
-                onRoundUpdate: _handleRoundUpdate,
-              ),
-            ),
-          ),
-
-          // MENSAJE SOLO DE REFUERZO (nada de pista)
-          if (_message.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                _message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.035,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: EqualSubtractionBoard(
+                  key: ValueKey(_roundIndex),
+                  controller: _controller,
+                  onRoundUpdate: _handleRoundUpdate,
                 ),
               ),
             ),
+          ),
 
-          // ECUACIONES DE RESTA (solo al completar)
-          if (_showEquation)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text(
-                _equation,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+          if (_showCheckIcon)
+            CheckIconOverlay(color: Colors.blue.shade400),
         ],
       ),
     );
