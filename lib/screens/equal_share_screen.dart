@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../widgets/check_icon_overlay.dart';
+import '../widgets/preference_provider.dart';
 
 /// ---------------------------------------------------------------------------
 /// CONTROLADOR DEL JUEGO: SUMAS EN CADA RECIPIENTE
@@ -488,11 +489,19 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final prefs = PreferenceProvider.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
 
       appBar: AppBar(
-        title: const Text('Reparto de sumas'),
+        title: Text(
+          'Reparto de sumas',
+          style: TextStyle(
+            fontSize: prefs?.getFontSizeValue() ?? 18,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
