@@ -45,7 +45,7 @@ class NumberTile extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: Colors.blue.shade400.withOpacity(opacity),
-        borderRadius: BorderRadius.circular(12),
+        shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
