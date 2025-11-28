@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'manage_users_screen.dart';
 import 'reset_passwords_screen.dart';
+import 'registro_usuarios.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -135,6 +136,14 @@ class AdminScreen extends StatelessWidget {
                     borderRadius: borderR,
                     innerPadding: innerPad,
                     gapY: gapY,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RegistroUsuariosScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _AdminCard(
                     icon: Icons.close_outlined,
