@@ -6,6 +6,8 @@ class UserProfile {
   final String role; // 'student', 'tutor', 'admin'
   final DateTime createdAt;
   
+  final bool permitirPersonalizar;
+
   // === PREFERENCIAS DE VISUALIZACIÓN ===
   final String fontFamily;   // 'default', 'opendyslexic', 'comicneue'
   final String fontSize;      // 'small', 'medium', 'large', 'extra_large'
@@ -17,6 +19,7 @@ class UserProfile {
     this.name = 'Demo User',
     this.role = 'student',
     DateTime? createdAt,
+    this.permitirPersonalizar = false,
     this.fontFamily = 'default',
     this.fontSize = 'medium',
     this.primaryColor = '#4CAF50',
@@ -29,6 +32,7 @@ class UserProfile {
       'name': name,
       'role': role,
       'createdAt': createdAt.toIso8601String(),
+      'permitir_personalizar': permitirPersonalizar,
       'fontFamily': fontFamily,
       'fontSize': fontSize,
       'primaryColor': primaryColor,
@@ -37,17 +41,32 @@ class UserProfile {
   }
 
   factory UserProfile.fromMap(Map<String, dynamic> map) {
+    // Helper para parsear fecha (String o Timestamp)
+    DateTime parseDate(dynamic val) {
+      if (val == null) return DateTime.now();
+      if (val is DateTime) return val;
+      if (val is String) return DateTime.tryParse(val) ?? DateTime.now();
+      // Si es Timestamp (de cloud_firestore), tiene método toDate()
+      // Usamos dynamic para no obligar a importar cloud_firestore aquí si no queremos,
+      // pero idealmente deberíamos importar si usamos el tipo explícito.
+      // Como 'val' es dynamic, si tiene toDate() lo llamamos.
+      try {
+        return (val as dynamic).toDate();
+      } catch (_) {
+        return DateTime.now();
+      }
+    }
+
     return UserProfile(
-      id: map['id'] ?? '',
-      name: map['name'] ?? 'Demo User',
-      role: map['role'] ?? 'student',
-      createdAt: map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'])
-          : DateTime.now(),
-      fontFamily: map['fontFamily'] ?? 'default',
-      fontSize: map['fontSize'] ?? 'medium',
-      primaryColor: map['primaryColor'] ?? '#4CAF50',
-      secondaryColor: map['secondaryColor'] ?? '#2196F3',
+      id: map['id']?.toString() ?? '',
+      name: map['name']?.toString() ?? 'Demo User',
+      role: map['role']?.toString() ?? 'student',
+      createdAt: parseDate(map['createdAt']),
+      permitirPersonalizar: map['permitir_personalizar'] ?? false,
+      fontFamily: map['fontFamily']?.toString() ?? 'default',
+      fontSize: map['fontSize']?.toString() ?? 'medium',
+      primaryColor: map['primaryColor']?.toString() ?? '#4CAF50',
+      secondaryColor: map['secondaryColor']?.toString() ?? '#2196F3',
     );
   }
 

@@ -11,10 +11,16 @@ class UserService {
   final String _collection = 'users';
 
   /// Asegura que exista un documento users/{userId}. Devuelve true si ya existía.
+  ///
+  /// IMPORTANTE:
+  /// - Si Firestore está temporalmente no disponible (`unavailable`), NO relanzamos
+  ///   la excepción para evitar que la app se caiga. En ese caso devolvemos `true`
+  ///   asumiendo que el usuario "existe" o que ya se gestionará más adelante.
   Future<bool> ensureUserExists(String userId, {String? name, String? role}) async {
     try {
       final docRef = _fs.collection(_collection).doc(userId);
       final snapshot = await docRef.get();
+
       if (snapshot.exists) {
         return true;
       } else {
@@ -22,26 +28,26 @@ class UserService {
           id: userId,
           name: name ?? 'Demo User',
           role: role ?? 'student',
+          permitirPersonalizar: false,
         );
         await docRef.set(profile.toMap());
         return false;
       }
     } on FirebaseException catch (e) {
-      print('FirebaseException en ensureUserExists: ${e.message}');
+      print('FirebaseException en ensureUserExists: [${e.code}] ${e.message}');
 
-      // 🔴 Si Firestore no está disponible (sin red / servicio caído),
-      // NO reventamos la app: dejamos seguir y devolvemos false.
       if (e.code == 'unavailable') {
-        print('Firestore unavailable en ensureUserExists, continúo sin relanzar.');
-        return false;
+        // Servicio no disponible (problema de red / Firestore temporalmente caído).
+        // No relanzamos para que no se caiga la app.
+        print('⚠️ Firestore unavailable en ensureUserExists. Se continúa sin fallar.');
+        // Devolvemos true para no bloquear el flujo de la app.
+        return true;
       }
 
-      // Para otros códigos de error, sí relanzamos para no ocultar bugs de lógica.
+      // Otros errores sí se relanzan (por ejemplo, permisos, configuración, etc.)
       rethrow;
     } catch (e) {
       print('Error genérico en ensureUserExists: $e');
-      // Si quieres que absolutamente nunca crashee aquí, puedes devolver false en vez de rethrow:
-      // return false;
       rethrow;
     }
   }
@@ -54,7 +60,8 @@ class UserService {
       if (!snapshot.exists) return null;
       return UserProfile.fromMap(snapshot.data() as Map<String, dynamic>);
     } on FirebaseException catch (e) {
-      print('FirebaseException en getUserProfile: ${e.message}');
+      print('FirebaseException en getUserProfile: [${e.code}] ${e.message}');
+      // Para errores de Firestore devolvemos null en lugar de reventar la app.
       return null;
     } catch (e) {
       print('Error genérico en getUserProfile: $e');
@@ -63,6 +70,9 @@ class UserService {
   }
 
   /// Actualiza las preferencias de un usuario
+  ///
+  /// Si Firestore está `unavailable`, se registra el error y se sale silenciosamente
+  /// (la UI podría decidir mostrar un mensaje de "sin conexión").
   Future<void> updateUserPreferences(
       String userId, {
         String? fontFamily,
@@ -85,7 +95,14 @@ class UserService {
         print('✅ Preferencias actualizadas para el usuario: $userId');
       }
     } on FirebaseException catch (e) {
-      print('❌ FirebaseException en updateUserPreferences: ${e.message}');
+      print('❌ FirebaseException en updateUserPreferences: [${e.code}] ${e.message}');
+
+      if (e.code == 'unavailable') {
+        // No relanzamos para evitar crash; simplemente no se guardan los cambios.
+        print('⚠️ Firestore unavailable en updateUserPreferences. Cambios no aplicados.');
+        return;
+      }
+
       rethrow;
     } catch (e) {
       print('❌ Error genérico en updateUserPreferences: $e');
@@ -94,13 +111,21 @@ class UserService {
   }
 
   /// Actualiza el perfil completo del usuario
+  ///
+  /// Igual que arriba: en caso de `unavailable`, se evita reventar la app.
   Future<void> updateUserProfile(String userId, UserProfile profile) async {
     try {
       final docRef = _fs.collection(_collection).doc(userId);
       await docRef.set(profile.toMap(), SetOptions(merge: true));
       print('✅ Perfil actualizado para el usuario: $userId');
     } on FirebaseException catch (e) {
-      print('❌ FirebaseException en updateUserProfile: ${e.message}');
+      print('❌ FirebaseException en updateUserProfile: [${e.code}] ${e.message}');
+
+      if (e.code == 'unavailable') {
+        print('⚠️ Firestore unavailable en updateUserProfile. Cambios no aplicados.');
+        return;
+      }
+
       rethrow;
     } catch (e) {
       print('❌ Error genérico en updateUserProfile: $e');
@@ -109,11 +134,32 @@ class UserService {
   }
 
   /// Elimina un usuario
+  ///
+  /// Si Firestore está `unavailable`, se registra y no se relanza. En ese caso,
+  /// el usuario no se llegará a borrar pero la app tampoco caerá.
   Future<void> deleteUser(String userId) async {
-    await _fs.collection(_collection).doc(userId).delete();
+    try {
+      await _fs.collection(_collection).doc(userId).delete();
+      print('✅ Usuario eliminado: $userId');
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en deleteUser: [${e.code}] ${e.message}');
+
+      if (e.code == 'unavailable') {
+        print('⚠️ Firestore unavailable en deleteUser. No se pudo borrar el usuario.');
+        return;
+      }
+
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en deleteUser: $e');
+      rethrow;
+    }
   }
 
   /// Escucha cambios en tiempo real del perfil de un usuario
+  ///
+  /// Si hay errores de conexión, estos se propagan por el stream, pero no como
+  /// excepción sin capturar en el arranque de la app.
   Stream<UserProfile?> watchUserProfile(String userId) {
     return _fs
         .collection(_collection)
@@ -126,5 +172,25 @@ class UserService {
         return null;
       }
     });
+  }
+
+  /// Obtiene todos los usuarios de la colección
+  Future<List<UserProfile>> getAllUsers() async {
+    try {
+      final querySnapshot = await _fs.collection(_collection).get();
+      return querySnapshot.docs
+          .map((doc) => UserProfile.fromMap(doc.data()))
+          .toList();
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en getAllUsers: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') {
+        print('⚠️ Firestore unavailable en getAllUsers. Devolviendo lista vacía.');
+        return [];
+      }
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en getAllUsers: $e');
+      rethrow;
+    }
   }
 }
