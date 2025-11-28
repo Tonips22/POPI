@@ -60,14 +60,13 @@ class NumberGrid extends StatelessWidget {
                     width: circleSize,
                     height: circleSize,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Colors.blue.shade400,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 2),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.15),
-                          offset: const Offset(2, 3),
-                          blurRadius: 4,
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
@@ -79,6 +78,7 @@ class NumberGrid extends StatelessWidget {
                         style: TextStyle(
                           fontSize: circleSize * 0.45,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ),
