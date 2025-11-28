@@ -136,7 +136,7 @@ class _NumberScreenState extends State<NumberScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 24),
 
                     // Grid de números
                     Expanded(

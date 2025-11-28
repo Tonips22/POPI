@@ -35,7 +35,7 @@ class NumberGrid extends StatelessWidget {
         final circleSizeH = (maxHeight / rows) * 0.85;
         double circleSize = circleSizeW < circleSizeH ? circleSizeW : circleSizeH;
 
-        const double maxCircleSize = 180;
+        const double maxCircleSize = 100;
         if (circleSize > maxCircleSize) {
           circleSize = maxCircleSize;
         }
