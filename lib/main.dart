@@ -4,6 +4,7 @@ import 'widgets/preference_provider.dart';
 
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart'; // generado por FlutterFire CLI
 
 void main() async {
@@ -12,6 +13,12 @@ void main() async {
   // Inicializa Firebase con las opciones generadas (multi-plataforma)
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Configurar Firestore
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
   );
 
   runApp(const MyApp());

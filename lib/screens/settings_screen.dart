@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'difficulty_screen.dart';
 import 'customization_screen.dart';
+import 'resultados.dart';
 import '../widgets/preference_provider.dart';
 import '../widgets/voice_text.dart';
 
@@ -69,6 +70,24 @@ class SettingsScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const CustomizationScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 30),
+
+              _SettingsOptionCard(
+                icon: Icons.bar_chart,
+                title: 'Resultados',
+                backgroundColor: Colors.green,
+                fontSize: prefs?.getFontSizeValue() ?? 18.0,
+                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ResultadosScreen(),
                     ),
                   );
                 },
