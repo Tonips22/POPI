@@ -10,6 +10,63 @@ class UserService {
 
   final String _collection = 'users';
 
+  /// Crea un nuevo usuario con ID numérico incremental.
+  ///
+  /// Busca el ID más alto actual (parseando los IDs de los documentos),
+  /// le suma 1 y crea el nuevo usuario con ese ID.
+  /// El campo 'id' se guarda como número en la BD, pero el ID del documento es el String.
+  Future<void> createUser(UserProfile user) async {
+    try {
+      // 1. Obtener todos los usuarios para calcular el nuevo ID
+      // Nota: Esto no es lo más eficiente para bases de datos enormes,
+      // pero para esta app es aceptable.
+      final snapshot = await _fs.collection(_collection).get();
+      
+      int maxId = 0;
+      for (var doc in snapshot.docs) {
+        // Intentamos parsear el ID del documento
+        final docId = int.tryParse(doc.id);
+        if (docId != null) {
+          if (docId > maxId) maxId = docId;
+        }
+      }
+
+      final newIdInt = maxId + 1;
+      final newIdStr = newIdInt.toString();
+
+      // 2. Preparar los datos.
+      // IMPORTANTE: El usuario pidió que 'id' sea un número en la BD.
+      final Map<String, dynamic> userData = {
+        'id': newIdInt, // Guardamos como número
+        'name': user.name,
+        'role': user.role,
+        'avatar': user.avatar, // Guardamos el avatar
+        'createdAt': DateTime.now(), // Timestamp actual
+        'activo': true, // Nuevo campo solicitado
+        'permitir_personalizar': false,
+        // Valores por defecto de preferencias
+        'fontFamily': 'default',
+        'fontSize': 'medium',
+        'primaryColor': '#4CAF50',
+        'secondaryColor': '#2196F3',
+      };
+
+      // 3. Guardar en Firestore
+      await _fs.collection(_collection).doc(newIdStr).set(userData);
+      print('✅ Usuario creado: $newIdStr (${user.name})');
+
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en createUser: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') {
+        print('⚠️ Firestore unavailable. No se pudo crear usuario.');
+      }
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en createUser: $e');
+      rethrow;
+    }
+  }
+
   /// Asegura que exista un documento users/{userId}. Devuelve true si ya existía.
   ///
   /// IMPORTANTE:

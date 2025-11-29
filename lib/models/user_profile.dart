@@ -4,7 +4,9 @@ class UserProfile {
   final String id;
   final String name;
   final String role; // 'student', 'tutor', 'admin'
+  final String avatar; // Nuevo campo: nombre del icono (e.g. 'boy', 'girl', 'robot')
   final DateTime createdAt;
+  final bool active; // Nuevo campo
   
   final bool permitirPersonalizar;
 
@@ -18,7 +20,9 @@ class UserProfile {
     required this.id,
     this.name = 'Demo User',
     this.role = 'student',
+    this.avatar = 'default',
     DateTime? createdAt,
+    this.active = true, // Por defecto true
     this.permitirPersonalizar = false,
     this.fontFamily = 'default',
     this.fontSize = 'medium',
@@ -31,7 +35,9 @@ class UserProfile {
       'id': id,
       'name': name,
       'role': role,
+      'avatar': avatar,
       'createdAt': createdAt.toIso8601String(),
+      'activo': active, // Mapeado a 'activo'
       'permitir_personalizar': permitirPersonalizar,
       'fontFamily': fontFamily,
       'fontSize': fontSize,
@@ -61,7 +67,9 @@ class UserProfile {
       id: map['id']?.toString() ?? '',
       name: map['name']?.toString() ?? 'Demo User',
       role: map['role']?.toString() ?? 'student',
+      avatar: map['avatar']?.toString() ?? 'default',
       createdAt: parseDate(map['createdAt']),
+      active: map['activo'] ?? true, // Recuperar 'activo', default true
       permitirPersonalizar: map['permitir_personalizar'] ?? false,
       fontFamily: map['fontFamily']?.toString() ?? 'default',
       fontSize: map['fontSize']?.toString() ?? 'medium',
@@ -74,6 +82,8 @@ class UserProfile {
   UserProfile copyWith({
     String? name,
     String? role,
+    String? avatar,
+    bool? active,
     String? fontFamily,
     String? fontSize,
     String? primaryColor,
@@ -83,7 +93,9 @@ class UserProfile {
       id: id,
       name: name ?? this.name,
       role: role ?? this.role,
+      avatar: avatar ?? this.avatar,
       createdAt: createdAt,
+      active: active ?? this.active,
       fontFamily: fontFamily ?? this.fontFamily,
       fontSize: fontSize ?? this.fontSize,
       primaryColor: primaryColor ?? this.primaryColor,
