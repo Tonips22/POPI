@@ -3,9 +3,10 @@ import 'package:popi/screens/voice_screen.dart';
 import 'color_settings_screen.dart';
 import 'fonts_settings_screen.dart';
 import 'number_format_screen.dart';
+import 'examples/login_screen_example.dart';
 
 import '../services/user_service.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 import '../widgets/voice_text.dart';
 
 class CustomizationScreen extends StatelessWidget {
@@ -13,10 +14,10 @@ class CustomizationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
 
-    final double titleFontSize = prefs?.getFontSizeValue() ?? 18.0;
-    final String titleFontFamily = prefs?.getFontFamilyName() ?? 'Roboto';
+    final double titleFontSize = 18.0;
+    final String titleFontFamily = 'Roboto';
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -75,30 +76,13 @@ class CustomizationScreen extends StatelessWidget {
                 backgroundColor: Colors.purple,
                 fontSize: titleFontSize,
                 fontFamily: titleFontFamily,
-                onTap: () async {
-                  const demoId = 'demo';
-                  final userService = UserService();
-
-                  try {
-                    await userService.ensureUserExists(
-                      demoId,
-                      name: 'Alumno Demo',
-                    );
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const FontSettingsScreen(),
-                      ),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                        Text('Error al preparar el usuario demo: $e'),
-                      ),
-                    );
-                  }
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FontSettingsScreen(),
+                    ),
+                  );
                 },
               ),
 
@@ -141,11 +125,10 @@ class CustomizationScreen extends StatelessWidget {
                 fontSize: titleFontSize,
                 fontFamily: titleFontFamily,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Configuración de reacciones - Próximamente',
-                      ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreenExample(),
                     ),
                   );
                 },
