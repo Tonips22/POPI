@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
-import '../models/user_profile.dart';
-import '../widgets/preference_provider.dart';
+import '../models/user_model.dart';
+// import '../widgets/preference_provider.dart';
 
 /// Pantalla de configuración de tipografía
 class FontSettingsScreen extends StatefulWidget {
@@ -40,13 +40,13 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   /// Carga las preferencias desde Firebase (tabla users)
   Future<void> _loadPreferences() async {
     try {
-      final userProfile = await _userService.getUserProfile(effectiveUserId);
-      if (userProfile != null) {
+      final userModel = await _userService.getUserById(effectiveUserId);
+      if (userModel != null) {
         setState(() {
           // Convertir fontFamily a FontType
-          selectedFontType = _fontFamilyToType(userProfile.fontFamily);
+          selectedFontType = _fontFamilyToType(userModel.preferences.fontFamily);
           // Convertir fontSize a valor del slider
-          fontSizeValue = _fontSizeToSliderValue(userProfile.fontSize);
+          fontSizeValue = _fontSizeToSliderValue(userModel.preferences.fontSize);
           _isLoading = false;
         });
       } else {
@@ -74,20 +74,13 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     }
   }
 
-  /// Convierte el fontSize del modelo a valor del slider
-  double _fontSizeToSliderValue(String fontSize) {
-    switch (fontSize) {
-      case 'small':
-        return 0.0;
-      case 'medium':
-        return 0.5;
-      case 'large':
-        return 0.75;
-      case 'extra_large':
-        return 1.0;
-      default:
-        return 0.5;
-    }
+  /// Convierte el fontSize del UserPreferences a valor del slider
+  double _fontSizeToSliderValue(double fontSize) {
+    // fontSize viene como double (14.0, 18.0, 24.0, 32.0)
+    if (fontSize <= 16.0) return 0.0;      // small
+    if (fontSize <= 21.0) return 0.5;      // medium
+    if (fontSize <= 28.0) return 0.75;     // large
+    return 1.0;                             // extra_large
   }
 
   /// Convierte el FontType a fontFamily del modelo
@@ -102,12 +95,12 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     }
   }
 
-  /// Convierte el valor del slider a fontSize del modelo
-  String _sliderValueToFontSize(double value) {
-    if (value <= 0.25) return 'small';
-    if (value <= 0.6) return 'medium';
-    if (value <= 0.85) return 'large';
-    return 'extra_large';
+  /// Convierte el valor del slider a fontSize del modelo (double)
+  double _sliderValueToFontSize(double value) {
+    if (value <= 0.25) return 14.0;   // small
+    if (value <= 0.6) return 18.0;    // medium
+    if (value <= 0.85) return 24.0;   // large
+    return 32.0;                       // extra_large
   }
 
   /// Guarda las preferencias en Firebase (tabla users)
@@ -117,16 +110,21 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     });
 
     try {
-      // Actualizar las preferencias en la tabla users
-      await _userService.updateUserPreferences(
-        effectiveUserId,
+      // Crear nuevas preferencias
+      final newPreferences = UserPreferences(
         fontFamily: _fontTypeToFamily(selectedFontType),
         fontSize: _sliderValueToFontSize(fontSizeValue),
       );
 
+      // Actualizar las preferencias en la tabla users
+      await _userService.updateUserPreferences(
+        effectiveUserId,
+        newPreferences,
+      );
+
       // Recargar las preferencias en toda la aplicación
       if (mounted) {
-        await PreferenceProvider.reload(context);
+        // await PreferenceProvider.reload(context);
       }
 
       if (mounted) {
@@ -161,7 +159,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   @override
   Widget build(BuildContext context) {
 
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
 
     if (_isLoading) {
       return Scaffold(
@@ -173,10 +171,10 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
           ),
           title: Text(
             'Tipografía',
-            style: TextStyle(
-              fontSize: prefs?.getFontSizeValue() ?? 32,
+            style: const TextStyle(
+              fontSize: 32,
               fontWeight: FontWeight.bold,
-              fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+              fontFamily: 'Roboto',
             ),
           ),
           backgroundColor: Colors.white,
@@ -200,10 +198,10 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
         ),
         title: Text(
           'Tipografía',
-          style: TextStyle(
-            fontSize: prefs?.getFontSizeValue() ?? 32,
+          style: const TextStyle(
+            fontSize: 32,
             fontWeight: FontWeight.bold,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontFamily: 'Roboto',
           ),
         ),
         backgroundColor: Colors.white,
@@ -249,10 +247,10 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
                       )
                     : Text(
                         'Guardar cambios',
-                        style: TextStyle(
-                          fontSize: prefs?.getFontSizeValue() ?? 20,
+                        style: const TextStyle(
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                          fontFamily: 'Roboto',
                           color: Colors.white,
                         ),
                       ),
