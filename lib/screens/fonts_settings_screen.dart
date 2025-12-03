@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/user_service.dart';
-import '../models/user_model.dart';
-// import '../widgets/preference_provider.dart';
 
-/// Pantalla de configuración de tipografía
+/// Pantalla de configuración de tipografía (solo visual, sin persistencia)
 class FontSettingsScreen extends StatefulWidget {
-  // userId ahora es opcional; si es null usamos 'demo' para pruebas.
   final String? userId;
 
   const FontSettingsScreen({super.key, this.userId});
@@ -15,201 +11,32 @@ class FontSettingsScreen extends StatefulWidget {
 }
 
 class _FontSettingsScreenState extends State<FontSettingsScreen> {
-  // === ESTADO DE LA PANTALLA ===
-  final UserService _userService = UserService();
-
   // Tipo de fuente seleccionado
   FontType selectedFontType = FontType.predeterminada;
 
   // Tamaño de letra (de 0.0 a 1.0)
-  // 0.0 = pequeño, 0.5 = medio, 1.0 = grande
   double fontSizeValue = 0.5;
-  
-  bool _isLoading = true;
-  bool _isSaving = false;
-
-  // userId efectivo (fallback a 'demo')
-  String get effectiveUserId => widget.userId ?? 'demo';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadPreferences();
-  }
-
-  /// Carga las preferencias desde Firebase (tabla users)
-  Future<void> _loadPreferences() async {
-    try {
-      final userModel = await _userService.getUserById(effectiveUserId);
-      if (userModel != null) {
-        setState(() {
-          // Convertir fontFamily a FontType
-          selectedFontType = _fontFamilyToType(userModel.preferences.fontFamily);
-          // Convertir fontSize a valor del slider
-          fontSizeValue = _fontSizeToSliderValue(userModel.preferences.fontSize);
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error al cargar preferencias: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  /// Convierte el fontFamily del modelo a FontType
-  FontType _fontFamilyToType(String fontFamily) {
-    switch (fontFamily) {
-      case 'opendyslexic':
-        return FontType.lecturaFacil;
-      case 'comicneue':
-        return FontType.amigable;
-      default:
-        return FontType.predeterminada;
-    }
-  }
-
-  /// Convierte el fontSize del UserPreferences a valor del slider
-  double _fontSizeToSliderValue(double fontSize) {
-    // fontSize viene como double (14.0, 18.0, 24.0, 32.0)
-    if (fontSize <= 16.0) return 0.0;      // small
-    if (fontSize <= 21.0) return 0.5;      // medium
-    if (fontSize <= 28.0) return 0.75;     // large
-    return 1.0;                             // extra_large
-  }
-
-  /// Convierte el FontType a fontFamily del modelo
-  String _fontTypeToFamily(FontType type) {
-    switch (type) {
-      case FontType.lecturaFacil:
-        return 'opendyslexic';
-      case FontType.amigable:
-        return 'comicneue';
-      default:
-        return 'default';
-    }
-  }
-
-  /// Convierte el valor del slider a fontSize del modelo (double)
-  double _sliderValueToFontSize(double value) {
-    if (value <= 0.25) return 14.0;   // small
-    if (value <= 0.6) return 18.0;    // medium
-    if (value <= 0.85) return 24.0;   // large
-    return 32.0;                       // extra_large
-  }
-
-  /// Guarda las preferencias en Firebase (tabla users)
-  Future<void> _savePreferences() async {
-    setState(() {
-      _isSaving = true;
-    });
-
-    try {
-      // Crear nuevas preferencias
-      final newPreferences = UserPreferences(
-        fontFamily: _fontTypeToFamily(selectedFontType),
-        fontSize: _sliderValueToFontSize(fontSizeValue),
-      );
-
-      // Actualizar las preferencias en la tabla users
-      await _userService.updateUserPreferences(
-        effectiveUserId,
-        newPreferences,
-      );
-
-      // Recargar las preferencias en toda la aplicación
-      if (mounted) {
-        // await PreferenceProvider.reload(context);
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Preferencias guardadas correctamente'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Error al guardar preferencias: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('❌ Error al guardar preferencias: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-
-    // final prefs = PreferenceProvider.of(context);
-
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.grey[100],
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, size: 32),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            'Tipografía',
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Roboto',
-            ),
-          ),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
-
-      // === BARRA SUPERIOR ===
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'Tipografía',
-          style: const TextStyle(
-            fontSize: 32,
+          style: TextStyle(
+            fontSize: 24,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Roboto',
           ),
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-
-      // === CONTENIDO DE LA PANTALLA ===
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -222,40 +49,6 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
 
             // === SECCIÓN 2: TAMAÑO DE LETRA ===
             _buildFontSizeSelector(),
-
-            const SizedBox(height: 24),
-            // Botón para guardar preferencias
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _savePreferences,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isSaving
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Guardar cambios',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Roboto',
-                          color: Colors.white,
-                        ),
-                      ),
-              ),
-            ),
           ],
         ),
       ),
@@ -366,10 +159,6 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
                             setState(() {
                               fontSizeValue = value;
                             });
-                          },
-                          onChangeEnd: (value) {
-                            print('Tamaño de letra: ${currentFontSize.toInt()}px');
-                            // Aquí podrías guardar el valor con effectiveUserId
                           },
                         ),
                       ),
