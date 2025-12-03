@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
 import '../widgets/check_icon_overlay.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 
 import '../logic/game_controller_ordenar.dart';
 import 'settings_screen_ordenar.dart';
@@ -134,7 +134,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -142,9 +142,9 @@ class _SortNumbersGameState extends State<SortNumbersGame>
       appBar: AppBar(
         title: Text(
           'Ordena la secuencia',
-          style: TextStyle(
-            fontSize: prefs?.getFontSizeValue() ?? 18,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          style: const TextStyle(
+            fontSize: 18,
+            fontFamily: 'Roboto',
           ),
         ),
         centerTitle: true,

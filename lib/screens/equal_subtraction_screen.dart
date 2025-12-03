@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../widgets/check_icon_overlay.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 
 /// ---------------------------------------------------------------------------
 /// CONTROLADOR DEL JUEGO: RESTAS PARA IGUALAR RECIPIENTES
@@ -326,7 +326,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -335,8 +335,8 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
         title: Text(
           'Resta para igualar',
           style: TextStyle(
-            fontSize: prefs?.getFontSizeValue() ?? 18,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontSize: 18,
+            fontFamily: 'Roboto',
           ),
         ),
         centerTitle: true,

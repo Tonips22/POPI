@@ -3,7 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../logic/game_controller.dart';
 import '../widget/number_grid.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 import '../widgets/check_icon_overlay.dart';
 
 class NumberScreen extends StatefulWidget {
@@ -66,7 +66,7 @@ class _NumberScreenState extends State<NumberScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -74,9 +74,9 @@ class _NumberScreenState extends State<NumberScreen> {
       appBar: AppBar(
         title: Text(
           "Toca el número que suena",
-          style: TextStyle(
-            fontSize: prefs?.getFontSizeValue() ?? 18,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          style: const TextStyle(
+            fontSize: 18,
+            fontFamily: 'Roboto',
           ),
         ),
         centerTitle: true,

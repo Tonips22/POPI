@@ -3,7 +3,7 @@ import 'create_profile_screen.dart';
 import 'password_screen.dart';
 import 'admin_screen.dart';
 import 'dart:math' as math;
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 import 'home_tutor_screen.dart';
 
 class LoginScreen extends StatefulWidget {

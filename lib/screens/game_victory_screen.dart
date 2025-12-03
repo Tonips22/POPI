@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 
 /// Pantalla de victoria que se muestra al completar un juego
 class GameVictoryScreen extends StatelessWidget {
@@ -14,7 +14,7 @@ class GameVictoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
     
     return Scaffold(
       backgroundColor: Colors.blue.shade400,
@@ -25,10 +25,10 @@ class GameVictoryScreen extends StatelessWidget {
             // Mensaje de victoria
             Text(
               '¡Has ganado!',
-              style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 2.5,
+              style: const TextStyle(
+                fontSize: 18.0 * 2.5,
                 fontWeight: FontWeight.bold,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontFamily: 'Roboto',
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
@@ -115,13 +115,13 @@ class _VictoryButton extends StatelessWidget {
         // Etiqueta del botón
         Builder(
           builder: (context) {
-            final prefs = PreferenceProvider.of(context);
+            // final prefs = PreferenceProvider.of(context);
             return Text(
               label,
               style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.1,
+                fontSize: 18.0 * 1.1,
                 fontWeight: FontWeight.w600,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontFamily: 'Roboto',
                 color: Colors.white,
               ),
             );

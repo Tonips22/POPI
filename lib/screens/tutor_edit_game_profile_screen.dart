@@ -3,7 +3,7 @@ import 'package:popi/screens/tutor_edit_game_profile_dejar.dart';
 import 'package:popi/screens/tutor_edit_game_profile_reparte.dart';
 import 'package:popi/screens/tutor_edit_game_profile_tocar.dart';
 import 'package:popi/screens/tutor_edit_game_profile_ordenar.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 
 class TutorChooseGameScreen extends StatelessWidget {
   final String studentName;
@@ -17,12 +17,11 @@ class TutorChooseGameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight -
         kToolbarHeight -
-        MediaQuery.of(context).padding.top -
         MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -210,14 +209,14 @@ class TutorChooseGameScreen extends StatelessWidget {
               // Texto del juego
               Builder(
                 builder: (context) {
-                  final prefs = PreferenceProvider.of(context);
+                  // final prefs = PreferenceProvider.of(context);
                   return Text(
                     label,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: prefs?.getFontSizeValue() ?? fontSize,
-                      fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                      fontSize: fontSize,
+                      fontFamily: 'Roboto',
                       color: Colors.white,
                     ),
                   );

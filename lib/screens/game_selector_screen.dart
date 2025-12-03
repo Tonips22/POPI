@@ -4,7 +4,7 @@ import 'sort_numbers_game.dart';
 import 'equal_share_screen.dart';
 import 'equal_subtraction_screen.dart';
 import '../utils/accessible_routes.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 
 
 class ChooseGameScreen extends StatelessWidget {
@@ -12,7 +12,7 @@ class ChooseGameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
@@ -21,10 +21,10 @@ class ChooseGameScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Juegos',
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: prefs?.getFontSizeValue() ?? 32.0,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontSize: 32.0,
+            fontFamily: 'Roboto',
           ),
         ),
         centerTitle: true,
@@ -120,7 +120,7 @@ class ChooseGameScreen extends StatelessWidget {
         required Color color,
         VoidCallback? onTap,
       }) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
     final size = MediaQuery.of(context).size;
     final buttonPadding = size.width * 0.015;
     final iconSize = size.width * 0.055;
@@ -158,10 +158,10 @@ class ChooseGameScreen extends StatelessWidget {
               Text(
                 label,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: prefs?.getFontSizeValue() ?? 32.0,
-                  fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                  fontSize: 32.0,
+                  fontFamily: 'Roboto',
                   color: Colors.white,
                 ),
               ),

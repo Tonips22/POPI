@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/color_setting_card.dart';
 import '../utils/color_constants.dart';
-import '../widgets/preference_provider.dart';
 
 /// Pantalla de configuración de colores
 ///
@@ -27,8 +26,6 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
-    
     return Scaffold(
       backgroundColor: Colors.grey[100],
 
@@ -38,12 +35,11 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
           icon: const Icon(Icons.arrow_back, size: 32),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'Color',
           style: TextStyle(
-            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
           ),
         ),
         backgroundColor: Colors.white,
