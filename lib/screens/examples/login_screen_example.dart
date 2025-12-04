@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '/services/app_service.dart';
 import '/models/user_model.dart';
+import '/screens/home_tutor_screen.dart';
+import '/screens/admin_screen.dart';
 import 'dart:math' as math;
 
 class LoginScreenExample extends StatefulWidget {
@@ -269,7 +271,12 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                Navigator.pushNamed(context, '/tutor-home');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const TutorHomeScreen(),
+                                  ),
+                                );
                               },
                               child: Text(
                                 'Iniciar sesión como tutor',
@@ -284,7 +291,12 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                Navigator.pushNamed(context, '/admin');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const AdminScreen(),
+                                  ),
+                                );
                               },
                               child: Text(
                                 'Iniciar sesión como administrador',
