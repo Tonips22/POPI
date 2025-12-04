@@ -4,6 +4,7 @@ import 'sort_numbers_game.dart';
 import 'equal_share_screen.dart';
 import 'equal_subtraction_screen.dart';
 import 'settings_screen.dart';
+import 'customization_screen.dart';
 import '../utils/accessible_routes.dart';
 import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
@@ -44,7 +45,7 @@ class ChooseGameScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const SettingsScreen(),
+                      builder: (_) => const CustomizationScreen(),
                     ),
                   );
                 },
