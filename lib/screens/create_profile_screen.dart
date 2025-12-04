@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'create_profile_screen_2.dart';
+import '../services/user_service.dart';
+import '../models/user_profile.dart';
+
 class CreateProfileScreen extends StatefulWidget {
   const CreateProfileScreen({super.key});
 
@@ -8,46 +10,111 @@ class CreateProfileScreen extends StatefulWidget {
 }
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
+  static const _blueAppBar = Color(0xFF5CA7FF);
+  
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
 
-  int? _selectedImageIndex;
+  // Para el Avatar
+  String _selectedAvatar = 'avatar1';
+  final List<String> _avatars = ['avatar1', 'avatar2', 'avatar3', 'avatar4'];
 
-  // 16 imágenes disponibles
-  final List<String> _imagePaths = List.generate(
-    16,
-        (index) => 'assets/images/avatar${(index % 4) + 1}.png',
-  );
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
 
-  // Tamaño forzado de cada avatar (cambia aquí si quieres otro tamaño)
-  static const double itemSize = 90.0;
-  static const double spacing = 8.0;
+  void _showAvatarSelection() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _blueAppBar,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          height: 300,
+          child: Column(
+            children: [
+              const Text(
+                'Elige un avatar',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: _avatars.length,
+                  itemBuilder: (context, index) {
+                    final avatar = _avatars[index];
+                    final isSelected = _selectedAvatar == avatar;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedAvatar = avatar);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected ? Colors.black : Colors.transparent,
+                            width: 3,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/$avatar.png',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Anchura total para 8 columnas (8 items y 7 espacios entre ellos)
-    final double totalWidth = 8 * itemSize + 7 * spacing;
-
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: _blueAppBar,
         title: const Text(
           'Crear perfil de alumno',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 26,
+            color: Colors.black,
           ),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 8.0),
-            child: Icon(Icons.more_vert),
+            child: Icon(Icons.more_vert, color: Colors.black),
           ),
         ],
+        elevation: 0,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -56,7 +123,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Datos identificativos
+              // Sección de datos identificativos
               _buildSectionContainer(
                 title: 'Datos identificativos del alumno',
                 child: Column(
@@ -87,96 +154,67 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
               const SizedBox(height: 20),
 
-              // Imagen de perfil
+              // Sección de avatar con selector moderno
               _buildSectionContainer(
-                title: 'Imagen de perfil',
+                title: 'Avatar del alumno',
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Imágenes disponibles',
+                      'Selecciona un avatar para el alumno',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
                       ),
                     ),
-                    const SizedBox(height: 8),
-
-                    // Contenedor con desplazamiento horizontal si hace falta
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: totalWidth,
-                        // Wrap organiza los items en varias filas según el ancho fijo
-                        child: Wrap(
-                          spacing: spacing,
-                          runSpacing: spacing,
-                          children: List.generate(_imagePaths.length, (index) {
-                            final bool selected = _selectedImageIndex == index;
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedImageIndex = index;
-                                });
-                              },
-                              child: Container(
-                                width: itemSize,
-                                height: itemSize,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[300],
-                                  border: Border.all(
-                                    color: selected ? Colors.black : Colors.grey,
-                                    width: selected ? 3 : 2,
+                    const SizedBox(height: 20),
+                    
+                    // Avatar seleccionado (círculo grande)
+                    Center(
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: _showAvatarSelection,
+                            child: Container(
+                              width: 140,
+                              height: 140,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.black, width: 2),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    offset: Offset(0, 2),
+                                    blurRadius: 6,
                                   ),
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
-                                    image: AssetImage(_imagePaths[index]),
-                                    fit: BoxFit.cover,
-                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/images/$_selectedAvatar.png',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.person,
+                                      size: 70,
+                                      color: Colors.grey,
+                                    );
+                                  },
                                 ),
                               ),
-                            );
-                          }),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Imagen seleccionada + borrar (mismo tamaño que itemSize)
-                    Row(
-                      children: [
-                        const Text(
-                          'Imagen seleccionada:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          width: itemSize,
-                          height: itemSize,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.black, width: 2),
-                            borderRadius: BorderRadius.circular(6),
-                            image: _selectedImageIndex != null
-                                ? DecorationImage(
-                              image: AssetImage(
-                                  _imagePaths[_selectedImageIndex!]),
-                              fit: BoxFit.cover,
-                            )
-                                : null,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.black87),
-                          onPressed: () {
-                            setState(() {
-                              _selectedImageIndex = null;
-                            });
-                          },
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Toca para cambiar avatar',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -209,24 +247,74 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   const SizedBox(width: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5CA7FF),
+                      backgroundColor: const Color(0xFF2E7D32),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                           vertical: 20, horizontal: 40),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
+                      elevation: 2,
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const CreateProfileScreen2()),
+                    onPressed: () async {
+                      final nombre = _nameController.text.trim();
+                      
+                      if (nombre.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Por favor, introduce el nombre del alumno'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Mostrar loading
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (ctx) => const Center(
+                          child: CircularProgressIndicator(color: Color(0xFF5CA7FF)),
+                        ),
                       );
+
+                      try {
+                        // Crear el perfil del alumno
+                        final newStudent = UserProfile(
+                          id: '', // Se genera automáticamente en el servicio
+                          name: nombre,
+                          role: 'Estudiante',
+                          avatar: _selectedAvatar,
+                        );
+
+                        await UserService().createUser(newStudent);
+
+                        if (context.mounted) {
+                          Navigator.pop(context); // Cerrar loading
+                          Navigator.pop(context); // Volver a pantalla anterior
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Alumno "$nombre" creado con éxito'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          Navigator.pop(context); // Cerrar loading
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error al crear alumno: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
                     },
                     child: const Text(
-                      'Continuar',
+                      'Crear Alumno',
                       style: TextStyle(
                         fontSize: 20,
-                        color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -249,18 +337,28 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         const SizedBox(height: 4),
         TextField(
           controller: controller,
           keyboardType: keyboardType,
+          style: const TextStyle(fontSize: 16, color: Colors.black87),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: const TextStyle(color: Colors.black45, fontSize: 14),
             filled: true,
-            fillColor: Colors.grey[200],
-            border: OutlineInputBorder(
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.black54, width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.black, width: 2),
             ),
           ),
         ),
@@ -271,9 +369,9 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   Widget _buildSectionContainer({required String title, required Widget child}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF5CA7FF),
+        color: _blueAppBar,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -283,10 +381,12 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
             title,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 17,
+              fontSize: 18,
+              color: Colors.black,
             ),
           ),
-          const Divider(color: Colors.black),
+          const Divider(color: Colors.black, thickness: 1),
+          const SizedBox(height: 8),
           child,
         ],
       ),
