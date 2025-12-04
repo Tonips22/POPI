@@ -13,7 +13,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   static const _blueAppBar = Color(0xFF5CA7FF);
   
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
 
   // Para el Avatar
   int _selectedAvatarIndex = 0;
@@ -22,7 +21,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _ageController.dispose();
     super.dispose();
   }
 
@@ -128,25 +126,10 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                 title: 'Datos identificativos del alumno',
                 child: Column(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'Nombre del alumno',
-                            hint: 'Introduce nombre del alumno',
-                            controller: _nameController,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildInputField(
-                            label: 'Edad del alumno',
-                            hint: 'Introduce edad del alumno',
-                            controller: _ageController,
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                      ],
+                    _buildInputField(
+                      label: 'Nombre del alumno',
+                      hint: 'Introduce nombre del alumno',
+                      controller: _nameController,
                     ),
                   ],
                 ),
@@ -285,7 +268,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                           name: nombre,
                           role: 'student',
                           avatarIndex: _selectedAvatarIndex,
-                          edad: int.tryParse(_ageController.text.trim()),
                         );
 
                         await UserService().createUser(newStudent);

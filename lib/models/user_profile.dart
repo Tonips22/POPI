@@ -83,7 +83,6 @@ class UserProfile {
   final String role;          // 'student', 'tutor', 'admin'
   final int avatarIndex;      // Índice del avatar (0-3 para avatar1-avatar4)
   final String createdAt;     // String ISO 8601
-  final int? edad;            // Edad del usuario (opcional)
   final int? tutorId;         // ID del tutor asignado (opcional)
   final UserPreferences preferences;
 
@@ -93,7 +92,6 @@ class UserProfile {
     this.role = 'student',
     this.avatarIndex = 0,
     String? createdAt,
-    this.edad,
     this.tutorId,
     UserPreferences? preferences,
   })  : createdAt = createdAt ?? DateTime.now().toIso8601String(),
@@ -110,7 +108,6 @@ class UserProfile {
     };
     
     // Añadir campos opcionales solo si no son nulos
-    if (edad != null) map['edad'] = edad!;
     if (tutorId != null) map['tutorId'] = tutorId!;
     
     return map;
@@ -126,7 +123,6 @@ class UserProfile {
       role: _normalizeRole(map['role']?.toString() ?? 'student'),
       avatarIndex: _parseAvatarIndex(map),
       createdAt: _parseCreatedAt(map['createdAt']),
-      edad: map['edad'] as int?,
       tutorId: map['tutorId'] as int?,
       preferences: hasNestedPrefs
           ? UserPreferences.fromMap(map['preferences'] as Map<String, dynamic>)
@@ -176,7 +172,6 @@ class UserProfile {
     String? name,
     String? role,
     int? avatarIndex,
-    int? edad,
     int? tutorId,
     UserPreferences? preferences,
   }) {
@@ -186,7 +181,6 @@ class UserProfile {
       role: role ?? this.role,
       avatarIndex: avatarIndex ?? this.avatarIndex,
       createdAt: createdAt,
-      edad: edad ?? this.edad,
       tutorId: tutorId ?? this.tutorId,
       preferences: preferences ?? this.preferences,
     );
