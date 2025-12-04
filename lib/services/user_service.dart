@@ -250,7 +250,5 @@ class UserService {
       print('❌ Error genérico en getAllUsers: $e');
       rethrow;
     }
-=======
->>>>>>> origin/main
   }
 }
