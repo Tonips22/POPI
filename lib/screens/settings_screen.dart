@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'difficulty_screen.dart';
 import 'customization_screen.dart';
+import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -9,9 +10,13 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
     
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
       
       appBar: AppBar(
         leading: IconButton(

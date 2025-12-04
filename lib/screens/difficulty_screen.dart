@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../logic/game_controller.dart';
+import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 
 class DifficultyScreen extends StatefulWidget {
@@ -38,6 +39,10 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
     
     // Calculamos el máximo permitido del slider según el rango seleccionado
     double maxValue = 12;
@@ -46,7 +51,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
       
       // === BARRA SUPERIOR ===
       appBar: AppBar(

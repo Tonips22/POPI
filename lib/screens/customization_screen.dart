@@ -6,6 +6,7 @@ import 'number_format_screen.dart';
 import 'examples/login_screen_example.dart';
 
 import '../services/user_service.dart';
+import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 import '../widgets/voice_text.dart';
 
@@ -15,12 +16,16 @@ class CustomizationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
 
     final double titleFontSize = 18.0;
     final String titleFontFamily = 'Roboto';
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
 
       appBar: AppBar(
         leading: IconButton(

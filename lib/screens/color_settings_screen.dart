@@ -127,8 +127,10 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
       );
     }
 
+    final userBackgroundColor = backgroundColor ?? Colors.grey[100]!;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: userBackgroundColor,
 
       // === BARRA SUPERIOR ===
       appBar: AppBar(

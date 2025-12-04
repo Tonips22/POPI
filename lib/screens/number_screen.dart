@@ -75,9 +75,12 @@ class _NumberScreenState extends State<NumberScreen> {
     final secondaryColor = _service.currentUser != null
         ? Color(int.parse(_service.currentUser!.preferences.secondaryColor))
         : Colors.green;
+    final backgroundColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.backgroundColor))
+        : Colors.grey[50]!;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: backgroundColor,
 
       appBar: AppBar(
         title: Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/app_service.dart';
 
 /// Pantalla de configuración de tipografía (solo visual, sin persistencia)
 class FontSettingsScreen extends StatefulWidget {
@@ -64,8 +65,13 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
+        
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
