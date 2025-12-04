@@ -66,161 +66,172 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
 
             final double titleFont = (w * 0.08).clamp(60, 100);
             final double titleLetterSpacing = (w * 0.012).clamp(8, 20);
-            final double sectionTitle = (w * 0.025).clamp(18, 24);
-            final double gridSpacing = (w * 0.015).clamp(12, 20);
-            final double bluePadV = (w * 0.02).clamp(16, 28);
-            final double bluePadH = (w * 0.025).clamp(16, 28);
+            final double sectionTitle = (w * 0.03).clamp(24, 32);
+            final double gridSpacing = (w * 0.025).clamp(20, 32);
+            final double logoSize = (w * 0.25).clamp(200, 350);
 
-            final int gridCols = isDesktop ? 4 : 3;
+            const int gridCols = 4;
 
-            final double contentWidth = math.min(w, kMaxContentWidth) - 2 * hMargin;
-            final double gridWidth = contentWidth - 2 * bluePadH;
-            final double cellWidth = (gridWidth - (gridCols - 1) * gridSpacing) / gridCols;
-            final double iconSize = (cellWidth * 0.65).clamp(72, 150);
+            final double contentWidth = math.min(w, kMaxContentWidth);
+            final double cellWidth = (contentWidth - (gridCols - 1) * gridSpacing) / gridCols;
+            final double avatarSize = (cellWidth * 0.85).clamp(100, 160);
 
             Widget content = Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: kMaxContentWidth),
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: 6,
-                    left: 24,
-                    right: 24,
-                    bottom: 20,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Título POPI
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: math.max(20, titleLetterSpacing * 5),
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.black, width: 0.5),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'POPI',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: const Color(0xFF2596BE),
-                              fontSize: titleFont,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: titleLetterSpacing,
-                            ),
-                          ),
+                      // Logo POPI
+                      SizedBox(
+                        width: logoSize,
+                        child: Image.asset(
+                          'assets/images/popi-logo.png',
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Fallback al texto si no existe el logo
+                            return Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: math.max(20, titleLetterSpacing * 5),
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.black, width: 0.5),
+                              ),
+                              child: Text(
+                                'POPI',
+                                style: TextStyle(
+                                  color: const Color(0xFF2596BE),
+                                  fontSize: titleFont,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: titleLetterSpacing,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
 
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 48),
 
-                      // Card azul con alumnos
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: hMargin),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: bluePadH,
-                          vertical: bluePadV,
+                      // Título "Iniciar sesión"
+                      Text(
+                        'Iniciar sesión',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: sectionTitle,
+                          fontWeight: FontWeight.w700,
                         ),
-                        decoration: BoxDecoration(
-                          color: const Color(0x802596BE),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Iniciar sesión',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: sectionTitle,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8.0),
-                              child: Divider(
-                                color: Colors.black,
-                                thickness: 1,
-                                indent: 20,
-                                endIndent: 20,
-                              ),
-                            ),
+                      ),
 
-                            _isLoading
-                                ? const Padding(
-                                    padding: EdgeInsets.all(40.0),
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : _students.isEmpty
-                                    ? Padding(
-                                        padding: const EdgeInsets.all(40.0),
-                                        child: Text(
-                                          'No hay alumnos registrados',
-                                          style: TextStyle(
-                                            fontSize: sectionTitle * 0.8,
-                                          ),
-                                        ),
-                                      )
-                                    : GridView.builder(
-                                        shrinkWrap: true,
-                                        physics: const NeverScrollableScrollPhysics(),
-                                        gridDelegate:
-                                            SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: gridCols,
-                                          crossAxisSpacing: gridSpacing,
-                                          mainAxisSpacing: gridSpacing,
-                                          childAspectRatio: 1,
-                                        ),
-                                        itemCount: _students.length,
-                                        itemBuilder: (context, index) {
-                                          final student = _students[index];
-                                          return MouseRegion(
-                                            onEnter: (_) =>
-                                                setState(() => _hoveredIndex = index),
-                                            onExit: (_) =>
-                                                setState(() => _hoveredIndex = null),
-                                            child: InkWell(
-                                              onTap: () => _onStudentSelected(student, index),
-                                              borderRadius: BorderRadius.circular(999),
-                                              hoverColor: Colors.transparent,
-                                              highlightColor: Colors.transparent,
-                                              splashColor: Colors.transparent,
-                                              splashFactory: NoSplash.splashFactory,
-                                              child: Center(
-                                                child: AnimatedOpacity(
-                                                  duration: const Duration(milliseconds: 150),
-                                                  opacity: (_hoveredIndex == index ||
-                                                          _selectedIndex == index)
-                                                      ? 0.6
-                                                      : 1.0,
-                                                  child: ClipOval(
-                                                    child: Image.asset(
-                                                      'assets/images/avatar${(student.avatarIndex % 4) + 1}.png',
-                                                      width: iconSize * 1.5,
-                                                      height: iconSize * 1.5,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (context, error, stackTrace) {
-                                                        return Icon(
-                                                          Icons.account_circle,
-                                                          size: iconSize * 1.5,
-                                                          color: Colors.white,
-                                                        );
-                                                      },
+                      const SizedBox(height: 32),
+
+                      // Grid de alumnos sin panel
+                      _isLoading
+                          ? const Padding(
+                              padding: EdgeInsets.all(60.0),
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF2596BE),
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : _students.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.all(60.0),
+                                  child: Text(
+                                    'No hay alumnos registrados',
+                                    style: TextStyle(
+                                      fontSize: sectionTitle * 0.7,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                )
+                              : GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: gridCols,
+                                    crossAxisSpacing: 20,
+                                    mainAxisSpacing: 20,
+                                    childAspectRatio: 1,
+                                  ),
+                                  itemCount: _students.length,
+                                  itemBuilder: (context, index) {
+                                    final student = _students[index];
+                                    final isHovered = _hoveredIndex == index;
+                                    final isSelected = _selectedIndex == index;
+                                    
+                                    return MouseRegion(
+                                      onEnter: (_) =>
+                                          setState(() => _hoveredIndex = index),
+                                      onExit: (_) =>
+                                          setState(() => _hoveredIndex = null),
+                                      child: InkWell(
+                                        onTap: () => _onStudentSelected(student, index),
+                                        borderRadius: BorderRadius.circular(999),
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        splashColor: Colors.transparent,
+                                        child: Center(
+                                          child: AnimatedScale(
+                                            scale: isHovered || isSelected ? 1.08 : 1.0,
+                                            duration: const Duration(milliseconds: 200),
+                                            curve: Curves.easeInOut,
+                                            child: AnimatedOpacity(
+                                              opacity: isSelected ? 0.7 : 1.0,
+                                              duration: const Duration(milliseconds: 150),
+                                              child: Container(
+                                                width: avatarSize,
+                                                height: avatarSize,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: isHovered || isSelected
+                                                          ? const Color(0xFF2596BE).withOpacity(0.5)
+                                                          : Colors.black.withOpacity(0.2),
+                                                      offset: const Offset(0, 4),
+                                                      blurRadius: isHovered || isSelected ? 16 : 8,
+                                                      spreadRadius: isHovered || isSelected ? 2 : 0,
                                                     ),
+                                                  ],
+                                                ),
+                                                child: ClipOval(
+                                                  child: Image.asset(
+                                                    'assets/images/avatar${(student.avatarIndex % 6) + 0}.png',
+                                                    width: avatarSize,
+                                                    height: avatarSize,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) {
+                                                      return Container(
+                                                        width: avatarSize,
+                                                        height: avatarSize,
+                                                        decoration: const BoxDecoration(
+                                                          color: Color(0xFF2596BE),
+                                                          shape: BoxShape.circle,
+                                                        ),
+                                                        child: Icon(
+                                                          Icons.account_circle,
+                                                          size: avatarSize * 0.9,
+                                                          color: Colors.white,
+                                                        ),
+                                                      );
+                                                    },
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                          );
-                                        },
+                                          ),
+                                        ),
                                       ),
-                          ],
-                        ),
-                      ),
+                                    );
+                                  },
+                                ),
                     ],
                   ),
                 ),
