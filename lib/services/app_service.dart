@@ -33,17 +33,26 @@ class AppService {
     try {
       print('📥 Cargando alumnos desde Firestore...');
 
+      // Obtener TODOS los usuarios para depurar
       QuerySnapshot snapshot = await _firestore
           .collection('users')
-          .where('role', isEqualTo: 'student')
           .get();
 
-      List<UserModel> students = snapshot. docs
+      print('🔍 Total documentos en users: ${snapshot.docs.length}');
+      
+      // Depuración: mostrar cada usuario
+      for (var doc in snapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+        print('  📄 ${doc.id}: name="${data['name']}", role="${data['role']}", rol="${data['rol']}"');
+      }
+
+      List<UserModel> students = snapshot.docs
           .map((doc) =>
               UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .where((user) => user.role.toLowerCase() == 'student')
           .toList();
 
-      print('✅ ${students.length} alumnos cargados');
+      print('✅ ${students.length} alumnos cargados (filtrados por role==student)');
       return students;
     } catch (e) {
       print('❌ Error al cargar alumnos: $e');

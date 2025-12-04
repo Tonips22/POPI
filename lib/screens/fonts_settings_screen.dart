@@ -14,8 +14,53 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   // Tipo de fuente seleccionado
   FontType selectedFontType = FontType.predeterminada;
 
-  // Tamaño de letra (de 0.0 a 1.0)
-  double fontSizeValue = 0.5;
+  // Tamaño de letra como String
+  String fontSizeValue = 'medium';
+
+  /// Convierte el String a valor del slider (0.0 a 1.0)
+  double _fontSizeToSlider(String fontSize) {
+    switch (fontSize) {
+      case 'extra_small':
+        return 0.0;
+      case 'small':
+        return 0.25;
+      case 'medium':
+        return 0.5;
+      case 'large':
+        return 0.75;
+      case 'extra_large':
+        return 1.0;
+      default:
+        return 0.5;
+    }
+  }
+
+  /// Convierte el valor del slider a String
+  String _sliderToFontSize(double value) {
+    if (value <= 0.125) return 'extra_small';
+    if (value <= 0.375) return 'small';
+    if (value <= 0.625) return 'medium';
+    if (value <= 0.875) return 'large';
+    return 'extra_large';
+  }
+
+  /// Obtiene el valor numérico para preview
+  double _getFontSizePreview(String fontSize) {
+    switch (fontSize) {
+      case 'extra_small':
+        return 12.0;
+      case 'small':
+        return 16.0;
+      case 'medium':
+        return 20.0;
+      case 'large':
+        return 24.0;
+      case 'extra_large':
+        return 32.0;
+      default:
+        return 20.0;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +151,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   }
 
   Widget _buildFontSizeSelector() {
-    final currentFontSize = 16.0 + (fontSizeValue * 16.0);
+    final currentFontSize = _getFontSizePreview(fontSizeValue);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,13 +196,13 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
                           trackHeight: 8,
                         ),
                         child: Slider(
-                          value: fontSizeValue,
+                          value: _fontSizeToSlider(fontSizeValue),
                           min: 0.0,
                           max: 1.0,
                           divisions: 4,
                           onChanged: (value) {
                             setState(() {
-                              fontSizeValue = value;
+                              fontSizeValue = _sliderToFontSize(value);
                             });
                           },
                         ),

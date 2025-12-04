@@ -41,14 +41,14 @@ class UserPreferences {
   final String primaryColor;
   final String secondaryColor;
   final String fontFamily;
-  final double fontSize;
+  final String fontSize; // 'extra_small', 'small', 'medium', 'large', 'extra_large'
   final bool canCustomize;
 
   UserPreferences({
     this.primaryColor = '0xFF2196F3',
     this. secondaryColor = '0xFFFFC107',
     this. fontFamily = 'Roboto',
-    this.fontSize = 24.0,
+    this.fontSize = 'medium',
     this. canCustomize = false,
   });
 
@@ -57,17 +57,39 @@ class UserPreferences {
       'primaryColor': primaryColor,
       'secondaryColor': secondaryColor,
       'fontFamily': fontFamily,
-      'fontSize': fontSize,
+      'fontSize': fontSize, // Ahora es String directamente
       'canCustomize': canCustomize,
     };
   }
 
   factory UserPreferences.fromMap(Map<String, dynamic> map) {
+    // Manejar fontSize: puede ser String o número (legacy)
+    String fontSize = 'medium'; // default
+    if (map['fontSize'] != null) {
+      if (map['fontSize'] is String) {
+        fontSize = map['fontSize'] as String;
+      } else if (map['fontSize'] is num) {
+        // Convertir números antiguos a String
+        double value = (map['fontSize'] as num).toDouble();
+        if (value <= 12.0) {
+          fontSize = 'extra_small';
+        } else if (value <= 16.0) {
+          fontSize = 'small';
+        } else if (value <= 20.0) {
+          fontSize = 'medium';
+        } else if (value <= 28.0) {
+          fontSize = 'large';
+        } else {
+          fontSize = 'extra_large';
+        }
+      }
+    }
+    
     return UserPreferences(
       primaryColor: map['primaryColor'] ?? '0xFF2196F3',
       secondaryColor: map['secondaryColor'] ?? '0xFFFFC107',
       fontFamily: map['fontFamily'] ?? 'Roboto',
-      fontSize: (map['fontSize'] ??  24.0).toDouble(),
+      fontSize: fontSize,
       canCustomize: map['canCustomize'] ?? false,
     );
   }
@@ -77,7 +99,7 @@ class UserPreferences {
     String? primaryColor,
     String? secondaryColor,
     String? fontFamily,
-    double? fontSize,
+    String? fontSize,
     bool?  canCustomize,
   }) {
     return UserPreferences(
@@ -87,5 +109,23 @@ class UserPreferences {
       fontSize: fontSize ?? this.fontSize,
       canCustomize: canCustomize ?? this.canCustomize,
     );
+  }
+
+  /// Convierte el tamaño de fuente String a valor numérico
+  double getFontSizeValue() {
+    switch (fontSize) {
+      case 'extra_small':
+        return 12.0;
+      case 'small':
+        return 16.0;
+      case 'medium':
+        return 20.0;
+      case 'large':
+        return 24.0;
+      case 'extra_large':
+        return 32.0;
+      default:
+        return 20.0;
+    }
   }
 }
