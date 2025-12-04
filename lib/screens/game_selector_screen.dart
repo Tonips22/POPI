@@ -106,7 +106,7 @@ class ChooseGameScreen extends StatelessWidget {
                 children: [
                   _buildGameButton(
                     context,
-                    icon: Icons.touch_app,
+                    imagePath: 'images/games/touch_game.png',
                     label: 'Toca el número',
                     color: Colors.blue,
                     onTap: () {
@@ -120,7 +120,7 @@ class ChooseGameScreen extends StatelessWidget {
                   ),
                   _buildGameButton(
                     context,
-                    icon: Icons.sort,
+                    imagePath: 'images/games/sort_name.png',
                     label: 'Ordena los números',
                     color: Colors.green,
                     onTap: () {
@@ -134,7 +134,7 @@ class ChooseGameScreen extends StatelessWidget {
                   ),
                   _buildGameButton(
                     context,
-                    icon: Icons.share,
+                    imagePath: 'images/games/sum_game.png',
                     label: 'Reparte los números',
                     color: Colors.orange,
                     onTap: () {
@@ -148,7 +148,7 @@ class ChooseGameScreen extends StatelessWidget {
                   ),
                   _buildGameButton(
                     context,
-                    icon: Icons.balance,
+                    imagePath: 'images/games/rest_game.png',
                     label: 'Deja el mismo número',
                     color: Colors.purple,
                     onTap: () {
@@ -171,17 +171,15 @@ class ChooseGameScreen extends StatelessWidget {
 
   Widget _buildGameButton(
       BuildContext context, {
-        required IconData icon,
+        required String imagePath,
         required String label,
         required Color color,
         VoidCallback? onTap,
       }) {
     // final prefs = PreferenceProvider.of(context);
     final size = MediaQuery.of(context).size;
-    final buttonPadding = size.width * 0.015;
-    final iconSize = size.width * 0.055;
-    final iconPadding = size.width * 0.02;
-    final fontSize = size.width * 0.022;
+    final buttonPadding = size.width * 0.01;
+    final imageSize = size.width * 0.12;
     
     return Material(
       color: color,
@@ -193,32 +191,47 @@ class ChooseGameScreen extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(buttonPadding),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Botón circular con icono blanco
-              Material(
-                color: Colors.white,
-                shape: const CircleBorder(),
-                elevation: 6,
-                child: Padding(
-                  padding: EdgeInsets.all(iconPadding),
-                  child: Icon(
-                    icon,
-                    size: iconSize,
-                    color: color,
-                  ),
+              // Imagen del juego redondeada sin fondo blanco
+              ClipOval(
+                child: Image.asset(
+                  imagePath,
+                  width: imageSize,
+                  height: imageSize,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: imageSize,
+                      height: imageSize,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.gamepad,
+                        size: imageSize * 0.6,
+                        color: color,
+                      ),
+                    );
+                  },
                 ),
               ),
-              SizedBox(height: size.height * 0.01),
+              SizedBox(height: size.height * 0.008),
               // Texto del juego
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 32.0,
-                  fontFamily: 'Roboto',
-                  color: Colors.white,
+              Flexible(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: size.width * 0.02,
+                    fontFamily: 'Roboto',
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
