@@ -34,24 +34,13 @@ class UserService {
       final newIdInt = maxId + 1;
       final newIdStr = newIdInt.toString();
 
-      // 2. Preparar los datos.
-      // IMPORTANTE: El usuario pidió que 'id' sea un número en la BD.
-      final Map<String, dynamic> userData = {
-        'id': newIdInt, // Guardamos como número
-        'name': user.name,
-        'role': user.role,
-        'avatar': user.avatar, // Guardamos el avatar
-        'createdAt': DateTime.now(), // Timestamp actual
-        'activo': true, // Nuevo campo solicitado
-        'permitir_personalizar': false,
-        // Valores por defecto de preferencias
-        'fontFamily': 'default',
-        'fontSize': 'medium',
-        'primaryColor': '#4CAF50',
-        'secondaryColor': '#2196F3',
-      };
+      // 2. Usar el método toMap() del usuario que ya tiene la estructura correcta
+      final Map<String, dynamic> userData = user.toMap();
+      
+      // Sobrescribir el ID para asegurar que sea el correcto
+      userData['id'] = newIdStr;
 
-      // 3. Guardar en Firestore
+      // 3. Crear el documento con el ID numérico como nombre del documento
       await _fs.collection(_collection).doc(newIdStr).set(userData);
       print('✅ Usuario creado: $newIdStr (${user.name})');
 
@@ -85,7 +74,6 @@ class UserService {
           id: userId,
           name: name ?? 'Demo User',
           role: role ?? 'student',
-          permitirPersonalizar: false,
         );
         await docRef.set(profile.toMap());
         return false;

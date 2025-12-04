@@ -70,7 +70,7 @@ class _PreferenceLoaderState extends State<PreferenceLoader> {
     // Luego cargamos sus preferencias
     UserProfile? prefs = await _userService.getUserProfile(widget.userId);
     setState(() {
-      _preferences = prefs ?? UserProfile(id: widget.userId);
+      _preferences = prefs ?? UserProfile(id: widget.userId, name: 'Alumno Demo');
       _isLoading = false;
     });
   }
