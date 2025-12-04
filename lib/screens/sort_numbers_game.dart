@@ -7,6 +7,7 @@ import '../widgets/check_icon_overlay.dart';
 // import '../widgets/preference_provider.dart';
 
 import '../logic/game_controller_ordenar.dart';
+import '../services/app_service.dart';
 import 'settings_screen_ordenar.dart';
 import 'game_selector_screen.dart';
 import 'game_victory_screen.dart';
@@ -22,6 +23,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     with SingleTickerProviderStateMixin {
 
   final OrdenarGameController _controller = OrdenarGameController();
+  final AppService _service = AppService();
 
   late List<int> pool;
   late List<int?> targets;
@@ -135,6 +137,12 @@ class _SortNumbersGameState extends State<SortNumbersGame>
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final userColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.primaryColor))
+        : Colors.blue.shade400;
+    final secondaryColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.secondaryColor))
+        : Colors.green;
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -206,6 +214,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
                               },
                               child: NumberTile(
                                 value: value,
+                                color: userColor,
                                 onTap: () {
                                   final idx = targets.indexOf(null);
                                   if (idx == -1) return;
@@ -238,6 +247,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
                         return TargetSlot(
                           index: i,
                           value: targets[i],
+                          color: userColor,
                           onAccept: (drag) => _handleDrop(drag, i),
                           onRemove: () => _removeFromTarget(i),
                         );
@@ -250,7 +260,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
           ),
 
           if (_showCheckIcon)
-            CheckIconOverlay(color: Colors.blue.shade400),
+            CheckIconOverlay(color: secondaryColor),
         ],
       ),
     );

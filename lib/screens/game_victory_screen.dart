@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 // import '../widgets/preference_provider.dart';
+import '../services/app_service.dart';
 
 /// Pantalla de victoria que se muestra al completar un juego
 class GameVictoryScreen extends StatelessWidget {
@@ -15,9 +16,12 @@ class GameVictoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final userColor = AppService().currentUser != null
+        ? Color(int.parse(AppService().currentUser!.preferences.primaryColor))
+        : Colors.blue.shade400;
     
     return Scaffold(
-      backgroundColor: Colors.blue.shade400,
+      backgroundColor: userColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -93,21 +97,28 @@ class _VictoryButton extends StatelessWidget {
           color: Colors.white,
           shape: const CircleBorder(),
           elevation: 8,
-          child: InkWell(
-            onTap: () {
-              print('Button tapped: $label'); // Debug
-              onPressed();
-            },
-            customBorder: const CircleBorder(),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Icon(
-                icon,
-                size: 60,
-                color: Colors.blue.shade400,
-              ),
+            child: Builder(
+              builder: (context) {
+                final userColor = AppService().currentUser != null
+                    ? Color(int.parse(AppService().currentUser!.preferences.primaryColor))
+                    : Colors.blue.shade400;
+                return InkWell(
+                  onTap: () {
+                    print('Button tapped: $label'); // Debug
+                    onPressed();
+                  },
+                  customBorder: const CircleBorder(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Icon(
+                      icon,
+                      size: 60,
+                      color: userColor,
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
         ),
         
         const SizedBox(height: 16),
