@@ -3,25 +3,33 @@ import 'number_screen.dart';
 import 'sort_numbers_game.dart';
 import 'equal_share_screen.dart';
 import 'equal_subtraction_screen.dart';
-import 'settings_screen.dart';
 import 'customization_screen.dart';
 import '../utils/accessible_routes.dart';
 import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 
 
-class ChooseGameScreen extends StatelessWidget {
+class ChooseGameScreen extends StatefulWidget {
   const ChooseGameScreen({super.key});
 
+  @override
+  State<ChooseGameScreen> createState() => _ChooseGameScreenState();
+}
+
+class _ChooseGameScreenState extends State<ChooseGameScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
     final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.white;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
     
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           'Juegos',
@@ -41,13 +49,15 @@ class ChooseGameScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => const CustomizationScreen(),
                     ),
                   );
+                  // Actualizar la pantalla cuando se regrese de personalización
+                  setState(() {});
                 },
                 icon: Container(
                   width: 40,

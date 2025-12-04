@@ -41,8 +41,7 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
       setState(() {
         primaryColor = _parseColor(user.preferences.primaryColor);
         secondaryColor = _parseColor(user.preferences.secondaryColor);
-        // backgroundColor no está en el modelo, usar blanco por defecto
-        backgroundColor = Colors.white;
+        backgroundColor = _parseColor(user.preferences.backgroundColor);
         _isLoading = false;
       });
     } else {
@@ -78,6 +77,7 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
     final updatedPreferences = user.preferences.copyWith(
       primaryColor: _colorToHex(primaryColor!),
       secondaryColor: _colorToHex(secondaryColor!),
+      backgroundColor: _colorToHex(backgroundColor!),
     );
 
     // Actualizar en Firebase
@@ -196,9 +196,7 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
               setState(() {
                 backgroundColor = color;
               });
-              // Nota: backgroundColor no se guarda en Firebase aún
-              // Se puede agregar al modelo si se necesita
-              print('Color de fondo seleccionado: ${color.value}');
+              _saveColors();
             },
           ),
         ],

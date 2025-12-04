@@ -40,6 +40,7 @@ class UserModel {
 class UserPreferences {
   final String primaryColor;
   final String secondaryColor;
+  final String backgroundColor;
   final String fontFamily;
   final String fontSize; // 'extra_small', 'small', 'medium', 'large', 'extra_large'
   final bool canCustomize;
@@ -47,6 +48,7 @@ class UserPreferences {
   UserPreferences({
     this.primaryColor = '0xFF2196F3',
     this. secondaryColor = '0xFFFFC107',
+    this.backgroundColor = '0xFFFFFFFF',
     this. fontFamily = 'Roboto',
     this.fontSize = 'medium',
     this. canCustomize = false,
@@ -56,6 +58,7 @@ class UserPreferences {
     return {
       'primaryColor': primaryColor,
       'secondaryColor': secondaryColor,
+      'backgroundColor': backgroundColor,
       'fontFamily': fontFamily,
       'fontSize': fontSize, // Ahora es String directamente
       'canCustomize': canCustomize,
@@ -88,6 +91,7 @@ class UserPreferences {
     return UserPreferences(
       primaryColor: map['primaryColor'] ?? '0xFF2196F3',
       secondaryColor: map['secondaryColor'] ?? '0xFFFFC107',
+      backgroundColor: map['backgroundColor'] ?? '0xFFFFFFFF',
       fontFamily: map['fontFamily'] ?? 'Roboto',
       fontSize: fontSize,
       canCustomize: map['canCustomize'] ?? false,
@@ -98,6 +102,7 @@ class UserPreferences {
   UserPreferences copyWith({
     String? primaryColor,
     String? secondaryColor,
+    String? backgroundColor,
     String? fontFamily,
     String? fontSize,
     bool?  canCustomize,
@@ -105,6 +110,7 @@ class UserPreferences {
     return UserPreferences(
       primaryColor: primaryColor ?? this.primaryColor,
       secondaryColor: secondaryColor ?? this. secondaryColor,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
       fontFamily: fontFamily ?? this.fontFamily,
       fontSize: fontSize ?? this.fontSize,
       canCustomize: canCustomize ?? this.canCustomize,
