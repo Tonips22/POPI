@@ -229,7 +229,6 @@ class UserService {
         return null;
       }
     });
-<<<<<<< HEAD
   }
 
   /// Obtiene todos los usuarios de la colección
