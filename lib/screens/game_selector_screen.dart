@@ -3,7 +3,9 @@ import 'number_screen.dart';
 import 'sort_numbers_game.dart';
 import 'equal_share_screen.dart';
 import 'equal_subtraction_screen.dart';
+import 'settings_screen.dart';
 import '../utils/accessible_routes.dart';
+import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 
 
@@ -13,6 +15,7 @@ class ChooseGameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
@@ -32,6 +35,59 @@ class ChooseGameScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          if (currentUser != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SettingsScreen(),
+                    ),
+                  );
+                },
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/avatar${(currentUser.avatarIndex % 6) + 0}.png',
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF2596BE),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.account_circle,
+                            size: 40,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
