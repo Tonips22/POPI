@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '/services/app_service.dart';
 import '/models/user_model.dart';
+import 'dart:math' as math;
 
 class LoginScreenExample extends StatefulWidget {
-  const LoginScreenExample({Key? key}) : super(key: key);
+  const LoginScreenExample({super.key});
 
   @override
   State<LoginScreenExample> createState() => _LoginScreenExampleState();
@@ -14,7 +15,8 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
 
   List<UserModel> _students = [];
   bool _isLoading = true;
-  String?  _errorMessage;
+  int? _selectedIndex;
+  int? _hoveredIndex;
 
   @override
   void initState() {
@@ -22,39 +24,28 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
     _loadStudents();
   }
 
-  /// Carga los alumnos desde Firestore
   Future<void> _loadStudents() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
     try {
       List<UserModel> students = await _service.getStudents();
-
       setState(() {
         _students = students;
         _isLoading = false;
-
-        if (students.isEmpty) {
-          _errorMessage = 'No hay alumnos registrados';
-        }
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error: $e';
         _isLoading = false;
       });
     }
   }
 
-  /// Cuando se selecciona un alumno
-  void _onStudentSelected(UserModel student) {
-    // Por ahora, loguear directamente (después añadirás la pantalla de contraseña)
+  void _onStudentSelected(UserModel student, int index) async {
+    setState(() => _selectedIndex = index);
     _service.login(student);
-
-    // Navegar a la siguiente pantalla
-    Navigator.pushReplacementNamed(context, '/games');
+    
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/games');
+    }
   }
 
   @override
@@ -62,134 +53,186 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            children: [
-              // Título
-              const Text(
-                '👋 ¡Hola!  ¿Quién eres?',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double w = constraints.maxWidth;
+            final double h = constraints.maxHeight;
+
+            final bool isDesktop = w >= 1200;
+            final bool needScroll = h < 650;
+
+            const double kMaxContentWidth = 1200.0;
+            final double hMargin = (w * 0.08).clamp(24, 250);
+
+            final double titleFont = (w * 0.08).clamp(60, 100);
+            final double titleLetterSpacing = (w * 0.012).clamp(8, 20);
+            final double sectionTitle = (w * 0.025).clamp(18, 24);
+            final double gridSpacing = (w * 0.015).clamp(12, 20);
+            final double bluePadV = (w * 0.02).clamp(16, 28);
+            final double bluePadH = (w * 0.025).clamp(16, 28);
+
+            final int gridCols = isDesktop ? 4 : 3;
+
+            final double contentWidth = math.min(w, kMaxContentWidth) - 2 * hMargin;
+            final double gridWidth = contentWidth - 2 * bluePadH;
+            final double cellWidth = (gridWidth - (gridCols - 1) * gridSpacing) / gridCols;
+            final double iconSize = (cellWidth * 0.65).clamp(72, 150);
+
+            Widget content = Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: kMaxContentWidth),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 6,
+                    left: 24,
+                    right: 24,
+                    bottom: 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Título POPI
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: math.max(20, titleLetterSpacing * 5),
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.black, width: 0.5),
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'POPI',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: const Color(0xFF2596BE),
+                              fontSize: titleFont,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: titleLetterSpacing,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // Card azul con alumnos
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: hMargin),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: bluePadH,
+                          vertical: bluePadV,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0x802596BE),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Iniciar sesión',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: sectionTitle,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8.0),
+                              child: Divider(
+                                color: Colors.black,
+                                thickness: 1,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                            ),
+
+                            _isLoading
+                                ? const Padding(
+                                    padding: EdgeInsets.all(40.0),
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : _students.isEmpty
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(40.0),
+                                        child: Text(
+                                          'No hay alumnos registrados',
+                                          style: TextStyle(
+                                            fontSize: sectionTitle * 0.8,
+                                          ),
+                                        ),
+                                      )
+                                    : GridView.builder(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: gridCols,
+                                          crossAxisSpacing: gridSpacing,
+                                          mainAxisSpacing: gridSpacing,
+                                          childAspectRatio: 1,
+                                        ),
+                                        itemCount: _students.length,
+                                        itemBuilder: (context, index) {
+                                          final student = _students[index];
+                                          return MouseRegion(
+                                            onEnter: (_) =>
+                                                setState(() => _hoveredIndex = index),
+                                            onExit: (_) =>
+                                                setState(() => _hoveredIndex = null),
+                                            child: InkWell(
+                                              onTap: () => _onStudentSelected(student, index),
+                                              borderRadius: BorderRadius.circular(999),
+                                              hoverColor: Colors.transparent,
+                                              highlightColor: Colors.transparent,
+                                              splashColor: Colors.transparent,
+                                              splashFactory: NoSplash.splashFactory,
+                                              child: Center(
+                                                child: AnimatedOpacity(
+                                                  duration: const Duration(milliseconds: 150),
+                                                  opacity: (_hoveredIndex == index ||
+                                                          _selectedIndex == index)
+                                                      ? 0.6
+                                                      : 1.0,
+                                                  child: ClipOval(
+                                                    child: Image.asset(
+                                                      'assets/images/avatar${(student.avatarIndex % 4) + 1}.png',
+                                                      width: iconSize * 1.5,
+                                                      height: iconSize * 1.5,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) {
+                                                        return Icon(
+                                                          Icons.account_circle,
+                                                          size: iconSize * 1.5,
+                                                          color: Colors.white,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 40),
+            );
 
-              // Contenido
-              Expanded(
-                child: _buildContent(),
-              ),
-
-              // Botón reintentar
-              if (_errorMessage != null)
-                ElevatedButton. icon(
-                  onPressed: _loadStudents,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Reintentar'),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContent() {
-    // Cargando...
-    if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Cargando alumnos... ', style: TextStyle(fontSize: 18)),
-          ],
-        ),
-      );
-    }
-
-    // Error
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, color: Colors. red),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Grid de alumnos
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4, // 4 columnas para tablets
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.8,
-      ),
-      itemCount: _students.length,
-      itemBuilder: (context, index) {
-        final student = _students[index];
-        return _StudentCard(
-          student: student,
-          onTap: () => _onStudentSelected(student),
-        );
-      },
-    );
-  }
-}
-
-/// Tarjeta de alumno
-class _StudentCard extends StatelessWidget {
-  final UserModel student;
-  final VoidCallback onTap;
-
-  const _StudentCard({required this.student, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Avatar
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.blue.shade100,
-              child: Text(
-                student.name[0]. toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Nombre
-            Text(
-              student.name,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            if (needScroll) {
+              return SingleChildScrollView(child: content);
+            } else {
+              return content;
+            }
+          },
         ),
       ),
     );
