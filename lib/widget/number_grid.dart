@@ -4,11 +4,13 @@ import '../logic/game_controller.dart';
 class NumberGrid extends StatelessWidget {
   final GameController controller;
   final Function(bool) onAnswer;
+  final Color primaryColor;
 
   const NumberGrid({
     super.key,
     required this.controller,
     required this.onAnswer,
+    required this.primaryColor,
   });
 
   @override
@@ -60,7 +62,7 @@ class NumberGrid extends StatelessWidget {
                     width: circleSize,
                     height: circleSize,
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade400,
+                      color: primaryColor,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(

@@ -5,6 +5,7 @@ import '../logic/game_controller.dart';
 import '../widget/number_grid.dart';
 // import '../widgets/preference_provider.dart';
 import '../widgets/check_icon_overlay.dart';
+import '../services/app_service.dart';
 
 class NumberScreen extends StatefulWidget {
   const NumberScreen({super.key});
@@ -16,6 +17,7 @@ class NumberScreen extends StatefulWidget {
 class _NumberScreenState extends State<NumberScreen> {
   final GameController _controller = GameController();
   final FlutterTts _flutterTts = FlutterTts();
+  final AppService _service = AppService();
   bool _showCheckIcon = false;
   bool _showErrorIcon = false;
 
@@ -67,6 +69,12 @@ class _NumberScreenState extends State<NumberScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final userColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.primaryColor))
+        : Colors.blue.shade400;
+    final secondaryColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.secondaryColor))
+        : Colors.green;
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -117,7 +125,7 @@ class _NumberScreenState extends State<NumberScreen> {
                     // Botón de volumen
                     IconButton(
                       iconSize: 64,
-                      color: Colors.blue.shade400,
+                      color: userColor,
                       onPressed: _speakTarget,
                       icon: Container(
                         padding: const EdgeInsets.all(16),
@@ -143,6 +151,7 @@ class _NumberScreenState extends State<NumberScreen> {
                       child: NumberGrid(
                         controller: _controller,
                         onAnswer: _handleAnswer,
+                        primaryColor: userColor,
                       ),
                     ),
 
@@ -157,11 +166,11 @@ class _NumberScreenState extends State<NumberScreen> {
           ),
 
           if (_showCheckIcon)
-            CheckIconOverlay(color: Colors.blue.shade400),
+            CheckIconOverlay(color: secondaryColor),
 
           if (_showErrorIcon)
             CheckIconOverlay(
-              color: Colors.red,
+              color: Colors.grey.shade400,
               icon: Icons.cancel,
             ),
         ],

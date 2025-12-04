@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../widgets/check_icon_overlay.dart';
 // import '../widgets/preference_provider.dart';
+import '../services/app_service.dart';
 
 /// ---------------------------------------------------------------------------
 /// CONTROLADOR DEL JUEGO: SUMAS EN CADA RECIPIENTE
@@ -139,10 +140,14 @@ class EqualShareBoard extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onRoundEnd,
+    required this.primaryColor,
+    required this.secondaryColor,
   });
 
   final EqualShareController controller;
   final void Function(bool isCorrect, String equation) onRoundEnd;
+  final Color primaryColor;
+  final Color secondaryColor;
 
   @override
   State<EqualShareBoard> createState() => _EqualShareBoardState();
@@ -344,7 +349,7 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        color: isSelected ? Colors.blue.shade200 : Colors.blue.shade400,
+        color: isSelected ? widget.primaryColor.withOpacity(0.5) : widget.primaryColor,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -427,6 +432,7 @@ class EqualShareScreen extends StatefulWidget {
 
 class _EqualShareScreenState extends State<EqualShareScreen> {
   final EqualShareController _controller = EqualShareController();
+  final AppService _service = AppService();
 
   bool _showCheckIcon = false;
   bool _showErrorIcon = false;
@@ -490,6 +496,12 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final userColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.primaryColor))
+        : Colors.blue.shade400;
+    final secondaryColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.secondaryColor))
+        : Colors.green;
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -542,13 +554,15 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
                   key: ValueKey(_roundIndex),
                   controller: _controller,
                   onRoundEnd: _handleRoundEnd,
+                  primaryColor: userColor,
+                  secondaryColor: secondaryColor,
                 ),
               ),
             ),
           ),
 
           if (_showCheckIcon)
-            CheckIconOverlay(color: Colors.blue.shade400),
+            CheckIconOverlay(color: secondaryColor),
 
           if (_showErrorIcon)
             CheckIconOverlay(
