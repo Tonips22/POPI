@@ -66,15 +66,17 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
 
             final double titleFont = (w * 0.08).clamp(60, 100);
             final double titleLetterSpacing = (w * 0.012).clamp(8, 20);
-            final double sectionTitle = (w * 0.03).clamp(24, 32);
+            final double sectionTitle = (w * 0.035).clamp(28, 40);
             final double gridSpacing = (w * 0.025).clamp(20, 32);
             final double logoSize = (w * 0.25).clamp(200, 350);
+            final double linksFont = (w * 0.02).clamp(16, 18);
 
-            const int gridCols = 4;
+            const int gridCols = 3;
 
             final double contentWidth = math.min(w, kMaxContentWidth);
             final double cellWidth = (contentWidth - (gridCols - 1) * gridSpacing) / gridCols;
-            final double avatarSize = (cellWidth * 0.85).clamp(100, 160);
+            final double avatarSize = (cellWidth * 0.55).clamp(120, 180);
+            final double nameFont = (w * 0.018).clamp(16, 20);
 
             Widget content = Center(
               child: ConstrainedBox(
@@ -118,9 +120,9 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
 
                       const SizedBox(height: 48),
 
-                      // Título "Iniciar sesión"
+                      // Título "¿Quién eres?"
                       Text(
-                        'Iniciar sesión',
+                        '¿Quién eres?',
                         style: TextStyle(
                           color: Colors.black87,
                           fontSize: sectionTitle,
@@ -128,7 +130,7 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 40),
 
                       // Grid de alumnos sin panel
                       _isLoading
@@ -179,52 +181,76 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
                                         splashColor: Colors.transparent,
                                         child: Center(
                                           child: AnimatedScale(
-                                            scale: isHovered || isSelected ? 1.08 : 1.0,
+                                            scale: isHovered || isSelected ? 1.05 : 1.0,
                                             duration: const Duration(milliseconds: 200),
                                             curve: Curves.easeInOut,
-                                            child: AnimatedOpacity(
-                                              opacity: isSelected ? 0.7 : 1.0,
-                                              duration: const Duration(milliseconds: 150),
-                                              child: Container(
-                                                width: avatarSize,
-                                                height: avatarSize,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: isHovered || isSelected
-                                                          ? const Color(0xFF2596BE).withOpacity(0.5)
-                                                          : Colors.black.withOpacity(0.2),
-                                                      offset: const Offset(0, 4),
-                                                      blurRadius: isHovered || isSelected ? 16 : 8,
-                                                      spreadRadius: isHovered || isSelected ? 2 : 0,
-                                                    ),
-                                                  ],
-                                                ),
-                                                child: ClipOval(
-                                                  child: Image.asset(
-                                                    'assets/images/avatar${(student.avatarIndex % 6) + 0}.png',
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                // Avatar
+                                                AnimatedOpacity(
+                                                  opacity: isSelected ? 0.7 : 1.0,
+                                                  duration: const Duration(milliseconds: 150),
+                                                  child: Container(
                                                     width: avatarSize,
                                                     height: avatarSize,
-                                                    fit: BoxFit.cover,
-                                                    errorBuilder: (context, error, stackTrace) {
-                                                      return Container(
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: isHovered || isSelected
+                                                              ? const Color(0xFF2596BE).withOpacity(0.5)
+                                                              : Colors.black.withOpacity(0.2),
+                                                          offset: const Offset(0, 4),
+                                                          blurRadius: isHovered || isSelected ? 16 : 8,
+                                                          spreadRadius: isHovered || isSelected ? 2 : 0,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: ClipOval(
+                                                      child: Image.asset(
+                                                        'assets/images/avatar${(student.avatarIndex % 6) + 0}.png',
                                                         width: avatarSize,
                                                         height: avatarSize,
-                                                        decoration: const BoxDecoration(
-                                                          color: Color(0xFF2596BE),
-                                                          shape: BoxShape.circle,
-                                                        ),
-                                                        child: Icon(
-                                                          Icons.account_circle,
-                                                          size: avatarSize * 0.9,
-                                                          color: Colors.white,
-                                                        ),
-                                                      );
-                                                    },
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder: (context, error, stackTrace) {
+                                                          return Container(
+                                                            width: avatarSize,
+                                                            height: avatarSize,
+                                                            decoration: const BoxDecoration(
+                                                              color: Color(0xFF2596BE),
+                                                              shape: BoxShape.circle,
+                                                            ),
+                                                            child: Icon(
+                                                              Icons.account_circle,
+                                                              size: avatarSize * 0.9,
+                                                              color: Colors.white,
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
+                                                
+                                                const SizedBox(height: 12),
+                                                
+                                                // Nombre del estudiante
+                                                Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                  child: Text(
+                                                    student.name,
+                                                    textAlign: TextAlign.center,
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: nameFont,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ),
@@ -232,6 +258,48 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
                                     );
                                   },
                                 ),
+                      
+                      const SizedBox(height: 40),
+                      
+                      // Enlaces tutor y administrador
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: hMargin),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/tutor-home');
+                              },
+                              child: Text(
+                                'Iniciar sesión como tutor',
+                                style: TextStyle(
+                                  color: const Color(0xFF2596BE),
+                                  fontSize: linksFont,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: const Color(0xFF2596BE),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/admin');
+                              },
+                              child: Text(
+                                'Iniciar sesión como administrador',
+                                style: TextStyle(
+                                  color: const Color(0xFF2596BE),
+                                  fontSize: linksFont,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: const Color(0xFF2596BE),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
