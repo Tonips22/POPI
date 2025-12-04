@@ -23,8 +23,8 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
   final List<String> _roles = ['Estudiante', 'Tutor'];
 
   // Para el Avatar
-  String _selectedAvatar = 'avatar1';
-  final List<String> _avatars = ['avatar1', 'avatar2', 'avatar3', 'avatar4'];
+  int _selectedAvatarIndex = 0;
+  final List<String> _avatarNames = ['avatar1', 'avatar2', 'avatar3', 'avatar4'];
 
   @override
   void dispose() {
@@ -62,13 +62,13 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
-                  itemCount: _avatars.length,
+                  itemCount: _avatarNames.length,
                   itemBuilder: (context, index) {
-                    final avatar = _avatars[index];
-                    final isSelected = _selectedAvatar == avatar;
+                    final avatarName = _avatarNames[index];
+                    final isSelected = _selectedAvatarIndex == index;
                     return GestureDetector(
                       onTap: () {
-                        setState(() => _selectedAvatar = avatar);
+                        setState(() => _selectedAvatarIndex = index);
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -81,7 +81,7 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                         ),
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/images/$avatar.png',
+                            'assets/images/$avatarName.png',
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -220,7 +220,7 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                                     ),
                                     child: ClipOval(
                                       child: Image.asset(
-                                        'assets/images/$_selectedAvatar.png',
+                                        'assets/images/${_avatarNames[_selectedAvatarIndex]}.png',
                                         fit: BoxFit.cover,
                                         errorBuilder: (context, error, stackTrace) {
                                           return Icon(
@@ -361,8 +361,8 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                                   final tempUser = UserProfile(
                                     id: '', 
                                     name: nombre,
-                                    role: rol,
-                                    avatar: _selectedAvatar,
+                                    role: _normalizeRole(rol),
+                                    avatarIndex: _selectedAvatarIndex,
                                   );
             
                                   await UserService().createUser(tempUser);
@@ -404,6 +404,12 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
         },
       ),
     );
+  }
+
+  String _normalizeRole(String displayRole) {
+    if (displayRole == 'Estudiante') return 'student';
+    if (displayRole == 'Tutor') return 'tutor';
+    return 'student';
   }
 
   InputDecoration _inputDecoration({

@@ -16,8 +16,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   final TextEditingController _ageController = TextEditingController();
 
   // Para el Avatar
-  String _selectedAvatar = 'avatar1';
-  final List<String> _avatars = ['avatar1', 'avatar2', 'avatar3', 'avatar4'];
+  int _selectedAvatarIndex = 0;
+  final List<String> _avatarNames = ['avatar1', 'avatar2', 'avatar3', 'avatar4'];
 
   @override
   void dispose() {
@@ -55,13 +55,13 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),
-                  itemCount: _avatars.length,
+                  itemCount: _avatarNames.length,
                   itemBuilder: (context, index) {
-                    final avatar = _avatars[index];
-                    final isSelected = _selectedAvatar == avatar;
+                    final avatarName = _avatarNames[index];
+                    final isSelected = _selectedAvatarIndex == index;
                     return GestureDetector(
                       onTap: () {
-                        setState(() => _selectedAvatar = avatar);
+                        setState(() => _selectedAvatarIndex = index);
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -74,7 +74,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                         ),
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/images/$avatar.png',
+                            'assets/images/$avatarName.png',
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -191,7 +191,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                               ),
                               child: ClipOval(
                                 child: Image.asset(
-                                  'assets/images/$_selectedAvatar.png',
+                                  'assets/images/${_avatarNames[_selectedAvatarIndex]}.png',
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return const Icon(
@@ -283,8 +283,9 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                         final newStudent = UserProfile(
                           id: '', // Se genera automáticamente en el servicio
                           name: nombre,
-                          role: 'Estudiante',
-                          avatar: _selectedAvatar,
+                          role: 'student',
+                          avatarIndex: _selectedAvatarIndex,
+                          edad: int.tryParse(_ageController.text.trim()),
                         );
 
                         await UserService().createUser(newStudent);
