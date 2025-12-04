@@ -3,6 +3,8 @@ import 'create_profile_screen.dart';
 import 'password_screen.dart';
 import 'admin_screen.dart';
 import 'dart:math' as math;
+import '../widgets/preference_provider.dart';
+import 'home_tutor_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,10 +25,15 @@ class _LoginScreenState extends State<LoginScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double w = constraints.maxWidth;
+            final double h = constraints.maxHeight;
 
             // Solo desktop/tablet
             final bool isDesktop = w >= 1200;
             final bool isTablet  = w < 1200;
+
+            // Si la altura es muy pequeña (móvil o ventana muy baja), permitimos scroll.
+            // En tablets normales NO habrá scroll.
+            final bool needScroll = h < 650;
 
             // Mantener estética en pantallas grandes
             const double kMaxContentWidth = 1200.0;
@@ -34,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // Márgenes laterales del card azul
             final double hMargin = (w * 0.08).clamp(24, 250);
 
-            // Tipos y espaciados (más “pegado” arriba; más hueco con el card)
+            // Tipos y espaciados
             final double titleFont = (w * 0.08).clamp(60, 100);
             final double titleLetterSpacing = (w * 0.012).clamp(8, 20);
             final double sectionTitle = (w * 0.025).clamp(18, 24);
@@ -56,15 +63,21 @@ class _LoginScreenState extends State<LoginScreen> {
             // Icono más grande y proporcional a la celda
             final double iconSize = (cellWidth * 0.65).clamp(72, 150);
 
-            return Center(
+            // ==== CONTENIDO PRINCIPAL SIN SCROLL POR DEFECTO ====
+            Widget content = Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: kMaxContentWidth),
-                child: SingleChildScrollView(
-                  // Más cerca del borde superior
-                  padding: const EdgeInsets.only(top: 6, left: 24, right: 24, bottom: 20),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 6,
+                    left: 24,
+                    right: 24,
+                    bottom: 20,
+                  ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // ====== TÍTULO POPI (subido y sin separarse demasiado) ======
+                      // ====== TÍTULO POPI ======
                       Container(
                         padding: EdgeInsets.symmetric(
                           vertical: 8,
@@ -89,7 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      // Más separación respecto al rectángulo azul
                       const SizedBox(height: 28),
 
                       // ====== CARD AZUL ======
@@ -137,34 +149,38 @@ class _LoginScreenState extends State<LoginScreen> {
                               itemCount: 8,
                               itemBuilder: (context, index) {
                                 return MouseRegion(
-                                  onEnter: (_) => setState(() => _hoveredIndex = index),
-                                  onExit: (_) => setState(() => _hoveredIndex = null),
+                                  onEnter: (_) =>
+                                      setState(() => _hoveredIndex = index),
+                                  onExit: (_) =>
+                                      setState(() => _hoveredIndex = null),
                                   child: InkWell(
                                     onTap: () async {
                                       setState(() => _selectedIndex = index);
 
-                                      // Navegamos a la pantalla de contraseña y esperamos hasta que se cierre
                                       await Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (_) => PasswordScreen()),
+                                        MaterialPageRoute(
+                                          builder: (_) => PasswordScreen(),
+                                        ),
                                       );
 
-                                      // Cuando volvemos atrás, reseteamos la selección
                                       if (mounted) {
                                         setState(() => _selectedIndex = null);
                                       }
                                     },
-
                                     borderRadius: BorderRadius.circular(999),
                                     hoverColor: Colors.transparent,
                                     highlightColor: Colors.transparent,
                                     splashColor: Colors.transparent,
                                     splashFactory: NoSplash.splashFactory,
-
                                     child: Center(
                                       child: AnimatedOpacity(
-                                        duration: const Duration(milliseconds: 150),
-                                        opacity: (_hoveredIndex == index || _selectedIndex == index) ? 0.6 : 1.0,
+                                        duration:
+                                        const Duration(milliseconds: 150),
+                                        opacity: (_hoveredIndex == index ||
+                                            _selectedIndex == index)
+                                            ? 0.6
+                                            : 1.0,
                                         child: Icon(
                                           Icons.account_circle,
                                           size: iconSize * 1.5,
@@ -175,9 +191,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 );
                               },
-
-
-
                             ),
                           ],
                         ),
@@ -195,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const CreateProfileScreen()),
+                                  MaterialPageRoute(builder: (_) => const TutorHomeScreen()),
                                 );
                               },
                               child: Text(
@@ -212,7 +225,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const AdminScreen()),
+                                  MaterialPageRoute(
+                                    builder: (_) => const AdminScreen(),
+                                  ),
                                 );
                               },
                               child: Text(
@@ -233,6 +248,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             );
+
+            // Si la pantalla es muy bajita -> scroll. En tablets normales -> sin scroll.
+            if (needScroll) {
+              return SingleChildScrollView(
+                child: content,
+              );
+            } else {
+              return content;
+            }
           },
         ),
       ),

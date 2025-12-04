@@ -229,6 +229,7 @@ class UserService {
         return null;
       }
     });
+<<<<<<< HEAD
   }
 
   /// Obtiene todos los usuarios de la colección
@@ -249,5 +250,7 @@ class UserService {
       print('❌ Error genérico en getAllUsers: $e');
       rethrow;
     }
+=======
+>>>>>>> origin/main
   }
 }

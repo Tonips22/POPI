@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../logic/game_controller.dart';
-import '../logic/voice_controller.dart';
 import '../widget/number_grid.dart';
-import '../widgets/voice_text.dart';
+import '../widgets/preference_provider.dart';
+import '../widgets/check_icon_overlay.dart';
 
 class NumberScreen extends StatefulWidget {
   const NumberScreen({super.key});
@@ -14,8 +15,9 @@ class NumberScreen extends StatefulWidget {
 
 class _NumberScreenState extends State<NumberScreen> {
   final GameController _controller = GameController();
-  final VoiceController _voiceController = VoiceController();
-  String _message = '';
+  final FlutterTts _flutterTts = FlutterTts();
+  bool _showCheckIcon = false;
+  bool _showErrorIcon = false;
 
   @override
   void initState() {
@@ -27,53 +29,63 @@ class _NumberScreenState extends State<NumberScreen> {
   void _handleAnswer(bool isCorrect) {
     if (isCorrect) {
       setState(() {
-        _message = '✅ ¡Correcto!';
+        _showCheckIcon = true;
       });
 
       Future.delayed(const Duration(milliseconds: 800), () {
         setState(() {
           _controller.nextRound();
-          _message = '';
+          _showCheckIcon = false;
         });
         _speakInstruction();
       });
     } else {
       setState(() {
-        _message = '❌ Incorrecto';
+        _showErrorIcon = true;
+      });
+
+      Future.delayed(const Duration(milliseconds: 800), () {
+        setState(() {
+          _showErrorIcon = false;
+        });
       });
     }
   }
 
-  Future<void> _speakTarget() async {
-    await _voiceController.speak('${_controller.targetNumber}');
+  void _speakTarget() async {
+    await _flutterTts.setLanguage("es-ES");
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.speak("${_controller.targetNumber}");
   }
 
-  Future<void> _speakInstruction() async {
-    await _voiceController.speak(
-      'Toca el número ${_controller.targetNumber}',
-    );
+  void _speakInstruction() async {
+    await _flutterTts.setLanguage("es-ES");
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.speak("Toca el número ${_controller.targetNumber}");
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
+      backgroundColor: Colors.grey[50],
+
       appBar: AppBar(
+        title: Text(
+          "Toca el número que suena",
+          style: TextStyle(
+            fontSize: prefs?.getFontSizeValue() ?? 18,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-
-        title: const VoiceText(
-          "Toca el número que suena",
-          style: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        centerTitle: true,
 
         actions: [
           IconButton(
@@ -81,9 +93,7 @@ class _NumberScreenState extends State<NumberScreen> {
             onPressed: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
               setState(() {
                 _controller.initGame();
@@ -94,53 +104,66 @@ class _NumberScreenState extends State<NumberScreen> {
         ],
       ),
 
-      body: Column(
+      body: Stack(
         children: [
-          const SizedBox(height: 30),
-
-          // Botón de altavoz para repetir el número
           Center(
-            child: IconButton(
-              iconSize: screenWidth * 0.05,
-              color: Colors.black,
-              onPressed: _speakTarget,
-              icon: Container(
-                padding: EdgeInsets.all(screenWidth * 0.02),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Botón de volumen
+                    IconButton(
+                      iconSize: 64,
+                      color: Colors.blue.shade400,
+                      onPressed: _speakTarget,
+                      icon: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.volume_up, size: 48),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Grid de números
+                    Expanded(
+                      child: NumberGrid(
+                        controller: _controller,
+                        onAnswer: _handleAnswer,
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Mensaje de feedback (oculto pero mantiene espacio)
+                    const SizedBox(height: 40),
+                  ],
                 ),
-                child: const Icon(Icons.volume_up),
               ),
             ),
           ),
 
-          const SizedBox(height: 30),
+          if (_showCheckIcon)
+            CheckIconOverlay(color: Colors.blue.shade400),
 
-          Expanded(
-            flex: 7,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: NumberGrid(
-                controller: _controller,
-                onAnswer: _handleAnswer,
-              ),
+          if (_showErrorIcon)
+            CheckIconOverlay(
+              color: Colors.red,
+              icon: Icons.cancel,
             ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: VoiceText(
-              _message,
-              style: TextStyle(
-                fontSize: screenWidth * 0.045,
-                fontWeight: FontWeight.bold,
-                color: _message.contains('Correcto')
-                    ? Colors.green
-                    : Colors.red,
-              ),
-            ),
-          ),
         ],
       ),
     );

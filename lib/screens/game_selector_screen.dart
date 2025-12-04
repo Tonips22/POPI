@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
 import 'number_screen.dart';
 import 'sort_numbers_game.dart';
+import 'equal_share_screen.dart';
+import 'equal_subtraction_screen.dart';
+import '../utils/accessible_routes.dart';
+import '../widgets/preference_provider.dart';
+
 
 class ChooseGameScreen extends StatelessWidget {
   const ChooseGameScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final prefs = PreferenceProvider.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Juegos',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 32,
+            fontSize: prefs?.getFontSizeValue() ?? 32.0,
+            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
           ),
         ),
         centerTitle: true,
@@ -47,9 +54,11 @@ class ChooseGameScreen extends StatelessWidget {
                     label: 'Toca el número',
                     color: Colors.blue,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const NumberScreen()),
+                      Navigator.of(context).push(
+                        buildAccessibleFadeRoute(
+                          context: context,
+                          page: const NumberScreen(),
+                        ),
                       );
                     },
                   ),
@@ -59,9 +68,11 @@ class ChooseGameScreen extends StatelessWidget {
                     label: 'Ordena los números',
                     color: Colors.green,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SortNumbersGame()),
+                      Navigator.of(context).push(
+                        buildAccessibleFadeRoute(
+                          context: context,
+                          page: const SortNumbersGame(),
+                        ),
                       );
                     },
                   ),
@@ -71,7 +82,12 @@ class ChooseGameScreen extends StatelessWidget {
                     label: 'Reparte los números',
                     color: Colors.orange,
                     onTap: () {
-                      // TODO: Implementar juego
+                      Navigator.of(context).push(
+                        buildAccessibleFadeRoute(
+                          context: context,
+                          page: const EqualShareScreen(),
+                        ),
+                      );
                     },
                   ),
                   _buildGameButton(
@@ -80,7 +96,12 @@ class ChooseGameScreen extends StatelessWidget {
                     label: 'Deja el mismo número',
                     color: Colors.purple,
                     onTap: () {
-                      // TODO: Implementar juego
+                      Navigator.of(context).push(
+                        buildAccessibleFadeRoute(
+                          context: context,
+                          page: const EqualSubtractionScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],
@@ -99,6 +120,7 @@ class ChooseGameScreen extends StatelessWidget {
         required Color color,
         VoidCallback? onTap,
       }) {
+    final prefs = PreferenceProvider.of(context);
     final size = MediaQuery.of(context).size;
     final buttonPadding = size.width * 0.015;
     final iconSize = size.width * 0.055;
@@ -138,7 +160,8 @@ class ChooseGameScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: fontSize,
+                  fontSize: prefs?.getFontSizeValue() ?? 32.0,
+                  fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
                   color: Colors.white,
                 ),
               ),

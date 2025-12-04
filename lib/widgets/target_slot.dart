@@ -46,7 +46,7 @@ class TargetSlot extends StatelessWidget {
                 height: slotSize,
                 decoration: BoxDecoration(
                   color: highlight ? Colors.blue.shade50 : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
+                  shape: BoxShape.circle,
                   border: Border.all(
                     color: Colors.grey.shade400,
                     width: 2,
@@ -67,7 +67,7 @@ class TargetSlot extends StatelessWidget {
                   height: slotSize,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
+                    shape: BoxShape.circle,
                     border: Border.all(color: Colors.grey.shade400, width: 2),
                   ),
                 ),
@@ -86,7 +86,7 @@ class TargetSlot extends StatelessWidget {
           height: slotSize,
           decoration: BoxDecoration(
             color: highlight ? Colors.blue.shade50 : Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(12),
+            shape: BoxShape.circle,
             border: Border.all(
               color: Colors.grey.shade400,
               width: 2,

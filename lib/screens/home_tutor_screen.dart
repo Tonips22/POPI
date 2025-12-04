@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'tutor_edit_profile_screen.dart';
 import 'tutor_edit_game_profile_screen.dart';
 import 'create_profile_screen.dart';
+import 'upload_resources_screen.dart';   // 👈 import para la pantalla de recursos
 
 class TutorHomeScreen extends StatelessWidget {
   const TutorHomeScreen({super.key});
@@ -36,22 +37,58 @@ class TutorHomeScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            margin: const EdgeInsets.only(left: 12, top: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF8DBDFF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              "Listado de estudiantes",
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
+          // ======= Píldora "Listado de estudiantes" + botón "Subir recursos" =======
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 12, right: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8DBDFF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    "Listado de estudiantes",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[300],
+                    foregroundColor: Colors.black,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UploadResourcesScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Subir recursos',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
           ),
+
           const SizedBox(height: 20),
+
+          // ================= CABECERA DE TABLA =================
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12),
             margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -84,6 +121,7 @@ class TutorHomeScreen extends StatelessWidget {
               ],
             ),
           ),
+
           const SizedBox(height: 10),
 
           // ================= LISTA DE ESTUDIANTES =================
@@ -144,7 +182,8 @@ class TutorHomeScreen extends StatelessWidget {
                                   ),
                                 );
                               },
-                              child: _buildGreyButton("Configurar perfil de juegos"),
+                              child: _buildGreyButton(
+                                  "Configurar perfil de juegos"),
                             ),
                           ],
                         ),
@@ -163,7 +202,8 @@ class TutorHomeScreen extends StatelessWidget {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.lightBlue,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -171,7 +211,8 @@ class TutorHomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CreateProfileScreen()),
+                    MaterialPageRoute(
+                        builder: (_) => const CreateProfileScreen()),
                   );
                 },
                 child: const Text(

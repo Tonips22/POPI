@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'tutor_edit_profile_screen_2.dart';
+import 'allow_personalization.dart';
 
 class TutorEditProfileScreen extends StatefulWidget {
   final String studentName;
@@ -12,7 +13,8 @@ class TutorEditProfileScreen extends StatefulWidget {
   });
 
   @override
-  State<TutorEditProfileScreen> createState() => _TutorEditProfileScreenState();
+  State<TutorEditProfileScreen> createState() =>
+      _TutorEditProfileScreenState();
 }
 
 class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
@@ -24,7 +26,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
         (i) => "assets/images/avatar${(i % 4) + 1}.png",
   );
 
-  static const double avatarSize = 40; // Reducido de 60 a 40
+  static const double avatarSize = 40;
 
   @override
   void initState() {
@@ -42,7 +44,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
           "TUTOR",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 20, // Reducido de 26 a 20
+            fontSize: 20,
             color: Colors.black,
           ),
         ),
@@ -53,63 +55,64 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
         ),
         actions: const [
           Padding(
-            padding: EdgeInsets.only(right: 8), // Reducido
+            padding: EdgeInsets.only(right: 8),
             child: Icon(Icons.more_vert, color: Colors.black),
           )
         ],
       ),
-
       body: Padding(
-        padding: const EdgeInsets.all(12), // Reducido de 20
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // ---- Cabecera del alumno ----
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Reducido
+              padding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: const Color(0xFFAAD2FF),
-                borderRadius: BorderRadius.circular(10), // Reducido
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     backgroundImage: AssetImage(widget.avatarPath),
-                    radius: 16, // Reducido de 20
+                    radius: 16,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     widget.studentName.toUpperCase(),
                     style: const TextStyle(
-                      fontSize: 16, // Reducido de 18
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Spacer(),
                   Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Reducido
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10), // Reducido
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Text(
                       "Configurar perfil",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12), // Reducido
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 12), // Reducido
+            const SizedBox(height: 12),
 
             // ---- Tarjeta de edición ----
             Container(
-              padding: const EdgeInsets.all(12), // Reducido
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: const Color(0xFF5CA7FF),
-                borderRadius: BorderRadius.circular(12), // Reducido
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,18 +121,17 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                     "Nombre y avatar",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16, // Reducido
+                      fontSize: 16,
                     ),
                   ),
-
                   const Divider(color: Colors.black, thickness: 1),
-
-                  const SizedBox(height: 8), // Reducido
+                  const SizedBox(height: 8),
 
                   // Campo nombre
                   const Text(
                     "Nombre del alumno",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14), // Reducido
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const SizedBox(height: 4),
                   TextField(
@@ -137,25 +139,27 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Reducido
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 6),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6), // Reducido
+                        borderRadius: BorderRadius.circular(6),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 12), // Reducido
+                  const SizedBox(height: 12),
 
                   // Avatares
                   const Text(
                     "Avatar del alumno:",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14), // Reducido
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
                   ),
-                  const SizedBox(height: 6), // Reducido
+                  const SizedBox(height: 6),
 
                   Wrap(
-                    spacing: 6, // Reducido
-                    runSpacing: 6, // Reducido
+                    spacing: 6,
+                    runSpacing: 6,
                     children: List.generate(_avatars.length, (i) {
                       final bool selected = _selectedAvatarIndex == i;
                       return GestureDetector(
@@ -169,10 +173,10 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                           height: avatarSize,
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(6), // Reducido
+                            borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                               color: selected ? Colors.black : Colors.grey,
-                              width: selected ? 2 : 1, // Reducido
+                              width: selected ? 2 : 1,
                             ),
                             image: DecorationImage(
                               image: AssetImage(_avatars[i]),
@@ -184,22 +188,24 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                     }),
                   ),
 
-                  const SizedBox(height: 12), // Reducido
+                  const SizedBox(height: 12),
 
                   // Avatar seleccionado
                   Row(
                     children: [
                       const Text(
                         "Imagen seleccionada:",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14), // Reducido
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const SizedBox(width: 8),
                       Container(
                         width: avatarSize,
                         height: avatarSize,
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black, width: 2),
-                          borderRadius: BorderRadius.circular(6), // Reducido
+                          border:
+                          Border.all(color: Colors.black, width: 2),
+                          borderRadius: BorderRadius.circular(6),
                           image: _selectedAvatarIndex != null
                               ? DecorationImage(
                             image: AssetImage(
@@ -211,32 +217,64 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.delete, size: 24), // Reducido
+                        icon: const Icon(Icons.delete, size: 24),
                         onPressed: () {
                           setState(() {
                             _selectedAvatarIndex = null;
                           });
                         },
-                      )
+                      ),
                     ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 👉 Nuevo botón "Visualización del estudiante"
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                            const AllowPersonalizationScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Visualización del estudiante",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 15), // Reducido
+            const SizedBox(height: 15),
 
             // ---- Botones inferior ----
-// ... resto del código idéntico ...
-
-// Dentro de Row de botones inferiores:
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // Cancelar
+                // Cancelar (sin lógica aún)
                 Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 30, vertical: 14),
                   decoration: BoxDecoration(
                     color: Colors.redAccent,
                     borderRadius: BorderRadius.circular(12),
@@ -249,9 +287,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 20),
-
                 // Continuar
                 GestureDetector(
                   onTap: () {
@@ -266,8 +302,8 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                     );
                   },
                   child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 14),
                     decoration: BoxDecoration(
                       color: Colors.greenAccent,
                       borderRadius: BorderRadius.circular(12),
@@ -283,7 +319,6 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                 ),
               ],
             ),
-
           ],
         ),
       ),
