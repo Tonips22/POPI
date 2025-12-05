@@ -24,9 +24,9 @@ class SettingsScreen extends StatelessWidget {
         ),
         title: VoiceText(
           'Ajustes',
-          style: TextStyle(
-            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          style: const TextStyle(
+            fontSize: 18.0 * 1.5,
+            fontFamily: 'Roboto',
           ),
         ),
         centerTitle: true,
@@ -45,8 +45,8 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.tune,
                 title: 'Dificultad',
                 backgroundColor: Colors.blue,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: 18.0,
+                fontFamily: 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -63,8 +63,8 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.palette,
                 title: 'Personalización',
                 backgroundColor: Colors.purple,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: 18.0,
+                fontFamily: 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,

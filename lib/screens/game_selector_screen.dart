@@ -3,28 +3,40 @@ import 'number_screen.dart';
 import 'sort_numbers_game.dart';
 import 'equal_share_screen.dart';
 import 'equal_subtraction_screen.dart';
+import 'customization_screen.dart';
 import '../utils/accessible_routes.dart';
-import '../widgets/preference_provider.dart';
+import '../services/app_service.dart';
+// import '../widgets/preference_provider.dart';
 
 
-class ChooseGameScreen extends StatelessWidget {
+class ChooseGameScreen extends StatefulWidget {
   const ChooseGameScreen({super.key});
 
   @override
+  State<ChooseGameScreen> createState() => _ChooseGameScreenState();
+}
+
+class _ChooseGameScreenState extends State<ChooseGameScreen> {
+  @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.white;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
     
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
           'Juegos',
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: prefs?.getFontSizeValue() ?? 32.0,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontSize: 32.0,
+            fontFamily: 'Roboto',
           ),
         ),
         centerTitle: true,
@@ -32,6 +44,61 @@ class ChooseGameScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          if (currentUser != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CustomizationScreen(),
+                    ),
+                  );
+                  // Actualizar la pantalla cuando se regrese de personalización
+                  setState(() {});
+                },
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/avatar${(currentUser.avatarIndex % 6) + 0}.png',
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 40,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF2596BE),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.account_circle,
+                            size: 40,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -50,7 +117,7 @@ class ChooseGameScreen extends StatelessWidget {
                 children: [
                   _buildGameButton(
                     context,
-                    icon: Icons.touch_app,
+                    imagePath: 'images/games/touch_game.png',
                     label: 'Toca el número',
                     color: Colors.blue,
                     onTap: () {
@@ -64,7 +131,7 @@ class ChooseGameScreen extends StatelessWidget {
                   ),
                   _buildGameButton(
                     context,
-                    icon: Icons.sort,
+                    imagePath: 'images/games/sort_name.png',
                     label: 'Ordena los números',
                     color: Colors.green,
                     onTap: () {
@@ -78,7 +145,7 @@ class ChooseGameScreen extends StatelessWidget {
                   ),
                   _buildGameButton(
                     context,
-                    icon: Icons.share,
+                    imagePath: 'images/games/sum_game.png',
                     label: 'Reparte los números',
                     color: Colors.orange,
                     onTap: () {
@@ -92,7 +159,7 @@ class ChooseGameScreen extends StatelessWidget {
                   ),
                   _buildGameButton(
                     context,
-                    icon: Icons.balance,
+                    imagePath: 'images/games/rest_game.png',
                     label: 'Deja el mismo número',
                     color: Colors.purple,
                     onTap: () {
@@ -115,17 +182,15 @@ class ChooseGameScreen extends StatelessWidget {
 
   Widget _buildGameButton(
       BuildContext context, {
-        required IconData icon,
+        required String imagePath,
         required String label,
         required Color color,
         VoidCallback? onTap,
       }) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
     final size = MediaQuery.of(context).size;
-    final buttonPadding = size.width * 0.015;
-    final iconSize = size.width * 0.055;
-    final iconPadding = size.width * 0.02;
-    final fontSize = size.width * 0.022;
+    final buttonPadding = size.width * 0.01;
+    final imageSize = size.width * 0.12;
     
     return Material(
       color: color,
@@ -137,32 +202,47 @@ class ChooseGameScreen extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.all(buttonPadding),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Botón circular con icono blanco
-              Material(
-                color: Colors.white,
-                shape: const CircleBorder(),
-                elevation: 6,
-                child: Padding(
-                  padding: EdgeInsets.all(iconPadding),
-                  child: Icon(
-                    icon,
-                    size: iconSize,
-                    color: color,
-                  ),
+              // Imagen del juego redondeada sin fondo blanco
+              ClipOval(
+                child: Image.asset(
+                  imagePath,
+                  width: imageSize,
+                  height: imageSize,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: imageSize,
+                      height: imageSize,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.gamepad,
+                        size: imageSize * 0.6,
+                        color: color,
+                      ),
+                    );
+                  },
                 ),
               ),
-              SizedBox(height: size.height * 0.01),
+              SizedBox(height: size.height * 0.008),
               // Texto del juego
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: prefs?.getFontSizeValue() ?? 32.0,
-                  fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
-                  color: Colors.white,
+              Flexible(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: size.width * 0.02,
+                    fontFamily: 'Roboto',
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

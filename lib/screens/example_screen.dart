@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 
 class ExampleScreen extends StatelessWidget {
   const ExampleScreen({Key? key}) : super(key: key);
@@ -7,7 +7,7 @@ class ExampleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Obtenemos las preferencias del usuario
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -17,9 +17,9 @@ class ExampleScreen extends StatelessWidget {
         ),
         title: Text(
           'Vista Previa de Preferencias',
-          style: TextStyle(
-            fontSize: prefs?.getFontSizeValue() ?? 18.0,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          style: const TextStyle(
+            fontSize: 18.0,
+            fontFamily: 'Roboto',
           ),
         ),
       ),
@@ -46,17 +46,17 @@ class ExampleScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildInfoRow(
                       'Fuente',
-                      prefs?.fontFamily ?? 'default',
+                      'default',
                     ),
                     const SizedBox(height: 8),
                     _buildInfoRow(
                       'Tamaño',
-                      prefs?.fontSize ?? 'medium',
+                      'medium',
                     ),
                     const SizedBox(height: 8),
                     _buildInfoRow(
                       'Tamaño en px',
-                      '${prefs?.getFontSizeValue() ?? 18.0}',
+                      '18.0',
                     ),
                   ],
                 ),
@@ -82,9 +82,9 @@ class ExampleScreen extends StatelessWidget {
               ),
               child: Text(
                 'Este texto usa las preferencias del usuario. Puedes modificar el tamaño y tipo de fuente desde la configuración de Tipografía.',
-                style: TextStyle(
-                  fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                  fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  fontFamily: 'Roboto',
                   height: 1.5,
                 ),
               ),
@@ -95,26 +95,26 @@ class ExampleScreen extends StatelessWidget {
             // Más ejemplos con diferentes tamaños
             Text(
               'Título Grande',
-              style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+              style: const TextStyle(
+                fontSize: 18.0 * 1.5,
+                fontFamily: 'Roboto',
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               'Texto mediano con la fuente seleccionada',
-              style: TextStyle(
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+              style: const TextStyle(
+                fontSize: 18.0,
+                fontFamily: 'Roboto',
               ),
             ),
             const SizedBox(height: 16),
             Text(
               'Texto pequeño',
               style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 0.8,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: 18.0 * 0.8,
+                fontFamily: 'Roboto',
                 color: Colors.grey[600],
               ),
             ),

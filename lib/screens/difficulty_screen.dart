@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../logic/game_controller.dart';
-import '../widgets/preference_provider.dart';
+import '../services/app_service.dart';
+// import '../widgets/preference_provider.dart';
 
 class DifficultyScreen extends StatefulWidget {
   const DifficultyScreen({super.key});
@@ -37,7 +38,11 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
     
     // Calculamos el máximo permitido del slider según el rango seleccionado
     double maxValue = 12;
@@ -46,7 +51,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
       
       // === BARRA SUPERIOR ===
       appBar: AppBar(
@@ -57,9 +62,9 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
         title: Text(
           'Dificultad',
           style: TextStyle(
-            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
+            fontSize: 18.0 * 1.5,
             fontWeight: FontWeight.bold,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontFamily: 'Roboto',
           ),
         ),
         backgroundColor: Colors.white,
@@ -77,17 +82,17 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             Text(
               'Toca el número que suena',
               style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.2,
+                fontSize: 18.0 * 1.2,
                 fontWeight: FontWeight.w600,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontFamily: 'Roboto',
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Selecciona la cantidad de números',
               style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0),
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: 18.0,
+                fontFamily: 'Roboto',
                 color: Colors.grey[700],
               ),
             ),
@@ -142,7 +147,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                            fontFamily: 'Roboto',
                           ),
                         ),
                       ),
@@ -158,9 +163,9 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             Text(
               'Rango de números',
               style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.1,
+                fontSize: 18.0 * 1.1,
                 fontWeight: FontWeight.bold,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontFamily: 'Roboto',
               ),
             ),
             const SizedBox(height: 20),
@@ -206,7 +211,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                         style: TextStyle(
                           fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                           fontSize: 18,
-                          fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                          fontFamily: 'Roboto',
                         ),
                       ),
                     ),

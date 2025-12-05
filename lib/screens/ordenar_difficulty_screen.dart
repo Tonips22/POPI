@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../logic/game_controller_ordenar.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 
 class OrdenarDifficultyScreen extends StatefulWidget {
   const OrdenarDifficultyScreen({super.key});
@@ -37,7 +37,7 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
 
     double maxValue = (_ranges[_selectedRangeIndex]['max'] == 10) ? 10 : 12;
 
@@ -52,10 +52,10 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
         ),
         title: Text(
           'Dificultad',
-          style: TextStyle(
-            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
+          style: const TextStyle(
+            fontSize: 18.0 * 1.5,
             fontWeight: FontWeight.bold,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontFamily: 'Roboto',
           ),
         ),
         backgroundColor: Colors.white,
@@ -72,18 +72,18 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
             // Subtítulo
             Text(
               'Ordena la secuencia',
-              style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.2,
+              style: const TextStyle(
+                fontSize: 18.0 * 1.2,
                 fontWeight: FontWeight.w600,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontFamily: 'Roboto',
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Selecciona la cantidad de números',
               style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0),
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: 18.0,
+                fontFamily: 'Roboto',
                 color: Colors.grey[700],
               ),
             ),
@@ -138,7 +138,7 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                            fontFamily: 'Roboto',
                           ),
                         ),
                       ),
@@ -154,9 +154,9 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
             Text(
               'Rango de números',
               style: TextStyle(
-                fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.1,
+                fontSize: 18.0 * 1.1,
                 fontWeight: FontWeight.bold,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontFamily: 'Roboto',
               ),
             ),
             const SizedBox(height: 20),
@@ -203,7 +203,7 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
                         style: TextStyle(
                           fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                           fontSize: 18,
-                          fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                          fontFamily: 'Roboto',
                         ),
                       ),
                     ),

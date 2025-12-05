@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:popi/screens/ordenar_difficulty_screen.dart';
 import 'difficulty_screen.dart';
 import 'customization_screen.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
 
 class SettingsScreenOrdenar extends StatelessWidget {
   const SettingsScreenOrdenar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -23,9 +23,9 @@ class SettingsScreenOrdenar extends StatelessWidget {
         ),
         title: Text(
           'Ajustes',
-          style: TextStyle(
-            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+          style: const TextStyle(
+            fontSize: 18.0 * 1.5,
+            fontFamily: 'Roboto',
           ),
         ),
         centerTitle: true,
@@ -45,8 +45,8 @@ class SettingsScreenOrdenar extends StatelessWidget {
                 icon: Icons.tune,
                 title: 'Dificultad',
                 backgroundColor: Colors.blue,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: 18.0,
+                fontFamily: 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -64,8 +64,8 @@ class SettingsScreenOrdenar extends StatelessWidget {
                 icon: Icons.palette,
                 title: 'Personalización',
                 backgroundColor: Colors.purple,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: 18.0,
+                fontFamily: 'Roboto',
                 onTap: () {
                   Navigator.push(
                     context,

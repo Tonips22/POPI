@@ -15,6 +15,7 @@ class TargetSlot extends StatelessWidget {
   final int? value;
   final void Function(DragItem) onAccept;
   final VoidCallback onRemove;
+  final Color color;
 
   const TargetSlot({
     super.key,
@@ -22,6 +23,7 @@ class TargetSlot extends StatelessWidget {
     required this.value,
     required this.onAccept,
     required this.onRemove,
+    this.color = const Color(0xFF42A5F5), // Colors.blue.shade400 default
   });
 
   @override
@@ -45,7 +47,7 @@ class TargetSlot extends StatelessWidget {
                 width: slotSize,
                 height: slotSize,
                 decoration: BoxDecoration(
-                  color: highlight ? Colors.blue.shade50 : Colors.grey.shade200,
+                  color: highlight ? color.withOpacity(0.1) : Colors.grey.shade200,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: Colors.grey.shade400,
@@ -60,7 +62,7 @@ class TargetSlot extends StatelessWidget {
                 feedback: Material(
                   color: Colors.transparent,
                   elevation: 8,
-                  child: NumberTile(value: value!, draggableData: dragItem),
+                  child: NumberTile(value: value!, draggableData: dragItem, color: color),
                 ),
                 childWhenDragging: Container(
                   width: slotSize,
@@ -73,7 +75,7 @@ class TargetSlot extends StatelessWidget {
                 ),
                 child: GestureDetector(
                   onTap: onRemove, // tocar la ficha la devuelve al pool
-                  child: NumberTile(value: value!, draggableData: dragItem),
+                  child: NumberTile(value: value!, draggableData: dragItem, color: color),
                 ),
               ),
             ],
@@ -85,7 +87,7 @@ class TargetSlot extends StatelessWidget {
           width: slotSize,
           height: slotSize,
           decoration: BoxDecoration(
-            color: highlight ? Colors.blue.shade50 : Colors.grey.shade200,
+            color: highlight ? color.withOpacity(0.1) : Colors.grey.shade200,
             shape: BoxShape.circle,
             border: Border.all(
               color: Colors.grey.shade400,
