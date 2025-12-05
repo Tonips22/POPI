@@ -5,6 +5,8 @@ import 'admin_screen.dart';
 import 'dart:math' as math;
 import '../widgets/preference_provider.dart';
 import 'home_tutor_screen.dart';
+import '../services/user_service.dart';
+import '../models/user_profile.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +18,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   int? _selectedIndex;
   int? _hoveredIndex;
+  
+  // Future para cargar usuarios
+  late Future<List<UserProfile>> _usersFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _usersFuture = UserService().getAllUsers();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,59 +147,149 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
 
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: gridCols,
-                                crossAxisSpacing: gridSpacing,
-                                mainAxisSpacing: gridSpacing,
-                                childAspectRatio: 1,
-                              ),
-                              itemCount: 8,
-                              itemBuilder: (context, index) {
-                                return MouseRegion(
-                                  onEnter: (_) =>
-                                      setState(() => _hoveredIndex = index),
-                                  onExit: (_) =>
-                                      setState(() => _hoveredIndex = null),
-                                  child: InkWell(
-                                    onTap: () async {
-                                      setState(() => _selectedIndex = index);
+                            FutureBuilder<List<UserProfile>>(
+                              future: _usersFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(20.0),
+                                    child: CircularProgressIndicator(color: Colors.white),
+                                  );
+                                }
+                                
+                                if (snapshot.hasError) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(20.0),
+                                    child: Text('Error al cargar usuarios: ${snapshot.error}'),
+                                  );
+                                }
 
-                                      await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => PasswordScreen(),
-                                        ),
-                                      );
+                                final users = snapshot.data ?? [];
+                                
+                                if (users.isEmpty) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(20.0),
+                                    child: Text(
+                                      'No hay usuarios registrados',
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                  );
+                                }
 
-                                      if (mounted) {
-                                        setState(() => _selectedIndex = null);
-                                      }
-                                    },
-                                    borderRadius: BorderRadius.circular(999),
-                                    hoverColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    splashColor: Colors.transparent,
-                                    splashFactory: NoSplash.splashFactory,
-                                    child: Center(
-                                      child: AnimatedOpacity(
-                                        duration:
-                                        const Duration(milliseconds: 150),
-                                        opacity: (_hoveredIndex == index ||
-                                            _selectedIndex == index)
-                                            ? 0.6
-                                            : 1.0,
-                                        child: Icon(
-                                          Icons.account_circle,
-                                          size: iconSize * 1.5,
-                                          color: Colors.white,
+                                return GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: gridCols,
+                                    crossAxisSpacing: gridSpacing,
+                                    mainAxisSpacing: gridSpacing,
+                                    childAspectRatio: 0.85, // Ajustado para dar espacio al nombre
+                                  ),
+                                  itemCount: users.length,
+                                  itemBuilder: (context, index) {
+                                    final user = users[index];
+                                    
+                                    // Parsear los colores del usuario
+                                    Color primaryColor = const Color(0xFF4CAF50); // default
+                                    Color secondaryColor = const Color(0xFF2196F3); // default
+                                    
+                                    try {
+                                      primaryColor = Color(int.parse(user.primaryColor));
+                                    } catch (e) {
+                                      // Usar color por defecto si hay error
+                                    }
+                                    
+                                    try {
+                                      secondaryColor = Color(int.parse(user.secondaryColor));
+                                    } catch (e) {
+                                      // Usar color por defecto si hay error
+                                    }
+                                    
+                                    return MouseRegion(
+                                      onEnter: (_) =>
+                                          setState(() => _hoveredIndex = index),
+                                      onExit: (_) =>
+                                          setState(() => _hoveredIndex = null),
+                                      child: InkWell(
+                                        onTap: () async {
+                                          setState(() => _selectedIndex = index);
+
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => PasswordScreen(user: user),
+                                            ),
+                                          );
+
+                                          if (mounted) {
+                                            setState(() => _selectedIndex = null);
+                                          }
+                                        },
+                                        borderRadius: BorderRadius.circular(20),
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        splashColor: Colors.transparent,
+                                        splashFactory: NoSplash.splashFactory,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            AnimatedOpacity(
+                                              duration:
+                                              const Duration(milliseconds: 150),
+                                              opacity: (_hoveredIndex == index ||
+                                                  _selectedIndex == index)
+                                                  ? 0.6
+                                                  : 1.0,
+                                              child: Container(
+                                                width: iconSize,
+                                                height: iconSize,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: secondaryColor,
+                                                    width: 3,
+                                                  ),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                      color: Colors.black12,
+                                                      blurRadius: 4,
+                                                      offset: Offset(0, 2),
+                                                    )
+                                                  ],
+                                                ),
+                                                child: ClipOval(
+                                                  child: Image.asset(
+                                                    'assets/images/${user.avatarName}.png',
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (context, error, stackTrace) {
+                                                      return const Icon(
+                                                        Icons.account_circle,
+                                                        color: Colors.white,
+                                                        size: 50,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              user.name,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: primaryColor,
+                                                fontSize: linksFont,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                 );
                               },
                             ),
