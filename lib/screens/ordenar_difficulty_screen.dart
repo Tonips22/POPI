@@ -46,6 +46,8 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
     final primaryColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     double maxValue = (_ranges[_selectedRangeIndex]['max'] == 10) ? 10 : 12;
 
@@ -60,10 +62,10 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
         ),
         title: Text(
           'Dificultad',
-          style: const TextStyle(
-            fontSize: 18.0 * 1.5,
+          style: TextStyle(
+            fontSize: titleFontSize * 1.35,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Roboto',
+            fontFamily: titleFontFamily,
           ),
         ),
         backgroundColor: Colors.white,
@@ -80,18 +82,18 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
             // Subtítulo
             Text(
               'Ordena la secuencia',
-              style: const TextStyle(
-                fontSize: 18.0 * 1.2,
+              style: TextStyle(
+                fontSize: titleFontSize * 1.2,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
+                fontFamily: titleFontFamily,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Selecciona la cantidad de números',
               style: TextStyle(
-                fontSize: 18.0,
-                fontFamily: 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 color: Colors.grey[700],
               ),
             ),

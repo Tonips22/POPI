@@ -110,6 +110,10 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = _service.currentUser;
+    final titleFontSize = user?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = user?.preferences.getFontFamilyName() ?? 'Roboto';
+    
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.grey[100],
@@ -118,7 +122,7 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
             icon: const Icon(Icons.arrow_back, size: 32),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text('Color', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          title: Text('Color', style: TextStyle(fontSize: titleFontSize * 1.2, fontWeight: FontWeight.bold, fontFamily: titleFontFamily)),
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 0,
@@ -138,11 +142,12 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
           icon: const Icon(Icons.arrow_back, size: 32),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Color',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: titleFontSize * 1.2,
             fontWeight: FontWeight.bold,
+            fontFamily: titleFontFamily,
           ),
         ),
         backgroundColor: Colors.white,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../logic/voice_controller.dart';
 import '../widgets/voice_text.dart';
+import '../services/app_service.dart';
 
 class VoiceScreen extends StatefulWidget {
   const VoiceScreen({super.key});
@@ -88,6 +89,10 @@ class _VoiceScreenState extends State<VoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = AppService()?.currentUser;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -95,9 +100,10 @@ class _VoiceScreenState extends State<VoiceScreen> {
         elevation: 1,
         title: VoiceText(
           "Texto de voz",
-          style: const TextStyle(
-            fontSize: 26,
+          style: TextStyle(
+            fontSize: titleFontSize * 1.3,
             fontWeight: FontWeight.bold,
+            fontFamily: titleFontFamily,
             color: Colors.black,
           ),
         ),

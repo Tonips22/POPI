@@ -14,6 +14,8 @@ class SettingsScreen extends StatelessWidget {
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
     
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -27,9 +29,9 @@ class SettingsScreen extends StatelessWidget {
         ),
         title: Text(
           'Ajustes',
-          style: const TextStyle(
-            fontSize: 18.0 * 1.5,
-            fontFamily: 'Roboto',
+          style: TextStyle(
+            fontSize: titleFontSize * 1.35,
+            fontFamily: titleFontFamily,
           ),
         ),
         centerTitle: true,
@@ -49,8 +51,8 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.tune,
                 title: 'Dificultad',
                 backgroundColor: Colors.blue,
-                fontSize: 18.0,
-                fontFamily: 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -68,8 +70,8 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.palette,
                 title: 'Personalización',
                 backgroundColor: Colors.purple,
-                fontSize: 18.0,
-                fontFamily: 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   Navigator.push(
                     context,

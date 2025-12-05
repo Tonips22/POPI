@@ -24,6 +24,8 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.white;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
@@ -33,10 +35,10 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
       appBar: AppBar(
         title: Text(
           'Juegos',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 32.0,
-            fontFamily: 'Roboto',
+            fontSize: titleFontSize * 1.6,
+            fontFamily: titleFontFamily,
           ),
         ),
         centerTitle: true,
@@ -188,6 +190,8 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
         VoidCallback? onTap,
       }) {
     // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
     final size = MediaQuery.of(context).size;
     final buttonPadding = size.width * 0.01;
     final imageSize = size.width * 0.12;
@@ -240,7 +244,7 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: size.width * 0.02,
-                    fontFamily: 'Roboto',
+                    fontFamily: titleFontFamily,
                     color: Colors.white,
                   ),
                 ),

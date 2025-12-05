@@ -46,6 +46,8 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
     final primaryColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
     
     // Calculamos el máximo permitido del slider según el rango seleccionado
     double maxValue = 12;
@@ -65,9 +67,9 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
         title: Text(
           'Dificultad',
           style: TextStyle(
-            fontSize: 18.0 * 1.5,
+            fontSize: titleFontSize * 1.35,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Roboto',
+            fontFamily: titleFontFamily,
           ),
         ),
         backgroundColor: Colors.white,
@@ -85,17 +87,17 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             Text(
               'Toca el número que suena',
               style: TextStyle(
-                fontSize: 18.0 * 1.2,
+                fontSize: titleFontSize * 1.2,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
+                fontFamily: titleFontFamily,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Selecciona la cantidad de números',
               style: TextStyle(
-                fontSize: 18.0,
-                fontFamily: 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 color: Colors.grey[700],
               ),
             ),

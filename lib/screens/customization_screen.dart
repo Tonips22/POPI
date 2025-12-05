@@ -10,9 +10,14 @@ import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 import '../widgets/voice_text.dart';
 
-class CustomizationScreen extends StatelessWidget {
+class CustomizationScreen extends StatefulWidget {
   const CustomizationScreen({super.key});
 
+  @override
+  State<CustomizationScreen> createState() => _CustomizationScreenState();
+}
+
+class _CustomizationScreenState extends State<CustomizationScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
@@ -82,13 +87,15 @@ class CustomizationScreen extends StatelessWidget {
                 backgroundColor: Colors.purple,
                 fontSize: titleFontSize,
                 fontFamily: titleFontFamily,
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const FontSettingsScreen(),
                     ),
                   );
+                  // Actualizar la pantalla cuando se regrese
+                  setState(() {});
                 },
               ),
 
