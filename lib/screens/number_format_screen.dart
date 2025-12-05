@@ -34,7 +34,7 @@ class _NumberFormatScreenState extends State<NumberFormatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.grey[100],
       
       // === BARRA SUPERIOR ===
       appBar: AppBar(

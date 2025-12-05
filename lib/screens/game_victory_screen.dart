@@ -14,7 +14,7 @@ class GameVictoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: userColor,
+      backgroundColor: Colors.blue.shade400,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -89,28 +89,21 @@ class _VictoryButton extends StatelessWidget {
           color: Colors.white,
           shape: const CircleBorder(),
           elevation: 8,
-            child: Builder(
-              builder: (context) {
-                final userColor = AppService().currentUser != null
-                    ? Color(int.parse(AppService().currentUser!.preferences.primaryColor))
-                    : Colors.blue.shade400;
-                return InkWell(
-                  onTap: () {
-                    print('Button tapped: $label'); // Debug
-                    onPressed();
-                  },
-                  customBorder: const CircleBorder(),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Icon(
-                      icon,
-                      size: 60,
-                      color: userColor,
-                    ),
-                  ),
-                );
-              },
+          child: InkWell(
+            onTap: () {
+              print('Button tapped: $label'); // Debug
+              onPressed();
+            },
+            customBorder: const CircleBorder(),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Icon(
+                icon,
+                size: 60,
+                color: Colors.blue.shade400,
+              ),
             ),
+          ),
         ),
         
         const SizedBox(height: 16),

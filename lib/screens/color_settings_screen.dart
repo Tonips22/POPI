@@ -18,98 +18,16 @@ class ColorSettingsScreen extends StatefulWidget {
 }
 
 class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
-  final AppService _service = AppService();
-  
   // === COLORES SELECCIONADOS (estado de la pantalla) ===
-  Color? primaryColor;
-  Color? secondaryColor;
-  Color? backgroundColor;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserColors();
-  }
-
-  /// Carga los colores desde las preferencias del usuario
-  void _loadUserColors() {
-    final user = _service.currentUser;
-    if (user != null) {
-      setState(() {
-        primaryColor = _parseColor(user.preferences.primaryColor);
-        secondaryColor = _parseColor(user.preferences.secondaryColor);
-        backgroundColor = _parseColor(user.preferences.backgroundColor);
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        primaryColor = Colors.blue;
-        secondaryColor = Colors.green;
-        backgroundColor = Colors.white;
-        _isLoading = false;
-      });
-    }
-  }
-
-  /// Convierte un String hexadecimal a Color
-  Color _parseColor(String colorHex) {
-    try {
-      return Color(int.parse(colorHex));
-    } catch (e) {
-      return Colors.blue; // fallback
-    }
-  }
-
-  /// Convierte un Color a String hexadecimal
-  String _colorToHex(Color color) {
-    return '0x${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
-  }
-
-  /// Guarda los colores en Firebase y actualiza el usuario en memoria
-  Future<void> _saveColors() async {
-    final user = _service.currentUser;
-    if (user == null) return;
-
-    // Crear nuevas preferencias con los colores actualizados
-    final updatedPreferences = user.preferences.copyWith(
-      primaryColor: _colorToHex(primaryColor!),
-      secondaryColor: _colorToHex(secondaryColor!),
-      backgroundColor: _colorToHex(backgroundColor!),
-    );
-
-    // Actualizar en Firebase
-    bool success = await _service.updatePreferences(user.id, updatedPreferences);
-    
-    if (success) {
-      // Actualizar en memoria
-      _service.updateCurrentUserPreferences(updatedPreferences);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Colores guardados correctamente'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Error al guardar los colores'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
+  // Estos valores deberían cargarse y guardarse en Firebase más adelante
+  Color? primaryColor = Colors.blue;
+  Color? secondaryColor = Colors.green;
+  Color? backgroundColor = Colors.white;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: userBackgroundColor,
+      backgroundColor: Colors.grey[100],
 
       // === BARRA SUPERIOR ===
       appBar: AppBar(
@@ -145,7 +63,8 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
               setState(() {
                 primaryColor = color;
               });
-              _saveColors();
+              // TODO: Guardar en Firebase o en el modelo del estudiante
+              print('Color primario seleccionado: ${color.value}');
             },
           ),
 
@@ -161,7 +80,8 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
               setState(() {
                 secondaryColor = color;
               });
-              _saveColors();
+              // TODO: Guardar en Firebase o en el modelo del estudiante
+              print('Color secundario seleccionado: ${color.value}');
             },
           ),
 
@@ -177,7 +97,8 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
               setState(() {
                 backgroundColor = color;
               });
-              _saveColors();
+              // TODO: Guardar en Firebase o en el modelo del estudiante
+              print('Color de fondo seleccionado: ${color.value}');
             },
           ),
         ],

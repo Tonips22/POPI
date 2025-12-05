@@ -29,7 +29,9 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: Colors.grey[100],
+
+      // === BARRA SUPERIOR ===
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
@@ -46,6 +48,8 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
+
+      // === CONTENIDO DE LA PANTALLA ===
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -189,14 +193,14 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
                           trackHeight: 8, // Barra más gruesa
                         ),
                         child: Slider(
-                          value: _fontSizeToSlider(fontSizeValue),
+                          value: fontSizeValue,
                           min: 0.0,
                           max: 1.0,
                           // Dividimos en 4 pasos: muy pequeño, pequeño, medio, grande, muy grande
                           divisions: 4,
                           onChanged: (value) {
                             setState(() {
-                              fontSizeValue = _sliderToFontSize(value);
+                              fontSizeValue = value;
                             });
                           },
                           onChangeEnd: (value) {
