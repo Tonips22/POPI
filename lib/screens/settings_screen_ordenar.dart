@@ -3,6 +3,7 @@ import 'package:popi/screens/ordenar_difficulty_screen.dart';
 import 'difficulty_screen.dart';
 import 'customization_screen.dart';
 // import '../widgets/preference_provider.dart';
+import '../services/app_service.dart';
 
 class SettingsScreenOrdenar extends StatelessWidget {
   const SettingsScreenOrdenar({super.key});
@@ -10,9 +11,15 @@ class SettingsScreenOrdenar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
 
       appBar: AppBar(
         leading: IconButton(
@@ -23,9 +30,9 @@ class SettingsScreenOrdenar extends StatelessWidget {
         ),
         title: Text(
           'Ajustes',
-          style: const TextStyle(
-            fontSize: 18.0 * 1.5,
-            fontFamily: 'Roboto',
+          style: TextStyle(
+            fontSize: titleFontSize * 1.35,
+            fontFamily: titleFontFamily,
           ),
         ),
         centerTitle: true,
@@ -45,8 +52,8 @@ class SettingsScreenOrdenar extends StatelessWidget {
                 icon: Icons.tune,
                 title: 'Dificultad',
                 backgroundColor: Colors.blue,
-                fontSize: 18.0,
-                fontFamily: 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -64,8 +71,8 @@ class SettingsScreenOrdenar extends StatelessWidget {
                 icon: Icons.palette,
                 title: 'Personalización',
                 backgroundColor: Colors.purple,
-                fontSize: 18.0,
-                fontFamily: 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   Navigator.push(
                     context,

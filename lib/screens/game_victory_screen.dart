@@ -16,9 +16,12 @@ class GameVictoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
-    final userColor = AppService().currentUser != null
-        ? Color(int.parse(AppService().currentUser!.preferences.primaryColor))
+    final currentUser = AppService().currentUser;
+    final userColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue.shade400;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
     
     return Scaffold(
       backgroundColor: userColor,
@@ -29,10 +32,10 @@ class GameVictoryScreen extends StatelessWidget {
             // Mensaje de victoria
             Text(
               '¡Has ganado!',
-              style: const TextStyle(
-                fontSize: 18.0 * 2.5,
+              style: TextStyle(
+                fontSize: titleFontSize * 2.25,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
+                fontFamily: titleFontFamily,
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
@@ -127,12 +130,15 @@ class _VictoryButton extends StatelessWidget {
         Builder(
           builder: (context) {
             // final prefs = PreferenceProvider.of(context);
+            final currentUser = AppService().currentUser;
+            final labelFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+            final labelFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
             return Text(
               label,
               style: TextStyle(
-                fontSize: 18.0 * 1.1,
+                fontSize: labelFontSize * 1.1,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
+                fontFamily: labelFontFamily,
                 color: Colors.white,
               ),
             );
