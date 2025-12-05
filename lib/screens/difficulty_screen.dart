@@ -43,6 +43,9 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
+    final primaryColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.primaryColor))
+        : Colors.blue;
     
     // Calculamos el máximo permitido del slider según el rango seleccionado
     double maxValue = 12;
@@ -110,9 +113,9 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                   children: [
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: Colors.blue,
+                        activeTrackColor: primaryColor,
                         inactiveTrackColor: Colors.grey[300],
-                        thumbColor: Colors.blue,
+                        thumbColor: primaryColor,
                         thumbShape: const RoundSliderThumbShape(
                           enabledThumbRadius: 16,
                         ),
@@ -201,7 +204,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: selected ? Colors.blue : Colors.grey.shade300,
+                        color: selected ? primaryColor : Colors.grey.shade300,
                         width: selected ? 3 : 1.5,
                       ),
                     ),

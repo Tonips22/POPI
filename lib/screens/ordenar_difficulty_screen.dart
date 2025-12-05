@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../logic/game_controller_ordenar.dart';
+import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 
 class OrdenarDifficultyScreen extends StatefulWidget {
@@ -38,11 +39,18 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
+    final primaryColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.primaryColor))
+        : Colors.blue;
 
     double maxValue = (_ranges[_selectedRangeIndex]['max'] == 10) ? 10 : 12;
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
       
       // === BARRA SUPERIOR ===
       appBar: AppBar(
@@ -101,9 +109,9 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
                   children: [
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: Colors.blue,
+                        activeTrackColor: primaryColor,
                         inactiveTrackColor: Colors.grey[300],
-                        thumbColor: Colors.blue,
+                        thumbColor: primaryColor,
                         thumbShape: const RoundSliderThumbShape(
                           enabledThumbRadius: 16,
                         ),
@@ -193,7 +201,7 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: selected ? Colors.blue : Colors.grey.shade300,
+                        color: selected ? primaryColor : Colors.grey.shade300,
                         width: selected ? 3 : 1.5,
                       ),
                     ),
