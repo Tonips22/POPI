@@ -88,28 +88,38 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // ====== TÍTULO POPI ======
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: math.max(20, titleLetterSpacing * 5),
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.black, width: 0.5),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'POPI',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: const Color(0xFF2596BE),
-                              fontSize: titleFont,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: titleLetterSpacing,
-                            ),
-                          ),
+                      // ====== LOGO POPI ======
+                      SizedBox(
+                        width: (w * 0.25).clamp(200, 350),
+                        child: Image.asset(
+                          'assets/images/popi-logo.png',
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Fallback al texto si no se encuentra la imagen
+                            return Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: math.max(20, titleLetterSpacing * 5),
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.black, width: 0.5),
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'POPI',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: const Color(0xFF2596BE),
+                                    fontSize: titleFont,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: titleLetterSpacing,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
 
