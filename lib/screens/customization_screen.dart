@@ -21,8 +21,9 @@ class CustomizationScreen extends StatelessWidget {
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
 
-    final double titleFontSize = 18.0;
-    final String titleFontFamily = 'Roboto';
+    // Obtener preferencias de fuente del usuario
+    final double titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final String titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
       backgroundColor: backgroundColor,
