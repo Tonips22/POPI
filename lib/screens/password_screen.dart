@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'game_selector_screen.dart';
-import '../models/user_profile.dart';
+import 'package:popi/screens/home_tutor_screen.dart';
+import '../models/user_model.dart';
 
 class PasswordScreen extends StatefulWidget {
-  final UserProfile? user;
+  final UserModel? user;
 
   const PasswordScreen({super.key, this.user});
 

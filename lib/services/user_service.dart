@@ -2,7 +2,7 @@
 // Servicio para gestionar usuarios y sus preferencias en la colección "users"
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/user_profile.dart';
+import '../models/user_model.dart';
 
 class UserService {
   // Getter que accede a FirebaseFirestore.instance solo cuando se usa.
@@ -15,7 +15,7 @@ class UserService {
   /// Busca el ID más alto actual (parseando los IDs de los documentos),
   /// le suma 1 y crea el nuevo usuario con ese ID.
   /// El campo 'id' se guarda como número en la BD, pero el ID del documento es el String.
-  Future<void> createUser(UserProfile user) async {
+  Future<void> createUser(UserModel user) async {
     try {
       // 1. Obtener todos los usuarios para calcular el nuevo ID
       // Nota: Esto no es lo más eficiente para bases de datos enormes,
@@ -70,10 +70,12 @@ class UserService {
       if (snapshot.exists) {
         return true;
       } else {
-        final profile = UserProfile(
+        final profile = UserModel(
           id: userId,
           name: name ?? 'Demo User',
           role: role ?? 'student',
+          avatarIndex: 0,
+          preferences: UserPreferences(),
         );
         await docRef.set(profile.toMap());
         return false;
@@ -98,12 +100,12 @@ class UserService {
   }
 
   /// Obtiene el perfil completo de un usuario (incluye preferencias)
-  Future<UserProfile?> getUserProfile(String userId) async {
+  Future<UserModel?> getUserProfile(String userId) async {
     try {
       final docRef = _fs.collection(_collection).doc(userId);
       final snapshot = await docRef.get();
       if (!snapshot.exists) return null;
-      return UserProfile.fromMap(snapshot.data() as Map<String, dynamic>);
+      return UserModel.fromMap(snapshot.data() as Map<String, dynamic>, snapshot.id);
     } on FirebaseException catch (e) {
       print('FirebaseException en getUserProfile: [${e.code}] ${e.message}');
       // Para errores de Firestore devolvemos null en lugar de reventar la app.
@@ -158,7 +160,7 @@ class UserService {
   /// Actualiza el perfil completo del usuario
   ///
   /// Igual que arriba: en caso de `unavailable`, se evita reventar la app.
-  Future<void> updateUserProfile(String userId, UserProfile profile) async {
+  Future<void> updateUserProfile(String userId, UserModel profile) async {
     try {
       final docRef = _fs.collection(_collection).doc(userId);
       await docRef.set(profile.toMap(), SetOptions(merge: true));
@@ -205,14 +207,14 @@ class UserService {
   ///
   /// Si hay errores de conexión, estos se propagan por el stream, pero no como
   /// excepción sin capturar en el arranque de la app.
-  Stream<UserProfile?> watchUserProfile(String userId) {
+  Stream<UserModel?> watchUserProfile(String userId) {
     return _fs
         .collection(_collection)
         .doc(userId)
         .snapshots()
         .map((snapshot) {
       if (snapshot.exists) {
-        return UserProfile.fromMap(snapshot.data() as Map<String, dynamic>);
+        return UserModel.fromMap(snapshot.data() as Map<String, dynamic>, snapshot.id);
       } else {
         return null;
       }
@@ -220,11 +222,11 @@ class UserService {
   }
 
   /// Obtiene todos los usuarios de la colección
-  Future<List<UserProfile>> getAllUsers() async {
+  Future<List<UserModel>> getAllUsers() async {
     try {
       final querySnapshot = await _fs.collection(_collection).get();
       return querySnapshot.docs
-          .map((doc) => UserProfile.fromMap(doc.data()))
+          .map((doc) => UserModel.fromMap(doc.data(), doc.id))
           .toList();
     } on FirebaseException catch (e) {
       print('❌ FirebaseException en getAllUsers: [${e.code}] ${e.message}');

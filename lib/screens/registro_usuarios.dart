@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
-import '../models/user_profile.dart';
+import '../models/user_model.dart';
 import '../screens/detalles_usuario.dart';
 
 class RegistroUsuariosScreen extends StatefulWidget {
@@ -12,7 +12,7 @@ class RegistroUsuariosScreen extends StatefulWidget {
 
 class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
   final UserService _userService = UserService();
-  List<UserProfile> _users = [];
+  List<UserModel> _users = [];
   bool _isLoading = true;
 
   static const _blueAppBar = Color(0xFF77A9F4);
@@ -148,7 +148,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                   );
                 }
 
-                Widget rowItem(UserProfile user, int index) {
+                Widget rowItem(UserModel user, int index) {
                   final colors = [
                     const Color(0xFF9ED7E6),
                     const Color(0xFFF7E07D),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
-import '../models/user_profile.dart';
+import '../models/user_model.dart';
 
 class CrearUsuarioScreen extends StatefulWidget {
   const CrearUsuarioScreen({super.key});
@@ -358,11 +358,12 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                                 try {
                                   // Creamos un objeto temporal. El ID se ignorará en el servicio
                                   // porque generará uno nuevo numérico.
-                                  final tempUser = UserProfile(
+                                  final tempUser = UserModel(
                                     id: '', 
                                     name: nombre,
                                     role: _normalizeRole(rol),
                                     avatarIndex: _selectedAvatarIndex,
+                                    preferences: UserPreferences(),
                                   );
             
                                   await UserService().createUser(tempUser);

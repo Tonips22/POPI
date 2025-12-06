@@ -1,13 +1,13 @@
 // lib/widgets/preference_provider.dart
 
 import 'package:flutter/material.dart';
-import '../models/user_profile.dart';
+import '../models/user_model.dart';
 import '../services/user_service.dart';
 
 /// Widget que provee las preferencias del usuario a toda la app
 /// Usa InheritedWidget para que cualquier pantalla pueda acceder a ellas
 class PreferenceProvider extends InheritedWidget {
-  final UserProfile preferences;
+  final UserModel preferences;
 
   const PreferenceProvider({
     Key? key,
@@ -16,7 +16,7 @@ class PreferenceProvider extends InheritedWidget {
   }) : super(key: key, child: child);
 
   /// Método estático para acceder a las preferencias desde cualquier parte
-  static UserProfile? of(BuildContext context) {
+  static UserModel? of(BuildContext context) {
     return context
         .dependOnInheritedWidgetOfExactType<PreferenceProvider>()
         ?.preferences;
@@ -54,7 +54,7 @@ class PreferenceLoader extends StatefulWidget {
 
 class _PreferenceLoaderState extends State<PreferenceLoader> {
   final UserService _userService = UserService();
-  UserProfile? _preferences;
+  UserModel? _preferences;
   bool _isLoading = true;
 
   @override
@@ -68,9 +68,9 @@ class _PreferenceLoaderState extends State<PreferenceLoader> {
     await _userService.ensureUserExists(widget.userId, name: 'Alumno Demo');
     
     // Luego cargamos sus preferencias
-    UserProfile? prefs = await _userService.getUserProfile(widget.userId);
+    UserModel? prefs = await _userService.getUserProfile(widget.userId);
     setState(() {
-      _preferences = prefs ?? UserProfile(id: widget.userId, name: 'Alumno Demo');
+      _preferences = prefs ?? UserModel(id: widget.userId, name: 'Alumno Demo', role: 'student', avatarIndex: 0, preferences: UserPreferences());
       _isLoading = false;
     });
   }

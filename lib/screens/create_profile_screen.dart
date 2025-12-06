@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
-import '../models/user_profile.dart';
+import '../models/user_model.dart';
 
 class CreateProfileScreen extends StatefulWidget {
   const CreateProfileScreen({super.key});
@@ -263,11 +263,12 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
                       try {
                         // Crear el perfil del alumno
-                        final newStudent = UserProfile(
+                        final newStudent = UserModel(
                           id: '', // Se genera automáticamente en el servicio
                           name: nombre,
                           role: 'student',
                           avatarIndex: _selectedAvatarIndex,
+                          preferences: UserPreferences(),
                         );
 
                         await UserService().createUser(newStudent);
