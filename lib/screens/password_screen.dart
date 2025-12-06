@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'game_selector_screen.dart';
+import '../models/user_profile.dart';
 
 class PasswordScreen extends StatefulWidget {
-  const PasswordScreen({super.key});
+  final UserProfile? user;
+
+  const PasswordScreen({super.key, this.user});
 
   @override
   State<PasswordScreen> createState() => _PasswordScreenState();
@@ -175,15 +178,46 @@ class _PasswordScreenState extends State<PasswordScreen> {
           // ===== Botón “Iniciar sesión” =====
           Widget loginButton(BuildContext context) {
             return ElevatedButton(
-              onPressed: _pwd.isEmpty
+              onPressed: _pwd.length != 4
                   ? null
                   : () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChooseGameScreen(),
-                  ),
-                );
+                // Validar contraseña
+                if (widget.user != null && widget.user!.password != null) {
+                  // Convertir la lista de índices a String
+                  final enteredPassword = _pwd.join('');
+                  
+                  // Comparar con la contraseña almacenada
+                  if (enteredPassword == widget.user!.password) {
+                    // Contraseña correcta
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ChooseGameScreen(),
+                      ),
+                    );
+                  } else {
+                    // Contraseña incorrecta
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Contraseña incorrecta'),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    // Limpiar la contraseña ingresada
+                    setState(() {
+                      _pwd.clear();
+                    });
+                  }
+                } else {
+                  // Si no hay usuario o no tiene contraseña configurada, permitir acceso
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChooseGameScreen(),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2596BE),

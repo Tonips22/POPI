@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/number_format_preferences.dart';
 import '../widgets/number_format_option_card.dart';
 import '../widgets/upload_option_card.dart';
-import 'home_tutor_screen.dart';
 
 class CreateProfileScreen4 extends StatefulWidget {
   const CreateProfileScreen4({super.key});
@@ -14,6 +13,7 @@ class CreateProfileScreen4 extends StatefulWidget {
 class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
   NumberDisplayType selectedDisplayType = NumberDisplayType.grafia;
 
+  // 🔹 Variables separadas para objetos y contenedores
   String? objectImageUrl;
   String? objectAudioUrl;
   String? containerImageUrl;
@@ -23,30 +23,44 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
+      // === APPBAR SUPERIOR ===
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 24, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, size: 28, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Crear perfil',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+          'Crear perfil de alumno',
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
         centerTitle: true,
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: Icon(Icons.more_vert, color: Colors.black),
+          ),
+        ],
       ),
+
+      // === CONTENIDO DE LA PANTALLA ===
       body: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: const Color(0xFF5CA7FF),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: SingleChildScrollView(
                   child: Column(
@@ -54,85 +68,114 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
                     children: [
                       const Text(
                         'Preferencias de visualización',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 12),
+
                       const Text(
                         'Visualización de números',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 10),
+
                       GridView.count(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisCount: 4,
-                        crossAxisSpacing: 4,
-                        mainAxisSpacing: 4,
-                        childAspectRatio: 1.5,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        childAspectRatio: 1.7,
                         children: [
                           NumberFormatOptionCard(
                             icon: Icons.numbers,
                             label: NumberDisplayType.grafia.displayName,
-                            isSelected: selectedDisplayType == NumberDisplayType.grafia,
+                            isSelected:
+                            selectedDisplayType == NumberDisplayType.grafia,
                             onTap: () {
-                              setState(() => selectedDisplayType = NumberDisplayType.grafia);
+                              setState(() =>
+                              selectedDisplayType = NumberDisplayType.grafia);
                               _savePreferences();
                             },
                           ),
                           NumberFormatOptionCard(
                             icon: Icons.extension,
                             label: NumberDisplayType.pictograma.displayName,
-                            isSelected: selectedDisplayType == NumberDisplayType.pictograma,
+                            isSelected: selectedDisplayType ==
+                                NumberDisplayType.pictograma,
                             onTap: () {
-                              setState(() => selectedDisplayType = NumberDisplayType.pictograma);
+                              setState(() => selectedDisplayType =
+                                  NumberDisplayType.pictograma);
                               _savePreferences();
                             },
                           ),
                           NumberFormatOptionCard(
                             icon: Icons.volume_up,
                             label: NumberDisplayType.audio.displayName,
-                            isSelected: selectedDisplayType == NumberDisplayType.audio,
+                            isSelected:
+                            selectedDisplayType == NumberDisplayType.audio,
                             onTap: () {
-                              setState(() => selectedDisplayType = NumberDisplayType.audio);
+                              setState(() =>
+                              selectedDisplayType = NumberDisplayType.audio);
                               _savePreferences();
                             },
                           ),
                           NumberFormatOptionCard(
                             icon: Icons.palette,
                             label: NumberDisplayType.dibujo.displayName,
-                            isSelected: selectedDisplayType == NumberDisplayType.dibujo,
+                            isSelected:
+                            selectedDisplayType == NumberDisplayType.dibujo,
                             onTap: () {
-                              setState(() => selectedDisplayType = NumberDisplayType.dibujo);
+                              setState(() =>
+                              selectedDisplayType = NumberDisplayType.dibujo);
                               _savePreferences();
                             },
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+
+                      const SizedBox(height: 24),
                       const Divider(color: Colors.black),
-                      const SizedBox(height: 6),
+
                       const Text(
                         'Personalización de objetos',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 10),
+
                       Row(
                         children: [
+                          // === BLOQUE 1: OBJETOS ===
                           Expanded(
                             child: Container(
-                              padding: const EdgeInsets.all(4),
+                              padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: Colors.grey[200],
                                 border: Border.all(color: Colors.black, width: 1),
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
                                 children: [
                                   const Text(
-                                    'Objetos',
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                    'Objetos de juego',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                  const SizedBox(height: 1),
+                                  const SizedBox(height: 6),
                                   Row(
                                     children: [
                                       Expanded(
@@ -143,7 +186,7 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
                                           onTap: () => _uploadCustomImage(true),
                                         ),
                                       ),
-                                      const SizedBox(width: 3),
+                                      const SizedBox(width: 8),
                                       Expanded(
                                         child: UploadOptionCard(
                                           icon: Icons.mic,
@@ -158,22 +201,29 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 3),
+
+                          const SizedBox(width: 12),
+
+                          // === BLOQUE 2: CONTENEDORES ===
                           Expanded(
                             child: Container(
-                              padding: const EdgeInsets.all(1),
+                              padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: Colors.grey[200],
                                 border: Border.all(color: Colors.black, width: 1),
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
                                 children: [
                                   const Text(
-                                    'Contenedores',
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                    'Contenedores de juego',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 6),
                                   Row(
                                     children: [
                                       Expanded(
@@ -184,7 +234,7 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
                                           onTap: () => _uploadCustomImage(false),
                                         ),
                                       ),
-                                      const SizedBox(width: 4),
+                                      const SizedBox(width: 8),
                                       Expanded(
                                         child: UploadOptionCard(
                                           icon: Icons.mic,
@@ -206,7 +256,10 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+
+            const SizedBox(height: 16),
+
+            // === BOTONES INFERIORES ===
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -214,26 +267,33 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
                   onPressed: () => Navigator.pop(context),
                   child: const Text(
                     'Cancelar',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF5CA7FF),
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14, horizontal: 32),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   onPressed: () {
-                    Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const TutorHomeScreen()),
-                  );},
+                    // Acción al continuar
+                  },
                   child: const Text(
                     'Finalizar',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -243,6 +303,8 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
       ),
     );
   }
+
+  // === FUNCIONES AUXILIARES ===
 
   void _savePreferences() {
     final preferences = NumberFormatPreferences(
@@ -284,18 +346,26 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Subir $type'),
-        content: Text('Simular que se subió un $type?'),
+        content: Text(
+          'Esta funcionalidad se implementará más adelante.\n\n¿Simular que se subió un $type?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () {
               onConfirm();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('$type subido correctamente'), backgroundColor: Colors.green),
+                SnackBar(
+                  content: Text('$type subido correctamente'),
+                  backgroundColor: Colors.green,
+                ),
               );
             },
-            child: const Text('Simular'),
+            child: const Text('Simular subida'),
           ),
         ],
       ),
