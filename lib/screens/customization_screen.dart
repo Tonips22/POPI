@@ -3,23 +3,35 @@ import 'package:popi/screens/voice_screen.dart';
 import 'color_settings_screen.dart';
 import 'fonts_settings_screen.dart';
 import 'number_format_screen.dart';
+import 'examples/login_screen_example.dart';
 
 import '../services/user_service.dart';
-import '../widgets/preference_provider.dart';
+import '../services/app_service.dart';
+// import '../widgets/preference_provider.dart';
 import '../widgets/voice_text.dart';
 
-class CustomizationScreen extends StatelessWidget {
+class CustomizationScreen extends StatefulWidget {
   const CustomizationScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+  State<CustomizationScreen> createState() => _CustomizationScreenState();
+}
 
-    final double titleFontSize = prefs?.getFontSizeValue() ?? 18.0;
-    final String titleFontFamily = prefs?.getFontFamilyName() ?? 'Roboto';
+class _CustomizationScreenState extends State<CustomizationScreen> {
+  @override
+  Widget build(BuildContext context) {
+    // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
+
+    // Obtener preferencias de fuente del usuario
+    final double titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final String titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
 
       appBar: AppBar(
         leading: IconButton(
@@ -76,29 +88,14 @@ class CustomizationScreen extends StatelessWidget {
                 fontSize: titleFontSize,
                 fontFamily: titleFontFamily,
                 onTap: () async {
-                  const demoId = 'demo';
-                  final userService = UserService();
-
-                  try {
-                    await userService.ensureUserExists(
-                      demoId,
-                      name: 'Alumno Demo',
-                    );
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const FontSettingsScreen(),
-                      ),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content:
-                        Text('Error al preparar el usuario demo: $e'),
-                      ),
-                    );
-                  }
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FontSettingsScreen(),
+                    ),
+                  );
+                  // Actualizar la pantalla cuando se regrese
+                  setState(() {});
                 },
               ),
 
@@ -141,11 +138,10 @@ class CustomizationScreen extends StatelessWidget {
                 fontSize: titleFontSize,
                 fontFamily: titleFontFamily,
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Configuración de reacciones - Próximamente',
-                      ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreenExample(),
                     ),
                   );
                 },

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'tutor_edit_profile_screen.dart';
 import 'tutor_edit_game_profile_screen.dart';
 import 'create_profile_screen.dart';
-import 'upload_resources_screen.dart';   // 👈 import para la pantalla de recursos
 
 class TutorHomeScreen extends StatelessWidget {
   const TutorHomeScreen({super.key});
@@ -37,52 +36,23 @@ class TutorHomeScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ======= Píldora "Listado de estudiantes" + botón "Subir recursos" =======
+          // ======= Píldora "Listado de estudiantes" =======
           Padding(
             padding: const EdgeInsets.only(left: 12, top: 12, right: 12),
-            child: Row(
-              children: [
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8DBDFF),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    "Listado de estudiantes",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+            child: Container(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF8DBDFF),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                "Listado de estudiantes",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
                 ),
-                const Spacer(),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[300],
-                    foregroundColor: Colors.black,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const UploadResourcesScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Subir recursos',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 

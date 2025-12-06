@@ -19,20 +19,86 @@ class TutorEditProfileScreen extends StatefulWidget {
 
 class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
-  int? _selectedAvatarIndex;
-
-  final List<String> _avatars = List.generate(
-    16,
-        (i) => "assets/images/avatar${(i % 4) + 1}.png",
-  );
-
-  static const double avatarSize = 40;
+  
+  // Avatar selection
+  int _selectedAvatarIndex = 0;
+  final List<String> _avatarNames = ['avatar1', 'avatar2', 'avatar3', 'avatar4'];
 
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.studentName;
-    _selectedAvatarIndex = _avatars.indexOf(widget.avatarPath);
+    // Determinar índice inicial basado en el avatar path
+    for (int i = 0; i < _avatarNames.length; i++) {
+      if (widget.avatarPath.contains(_avatarNames[i])) {
+        _selectedAvatarIndex = i;
+        break;
+      }
+    }
+  }
+
+  void _showAvatarSelection() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF5CA7FF),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          height: 300,
+          child: Column(
+            children: [
+              const Text(
+                'Elige un avatar',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: _avatarNames.length,
+                  itemBuilder: (context, index) {
+                    final avatarName = _avatarNames[index];
+                    final isSelected = _selectedAvatarIndex == index;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedAvatarIndex = index);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected ? Colors.black : Colors.transparent,
+                            width: 3,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/$avatarName.png',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -76,12 +142,12 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
               child: Row(
                 children: [
                   CircleAvatar(
-                    backgroundImage: AssetImage(widget.avatarPath),
+                    backgroundImage: AssetImage('assets/images/${_avatarNames[_selectedAvatarIndex]}.png'),
                     radius: 16,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    widget.studentName.toUpperCase(),
+                    _nameController.text.toUpperCase(),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -136,6 +202,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                   const SizedBox(height: 4),
                   TextField(
                     controller: _nameController,
+                    onChanged: (value) => setState(() {}),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
@@ -149,87 +216,58 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
 
                   const SizedBox(height: 12),
 
-                  // Avatares
+                  // Avatar selector
                   const Text(
                     "Avatar del alumno:",
                     style: TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 14),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 12),
 
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: List.generate(_avatars.length, (i) {
-                      final bool selected = _selectedAvatarIndex == i;
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedAvatarIndex = i;
-                          });
-                        },
-                        child: Container(
-                          width: avatarSize,
-                          height: avatarSize,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: selected ? Colors.black : Colors.grey,
-                              width: selected ? 2 : 1,
+                  Center(
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: _showAvatarSelection,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.black, width: 2),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  offset: Offset(0, 2),
+                                  blurRadius: 6,
+                                ),
+                              ],
                             ),
-                            image: DecorationImage(
-                              image: AssetImage(_avatars[i]),
-                              fit: BoxFit.cover,
+                            child: ClipOval(
+                              child: Image.asset(
+                                'assets/images/${_avatarNames[_selectedAvatarIndex]}.png',
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
-                      );
-                    }),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Avatar seleccionado
-                  Row(
-                    children: [
-                      const Text(
-                        "Imagen seleccionada:",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: avatarSize,
-                        height: avatarSize,
-                        decoration: BoxDecoration(
-                          border:
-                          Border.all(color: Colors.black, width: 2),
-                          borderRadius: BorderRadius.circular(6),
-                          image: _selectedAvatarIndex != null
-                              ? DecorationImage(
-                            image: AssetImage(
-                                _avatars[_selectedAvatarIndex!]),
-                            fit: BoxFit.cover,
-                          )
-                              : null,
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Toca para cambiar avatar',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.delete, size: 24),
-                        onPressed: () {
-                          setState(() {
-                            _selectedAvatarIndex = null;
-                          });
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 12),
 
-                  // 👉 Nuevo botón "Visualización del estudiante"
+                  // 👉 Botón "Visualización del estudiante"
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
@@ -271,19 +309,22 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // Cancelar (sin lógica aún)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 30, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    "Cancelar",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                // Cancelar
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      "Cancelar",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
                 ),
@@ -295,8 +336,8 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => TutorEditProfileScreen2(
-                          studentName: widget.studentName,
-                          avatarPath: widget.avatarPath,
+                          studentName: _nameController.text,
+                          avatarPath: 'assets/images/${_avatarNames[_selectedAvatarIndex]}.png',
                         ),
                       ),
                     );

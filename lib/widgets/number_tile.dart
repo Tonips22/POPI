@@ -9,12 +9,14 @@ class NumberTile extends StatelessWidget {
   final int value;
   final VoidCallback? onTap;
   final DragItem draggableData;
+  final Color color;
 
   const NumberTile({
     super.key,
     required this.value,
     this.onTap,
     required this.draggableData,
+    this.color = const Color(0xFF42A5F5), // Colors.blue.shade400 default
   });
 
   @override
@@ -44,7 +46,7 @@ class NumberTile extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.blue.shade400.withOpacity(opacity),
+        color: color.withOpacity(opacity),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(

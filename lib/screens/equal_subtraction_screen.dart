@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:popi/screens/settings_screen.dart';
 import '../widgets/check_icon_overlay.dart';
-import '../widgets/preference_provider.dart';
+// import '../widgets/preference_provider.dart';
+import '../services/app_service.dart';
 
 /// ---------------------------------------------------------------------------
 /// CONTROLADOR DEL JUEGO: RESTAS PARA IGUALAR RECIPIENTES
@@ -97,6 +98,8 @@ class EqualSubtractionBoard extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onRoundUpdate,
+    required this.primaryColor,
+    required this.secondaryColor,
   });
 
   final EqualSubtractionController controller;
@@ -104,6 +107,8 @@ class EqualSubtractionBoard extends StatefulWidget {
   /// - isCorrect = true  -> todas las jarras iguales al objetivo (nivel completado)
   /// - isCorrect = false -> todavía no están igualadas
   final void Function(bool isCorrect, String equation) onRoundUpdate;
+  final Color primaryColor;
+  final Color secondaryColor;
 
   @override
   State<EqualSubtractionBoard> createState() => _EqualSubtractionBoardState();
@@ -213,7 +218,7 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
       width: 64,
       height: 64,
       decoration: BoxDecoration(
-        color: Colors.blue.shade400,
+        color: widget.primaryColor,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -271,6 +276,7 @@ class EqualSubtractionScreen extends StatefulWidget {
 
 class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
   final EqualSubtractionController _controller = EqualSubtractionController();
+  final AppService _service = AppService();
 
   bool _showCheckIcon = false;
 
@@ -326,17 +332,28 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
+    // final prefs = PreferenceProvider.of(context);
+    final userColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.primaryColor))
+        : Colors.blue.shade400;
+    final secondaryColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.secondaryColor))
+        : Colors.green;
+    final backgroundColor = _service.currentUser != null
+        ? Color(int.parse(_service.currentUser!.preferences.backgroundColor))
+        : Colors.grey[50]!;
+    final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: backgroundColor,
 
       appBar: AppBar(
         title: Text(
           'Resta para igualar',
           style: TextStyle(
-            fontSize: prefs?.getFontSizeValue() ?? 18,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontSize: 18,
+            fontFamily: 'Roboto',
           ),
         ),
         centerTitle: true,
@@ -379,13 +396,15 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                   key: ValueKey(_roundIndex),
                   controller: _controller,
                   onRoundUpdate: _handleRoundUpdate,
+                  primaryColor: userColor,
+                  secondaryColor: secondaryColor,
                 ),
               ),
             ),
           ),
 
           if (_showCheckIcon)
-            CheckIconOverlay(color: Colors.blue.shade400),
+            CheckIconOverlay(color: secondaryColor),
         ],
       ),
     );

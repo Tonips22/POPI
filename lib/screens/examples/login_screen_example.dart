@@ -3,17 +3,16 @@ import '/services/app_service.dart';
 import '/models/user_model.dart';
 import '/screens/home_tutor_screen.dart';
 import '/screens/admin_screen.dart';
-import '/screens/game_selector_screen.dart';
 import 'dart:math' as math;
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class LoginScreenExample extends StatefulWidget {
+  const LoginScreenExample({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginScreenExample> createState() => _LoginScreenExampleState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenExampleState extends State<LoginScreenExample> {
   final AppService _service = AppService();
 
   List<UserModel> _students = [];
@@ -47,12 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
     
     await Future.delayed(const Duration(milliseconds: 200));
     if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const ChooseGameScreen(),
-        ),
-      );
+      Navigator.pushReplacementNamed(context, '/games');
     }
   }
 
