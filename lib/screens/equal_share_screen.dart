@@ -505,6 +505,8 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
     final backgroundColor = _service.currentUser != null
         ? Color(int.parse(_service.currentUser!.preferences.backgroundColor))
         : Colors.grey[50]!;
+    final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
       backgroundColor: backgroundColor,

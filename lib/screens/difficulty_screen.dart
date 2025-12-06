@@ -43,6 +43,11 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
+    final primaryColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.primaryColor))
+        : Colors.blue;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
     
     // Calculamos el máximo permitido del slider según el rango seleccionado
     double maxValue = 12;
@@ -62,9 +67,9 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
         title: Text(
           'Dificultad',
           style: TextStyle(
-            fontSize: 18.0 * 1.5,
+            fontSize: titleFontSize * 1.35,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Roboto',
+            fontFamily: titleFontFamily,
           ),
         ),
         backgroundColor: Colors.white,
@@ -82,17 +87,17 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
             Text(
               'Toca el número que suena',
               style: TextStyle(
-                fontSize: 18.0 * 1.2,
+                fontSize: titleFontSize * 1.2,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
+                fontFamily: titleFontFamily,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Selecciona la cantidad de números',
               style: TextStyle(
-                fontSize: 18.0,
-                fontFamily: 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 color: Colors.grey[700],
               ),
             ),
@@ -110,9 +115,9 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                   children: [
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: Colors.blue,
+                        activeTrackColor: primaryColor,
                         inactiveTrackColor: Colors.grey[300],
-                        thumbColor: Colors.blue,
+                        thumbColor: primaryColor,
                         thumbShape: const RoundSliderThumbShape(
                           enabledThumbRadius: 16,
                         ),
@@ -201,7 +206,7 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: selected ? Colors.blue : Colors.grey.shade300,
+                        color: selected ? primaryColor : Colors.grey.shade300,
                         width: selected ? 3 : 1.5,
                       ),
                     ),

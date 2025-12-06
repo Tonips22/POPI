@@ -146,6 +146,8 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     final backgroundColor = _service.currentUser != null
         ? Color(int.parse(_service.currentUser!.preferences.backgroundColor))
         : Colors.grey[50]!;
+    final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -153,9 +155,9 @@ class _SortNumbersGameState extends State<SortNumbersGame>
       appBar: AppBar(
         title: Text(
           'Ordena la secuencia',
-          style: const TextStyle(
-            fontSize: 18,
-            fontFamily: 'Roboto',
+          style: TextStyle(
+            fontSize: titleFontSize * 0.9,
+            fontFamily: titleFontFamily,
           ),
         ),
         centerTitle: true,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/color_setting_card.dart';
 import '../utils/color_constants.dart';
+import '../services/app_service.dart';
+import '../models/user_model.dart';
 
 /// Pantalla de configuración de colores
 ///
@@ -18,16 +20,121 @@ class ColorSettingsScreen extends StatefulWidget {
 }
 
 class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
+  final AppService _service = AppService();
+  
   // === COLORES SELECCIONADOS (estado de la pantalla) ===
-  // Estos valores deberían cargarse y guardarse en Firebase más adelante
-  Color? primaryColor = Colors.blue;
-  Color? secondaryColor = Colors.green;
-  Color? backgroundColor = Colors.white;
+  Color? primaryColor;
+  Color? secondaryColor;
+  Color? backgroundColor;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserColors();
+  }
+
+  /// Carga los colores desde las preferencias del usuario
+  void _loadUserColors() {
+    final user = _service.currentUser;
+    if (user != null) {
+      setState(() {
+        primaryColor = _parseColor(user.preferences.primaryColor);
+        secondaryColor = _parseColor(user.preferences.secondaryColor);
+        backgroundColor = _parseColor(user.preferences.backgroundColor);
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        primaryColor = Colors.blue;
+        secondaryColor = Colors.green;
+        backgroundColor = Colors.white;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Convierte un String hexadecimal a Color
+  Color _parseColor(String colorHex) {
+    try {
+      return Color(int.parse(colorHex));
+    } catch (e) {
+      return Colors.blue; // fallback
+    }
+  }
+
+  /// Convierte un Color a String hexadecimal
+  String _colorToHex(Color color) {
+    return '0x${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  }
+
+  /// Guarda los colores en Firebase y actualiza el usuario en memoria
+  Future<void> _saveColors() async {
+    final user = _service.currentUser;
+    if (user == null) return;
+
+    // Crear nuevas preferencias con los colores actualizados
+    final updatedPreferences = user.preferences.copyWith(
+      primaryColor: _colorToHex(primaryColor!),
+      secondaryColor: _colorToHex(secondaryColor!),
+      backgroundColor: _colorToHex(backgroundColor!),
+    );
+
+    // Actualizar en Firebase
+    bool success = await _service.updatePreferences(user.id, updatedPreferences);
+    
+    if (success) {
+      // Actualizar en memoria
+      _service.updateCurrentUserPreferences(updatedPreferences);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Colores guardados correctamente'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Error al guardar los colores'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = _service.currentUser;
+    final titleFontSize = user?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = user?.preferences.getFontFamilyName() ?? 'Roboto';
+    
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Colors.grey[100],
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, size: 32),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text('Color', style: TextStyle(fontSize: titleFontSize * 1.2, fontWeight: FontWeight.bold, fontFamily: titleFontFamily)),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final userBackgroundColor = backgroundColor ?? Colors.grey[100]!;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: userBackgroundColor,
 
       // === BARRA SUPERIOR ===
       appBar: AppBar(
@@ -35,11 +142,12 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
           icon: const Icon(Icons.arrow_back, size: 32),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Color',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: titleFontSize * 1.2,
             fontWeight: FontWeight.bold,
+            fontFamily: titleFontFamily,
           ),
         ),
         backgroundColor: Colors.white,
@@ -63,8 +171,7 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
               setState(() {
                 primaryColor = color;
               });
-              // TODO: Guardar en Firebase o en el modelo del estudiante
-              print('Color primario seleccionado: ${color.value}');
+              _saveColors();
             },
           ),
 
@@ -80,8 +187,7 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
               setState(() {
                 secondaryColor = color;
               });
-              // TODO: Guardar en Firebase o en el modelo del estudiante
-              print('Color secundario seleccionado: ${color.value}');
+              _saveColors();
             },
           ),
 
@@ -97,8 +203,7 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
               setState(() {
                 backgroundColor = color;
               });
-              // TODO: Guardar en Firebase o en el modelo del estudiante
-              print('Color de fondo seleccionado: ${color.value}');
+              _saveColors();
             },
           ),
         ],

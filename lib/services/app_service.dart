@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 
 /// Servicio único que maneja usuarios y sesión
@@ -14,6 +15,9 @@ class AppService {
 
   // Usuario actual logueado
   UserModel? _currentUser;
+  
+  // Notificador para actualizar la UI cuando cambia el usuario
+  final ValueNotifier<int> userChangeNotifier = ValueNotifier<int>(0);
 
   /// Obtiene el usuario actual
   UserModel?  get currentUser => _currentUser;
@@ -110,6 +114,7 @@ class AppService {
   /// Inicia sesión con un usuario
   void login(UserModel user) {
     _currentUser = user;
+    userChangeNotifier.value++;
     print('✅ Sesión iniciada: ${user. name} (${user.role})');
   }
 
@@ -117,6 +122,7 @@ class AppService {
   void logout() {
     print('👋 Sesión cerrada: ${_currentUser?.name}');
     _currentUser = null;
+    userChangeNotifier.value++;
   }
 
   /// Actualiza las preferencias del usuario actual en memoria
@@ -129,6 +135,7 @@ class AppService {
         avatarIndex: _currentUser!.avatarIndex,
         preferences: newPreferences,
       );
+      userChangeNotifier.value++;
       print('✅ Preferencias actualizadas en memoria');
     }
   }

@@ -78,6 +78,8 @@ class _NumberScreenState extends State<NumberScreen> {
     final backgroundColor = _service.currentUser != null
         ? Color(int.parse(_service.currentUser!.preferences.backgroundColor))
         : Colors.grey[50]!;
+    final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -85,9 +87,9 @@ class _NumberScreenState extends State<NumberScreen> {
       appBar: AppBar(
         title: Text(
           "Toca el número que suena",
-          style: const TextStyle(
-            fontSize: 18,
-            fontFamily: 'Roboto',
+          style: TextStyle(
+            fontSize: titleFontSize * 0.9,
+            fontFamily: titleFontFamily,
           ),
         ),
         centerTitle: true,

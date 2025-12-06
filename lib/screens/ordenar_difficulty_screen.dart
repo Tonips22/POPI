@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../logic/game_controller_ordenar.dart';
+import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 
 class OrdenarDifficultyScreen extends StatefulWidget {
@@ -38,11 +39,20 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
+    final primaryColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.primaryColor))
+        : Colors.blue;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     double maxValue = (_ranges[_selectedRangeIndex]['max'] == 10) ? 10 : 12;
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
       
       // === BARRA SUPERIOR ===
       appBar: AppBar(
@@ -52,10 +62,10 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
         ),
         title: Text(
           'Dificultad',
-          style: const TextStyle(
-            fontSize: 18.0 * 1.5,
+          style: TextStyle(
+            fontSize: titleFontSize * 1.35,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Roboto',
+            fontFamily: titleFontFamily,
           ),
         ),
         backgroundColor: Colors.white,
@@ -72,18 +82,18 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
             // Subtítulo
             Text(
               'Ordena la secuencia',
-              style: const TextStyle(
-                fontSize: 18.0 * 1.2,
+              style: TextStyle(
+                fontSize: titleFontSize * 1.2,
                 fontWeight: FontWeight.w600,
-                fontFamily: 'Roboto',
+                fontFamily: titleFontFamily,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Selecciona la cantidad de números',
               style: TextStyle(
-                fontSize: 18.0,
-                fontFamily: 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 color: Colors.grey[700],
               ),
             ),
@@ -101,9 +111,9 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
                   children: [
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: Colors.blue,
+                        activeTrackColor: primaryColor,
                         inactiveTrackColor: Colors.grey[300],
-                        thumbColor: Colors.blue,
+                        thumbColor: primaryColor,
                         thumbShape: const RoundSliderThumbShape(
                           enabledThumbRadius: 16,
                         ),
@@ -193,7 +203,7 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: selected ? Colors.blue : Colors.grey.shade300,
+                        color: selected ? primaryColor : Colors.grey.shade300,
                         width: selected ? 3 : 1.5,
                       ),
                     ),

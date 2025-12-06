@@ -1,37 +1,144 @@
 import 'package:flutter/material.dart';
+import '../services/app_service.dart';
 
 /// Pantalla de configuración de tipografía
-///
-/// Permite al estudiante personalizar:
-/// - Tipo de fuente: Predeterminada, Amigable (Comic Sans), Lectura Fácil (OpenDyslexic)
-/// - Tamaño de letra: mediante un slider de pequeño a grande
-///
-/// Estos ajustes mejorarán la accesibilidad para estudiantes con
-/// discapacidad visual o dificultades de lectura
 class FontSettingsScreen extends StatefulWidget {
-  const FontSettingsScreen({super.key});
+  final String? userId;
+
+  const FontSettingsScreen({super.key, this.userId});
 
   @override
   State<FontSettingsScreen> createState() => _FontSettingsScreenState();
 }
 
 class _FontSettingsScreenState extends State<FontSettingsScreen> {
-  // === ESTADO DE LA PANTALLA ===
-  // Estos valores deberían cargarse y guardarse en Firebase más adelante
+  final _appService = AppService();
+  
+  // Tipo de fuente seleccionado: 'default', 'friendly', 'easy-reading'
+  String selectedFontFamily = 'default';
 
-  // Tipo de fuente seleccionado
-  FontType selectedFontType = FontType.predeterminada;
+  // Tamaño de letra como String: 'extra_small', 'small', 'default', 'large', 'extra_large'
+  String fontSizeValue = 'default';
 
-  // Tamaño de letra (de 0.0 a 1.0)
-  // 0.0 = pequeño, 0.5 = medio, 1.0 = grande
-  double fontSizeValue = 0.5;
+  @override
+  void initState() {
+    super.initState();
+    _loadUserFontPreferences();
+  }
+
+  /// Carga las preferencias de fuente del usuario desde AppService
+  void _loadUserFontPreferences() {
+    final currentUser = _appService.currentUser;
+    if (currentUser != null) {
+      setState(() {
+        fontSizeValue = currentUser.preferences.fontSize;
+        selectedFontFamily = currentUser.preferences.fontFamily;
+      });
+    }
+  }
+
+  /// Guarda las preferencias de fuente en Firebase
+  Future<void> _saveFontPreferences() async {
+    final currentUser = _appService.currentUser;
+    if (currentUser == null) return;
+
+    try {
+      final updatedPreferences = currentUser.preferences.copyWith(
+        fontSize: fontSizeValue,
+        fontFamily: selectedFontFamily,
+      );
+
+      await _appService.updatePreferences(currentUser.id, updatedPreferences);
+      _appService.updateCurrentUserPreferences(updatedPreferences);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Preferencias de fuente guardadas'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Convierte el String a valor del slider (0.0 a 1.0)
+  double _fontSizeToSlider(String fontSize) {
+    switch (fontSize) {
+      case 'extra_small':
+        return 0.0;
+      case 'small':
+        return 0.25;
+      case 'default':
+        return 0.5;
+      case 'large':
+        return 0.75;
+      case 'extra_large':
+        return 1.0;
+      default:
+        return 0.5;
+    }
+  }
+
+  /// Convierte el valor del slider a String
+  String _sliderToFontSize(double value) {
+    if (value <= 0.125) return 'extra_small';
+    if (value <= 0.375) return 'small';
+    if (value <= 0.625) return 'default';
+    if (value <= 0.875) return 'large';
+    return 'extra_large';
+  }
+
+  /// Obtiene el valor numérico para preview
+  double _getFontSizePreview(String fontSize) {
+    switch (fontSize) {
+      case 'extra_small':
+        return 12.0;
+      case 'small':
+        return 16.0;
+      case 'default':
+        return 20.0;
+      case 'large':
+        return 24.0;
+      case 'extra_large':
+        return 32.0;
+      default:
+        return 20.0;
+    }
+  }
+  
+  /// Obtiene el nombre de la fuente para Flutter
+  String _getFontFamilyName(String fontFamily) {
+    switch (fontFamily) {
+      case 'default':
+        return 'Roboto';
+      case 'friendly':
+        return 'ComicNeue';
+      case 'easy-reading':
+        return 'OpenDyslexic';
+      default:
+        return 'Roboto';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
+        
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-
-      // === BARRA SUPERIOR ===
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
@@ -40,7 +147,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
         title: const Text(
           'Tipografía',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -48,8 +155,6 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-
-      // === CONTENIDO DE LA PANTALLA ===
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -68,64 +173,50 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     );
   }
 
-  /// Construye la sección de selección de tipo de fuente
   Widget _buildFontTypeSelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // No necesitamos título, los botones se explican solos
-
-        // === FILA DE BOTONES ===
         Row(
           children: [
-            // BOTÓN 1: Predeterminada
             Expanded(
               child: _FontTypeButton(
                 label: 'Predeterminada',
-                fontFamily: 'Roboto', // Fuente por defecto de Flutter
-                isSelected: selectedFontType == FontType.predeterminada,
+                fontFamily: 'Roboto',
+                isSelected: selectedFontFamily == 'default',
                 onTap: () {
                   setState(() {
-                    selectedFontType = FontType.predeterminada;
+                    selectedFontFamily = 'default';
                   });
-                  // TODO: Guardar en Firebase
-                  print('Fuente seleccionada: Predeterminada');
+                  _saveFontPreferences();
                 },
               ),
             ),
-
             const SizedBox(width: 16),
-
-            // BOTÓN 2: Amigable
             Expanded(
               child: _FontTypeButton(
                 label: 'Amigable',
-                fontFamily: 'ComicNeue', // Fuente amigable (similar a Comic Sans)
-                isSelected: selectedFontType == FontType.amigable,
+                fontFamily: 'ComicNeue',
+                isSelected: selectedFontFamily == 'friendly',
                 onTap: () {
                   setState(() {
-                    selectedFontType = FontType.amigable;
+                    selectedFontFamily = 'friendly';
                   });
-                  // TODO: Guardar en Firebase
-                  print('Fuente seleccionada: Amigable');
+                  _saveFontPreferences();
                 },
               ),
             ),
-
             const SizedBox(width: 16),
-
-            // BOTÓN 3: Lectura Fácil
             Expanded(
               child: _FontTypeButton(
                 label: 'Lectura Fácil',
-                fontFamily: 'OpenDyslexic', // Fuente para dislexia
-                isSelected: selectedFontType == FontType.lecturaFacil,
+                fontFamily: 'OpenDyslexic',
+                isSelected: selectedFontFamily == 'easy-reading',
                 onTap: () {
                   setState(() {
-                    selectedFontType = FontType.lecturaFacil;
+                    selectedFontFamily = 'easy-reading';
                   });
-                  // TODO: Guardar en Firebase
-                  print('Fuente seleccionada: Lectura Fácil');
+                  _saveFontPreferences();
                 },
               ),
             ),
@@ -135,16 +226,13 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
     );
   }
 
-  /// Construye la sección del selector de tamaño de letra
   Widget _buildFontSizeSelector() {
-    // Calculamos el tamaño de letra actual basándonos en el valor del slider
-    // Rango: 16px (pequeño) hasta 32px (grande)
-    final currentFontSize = 16.0 + (fontSizeValue * 16.0);
+    final currentFontSize = _getFontSizePreview(fontSizeValue);
+    final currentFontFamily = _getFontFamilyName(selectedFontFamily);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // === TÍTULO DE LA SECCIÓN ===
         const Text(
           'Tamaño de letra',
           style: TextStyle(
@@ -152,10 +240,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-
         const SizedBox(height: 24),
-
-        // === TARJETA CON EL SLIDER ===
         Card(
           elevation: 2,
           shape: RoundedRectangleBorder(
@@ -165,19 +250,14 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
             padding: const EdgeInsets.all(32.0),
             child: Column(
               children: [
-                // === FILA CON ICONOS Y SLIDER ===
                 Row(
                   children: [
-                    // ICONO IZQUIERDA: Letra pequeña
                     const Icon(
                       Icons.text_fields,
                       size: 32,
                       color: Colors.grey,
                     ),
-
                     const SizedBox(width: 24),
-
-                    // === SLIDER ===
                     Expanded(
                       child: SliderTheme(
                         data: SliderTheme.of(context).copyWith(
@@ -185,36 +265,30 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
                           inactiveTrackColor: Colors.grey[300],
                           thumbColor: Colors.blue,
                           thumbShape: const RoundSliderThumbShape(
-                            enabledThumbRadius: 16, // Pulgar grande para accesibilidad
+                            enabledThumbRadius: 16,
                           ),
                           overlayShape: const RoundSliderOverlayShape(
-                            overlayRadius: 28, // Área táctil grande
+                            overlayRadius: 28,
                           ),
-                          trackHeight: 8, // Barra más gruesa
+                          trackHeight: 8,
                         ),
                         child: Slider(
-                          value: fontSizeValue,
+                          value: _fontSizeToSlider(fontSizeValue),
                           min: 0.0,
                           max: 1.0,
-                          // Dividimos en 4 pasos: muy pequeño, pequeño, medio, grande, muy grande
                           divisions: 4,
                           onChanged: (value) {
                             setState(() {
-                              fontSizeValue = value;
+                              fontSizeValue = _sliderToFontSize(value);
                             });
                           },
                           onChangeEnd: (value) {
-                            // Cuando el usuario suelte el slider, guardamos el valor
-                            // TODO: Guardar en Firebase
-                            print('Tamaño de letra: ${currentFontSize.toInt()}px');
+                            _saveFontPreferences();
                           },
                         ),
                       ),
                     ),
-
                     const SizedBox(width: 24),
-
-                    // ICONO DERECHA: Letra grande
                     const Icon(
                       Icons.text_fields,
                       size: 56,
@@ -222,10 +296,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 24),
-
-                // === VISTA PREVIA DEL TAMAÑO ===
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -236,6 +307,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
                     'Texto de ejemplo',
                     style: TextStyle(
                       fontSize: currentFontSize,
+                      fontFamily: currentFontFamily,
                       fontWeight: FontWeight.normal,
                     ),
                   ),
@@ -249,21 +321,7 @@ class _FontSettingsScreenState extends State<FontSettingsScreen> {
   }
 }
 
-// === ENUMERACIÓN PARA LOS TIPOS DE FUENTE ===
-/// Representa los diferentes tipos de fuente disponibles
-enum FontType {
-  predeterminada,
-  amigable,
-  lecturaFacil,
-}
-
-// === WIDGET PARA LOS BOTONES DE TIPO DE FUENTE ===
-/// Botón que permite seleccionar un tipo de fuente
-///
-/// Características:
-/// - Muestra el texto en la fuente correspondiente
-/// - Cambia de estilo cuando está seleccionado (borde azul)
-/// - Es táctil y accesible
+// === WIDGET AUXILIAR PARA BOTONES DE TIPO DE FUENTE ===
 class _FontTypeButton extends StatelessWidget {
   final String label;
   final String fontFamily;
@@ -287,7 +345,6 @@ class _FontTypeButton extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            // Si está seleccionado, borde azul grueso; si no, borde gris fino
             color: isSelected ? Colors.blue : Colors.grey.shade300,
             width: isSelected ? 3 : 1.5,
           ),
@@ -298,7 +355,6 @@ class _FontTypeButton extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              // Aquí aplicamos la fuente correspondiente
               fontFamily: fontFamily,
             ),
             textAlign: TextAlign.center,

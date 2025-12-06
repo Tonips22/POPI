@@ -47,11 +47,11 @@ class UserPreferences {
 
   UserPreferences({
     this.primaryColor = '0xFF2196F3',
-    this. secondaryColor = '0xFFFFC107',
+    this.secondaryColor = '0xFFFFC107',
     this.backgroundColor = '0xFFFFFFFF',
-    this. fontFamily = 'Roboto',
-    this.fontSize = 'medium',
-    this. canCustomize = false,
+    this.fontFamily = 'default',
+    this.fontSize = 'default',
+    this.canCustomize = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -67,10 +67,16 @@ class UserPreferences {
 
   factory UserPreferences.fromMap(Map<String, dynamic> map) {
     // Manejar fontSize: puede ser String o número (legacy)
-    String fontSize = 'medium'; // default
+    String fontSize = 'default'; // default
     if (map['fontSize'] != null) {
       if (map['fontSize'] is String) {
-        fontSize = map['fontSize'] as String;
+        String value = map['fontSize'] as String;
+        // Convertir valores antiguos a nuevos
+        if (value == 'medium') {
+          fontSize = 'default';
+        } else {
+          fontSize = value;
+        }
       } else if (map['fontSize'] is num) {
         // Convertir números antiguos a String
         double value = (map['fontSize'] as num).toDouble();
@@ -79,7 +85,7 @@ class UserPreferences {
         } else if (value <= 16.0) {
           fontSize = 'small';
         } else if (value <= 20.0) {
-          fontSize = 'medium';
+          fontSize = 'default';
         } else if (value <= 28.0) {
           fontSize = 'large';
         } else {
@@ -88,11 +94,26 @@ class UserPreferences {
       }
     }
     
+    // Manejar fontFamily: convertir valores antiguos a nuevos
+    String fontFamily = 'default';
+    if (map['fontFamily'] != null) {
+      String value = map['fontFamily'] as String;
+      if (value == 'Roboto') {
+        fontFamily = 'default';
+      } else if (value == 'ComicNeue') {
+        fontFamily = 'friendly';
+      } else if (value == 'OpenDyslexic') {
+        fontFamily = 'easy-reading';
+      } else {
+        fontFamily = value;
+      }
+    }
+    
     return UserPreferences(
       primaryColor: map['primaryColor'] ?? '0xFF2196F3',
       secondaryColor: map['secondaryColor'] ?? '0xFFFFC107',
       backgroundColor: map['backgroundColor'] ?? '0xFFFFFFFF',
-      fontFamily: map['fontFamily'] ?? 'Roboto',
+      fontFamily: fontFamily,
       fontSize: fontSize,
       canCustomize: map['canCustomize'] ?? false,
     );
@@ -124,7 +145,7 @@ class UserPreferences {
         return 12.0;
       case 'small':
         return 16.0;
-      case 'medium':
+      case 'default':
         return 20.0;
       case 'large':
         return 24.0;
@@ -132,6 +153,20 @@ class UserPreferences {
         return 32.0;
       default:
         return 20.0;
+    }
+  }
+  
+  /// Convierte el fontFamily a nombre de fuente real para Flutter
+  String getFontFamilyName() {
+    switch (fontFamily) {
+      case 'default':
+        return 'Roboto';
+      case 'friendly':
+        return 'ComicNeue';
+      case 'easy-reading':
+        return 'OpenDyslexic';
+      default:
+        return 'Roboto';
     }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/number_format_preferences.dart';
 import '../widgets/number_format_option_card.dart';
 import '../widgets/upload_option_card.dart';
+import '../services/app_service.dart';
 
 /// Pantalla de configuración de visualización de números
 /// 
@@ -33,8 +34,15 @@ class _NumberFormatScreenState extends State<NumberFormatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+        
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
       
       // === BARRA SUPERIOR ===
       appBar: AppBar(
@@ -42,11 +50,12 @@ class _NumberFormatScreenState extends State<NumberFormatScreen> {
           icon: const Icon(Icons.arrow_back, size: 32),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Visualización de números',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: titleFontSize * 1.2,
             fontWeight: FontWeight.bold,
+            fontFamily: titleFontFamily,
           ),
         ),
         backgroundColor: Colors.white,

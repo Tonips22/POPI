@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'difficulty_screen.dart';
 import 'customization_screen.dart';
-import 'resultados.dart';
-import '../widgets/preference_provider.dart';
-import '../widgets/voice_text.dart';
+import '../services/app_service.dart';
+// import '../widgets/preference_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final prefs = PreferenceProvider.of(context);
-
+    // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final backgroundColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.backgroundColor))
+        : Colors.grey[100]!;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-
+      backgroundColor: backgroundColor,
+      
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
@@ -22,11 +27,11 @@ class SettingsScreen extends StatelessWidget {
             Navigator.pop(context);
           },
         ),
-        title: VoiceText(
+        title: Text(
           'Ajustes',
           style: TextStyle(
-            fontSize: (prefs?.getFontSizeValue() ?? 18.0) * 1.5,
-            fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+            fontSize: titleFontSize * 1.35,
+            fontFamily: titleFontFamily,
           ),
         ),
         centerTitle: true,
@@ -34,19 +39,20 @@ class SettingsScreen extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-
+      
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // === OPCIÓN 1: DIFICULTAD ===
               _SettingsOptionCard(
                 icon: Icons.tune,
                 title: 'Dificultad',
                 backgroundColor: Colors.blue,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -56,38 +62,21 @@ class SettingsScreen extends StatelessWidget {
                   );
                 },
               ),
-
+              
               const SizedBox(height: 30),
-
+              
+              // === OPCIÓN 2: PERSONALIZACIÓN ===
               _SettingsOptionCard(
                 icon: Icons.palette,
                 title: 'Personalización',
                 backgroundColor: Colors.purple,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
+                fontSize: titleFontSize,
+                fontFamily: titleFontFamily,
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const CustomizationScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 30),
-
-              _SettingsOptionCard(
-                icon: Icons.bar_chart,
-                title: 'Resultados',
-                backgroundColor: Colors.green,
-                fontSize: prefs?.getFontSizeValue() ?? 18.0,
-                fontFamily: prefs?.getFontFamilyName() ?? 'Roboto',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ResultadosScreen(),
                     ),
                   );
                 },
@@ -100,6 +89,7 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+/// Widget personalizado para cada opción de ajustes
 class _SettingsOptionCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -132,13 +122,15 @@ class _SettingsOptionCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Icono grande en blanco
               Icon(
                 icon,
                 size: 56,
                 color: Colors.white,
               ),
               const SizedBox(width: 24),
-              VoiceText(
+              // Título al lado del icono
+              Text(
                 title,
                 style: TextStyle(
                   fontSize: fontSize * 1.2,

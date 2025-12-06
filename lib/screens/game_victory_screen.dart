@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// import '../widgets/preference_provider.dart';
+import '../services/app_service.dart';
 
 /// Pantalla de victoria que se muestra al completar un juego
 class GameVictoryScreen extends StatelessWidget {
@@ -13,18 +15,27 @@ class GameVictoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final prefs = PreferenceProvider.of(context);
+    final currentUser = AppService().currentUser;
+    final userColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.primaryColor))
+        : Colors.blue.shade400;
+    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    
     return Scaffold(
-      backgroundColor: Colors.blue.shade400,
+      backgroundColor: userColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Mensaje de victoria
-            const Text(
+            Text(
               '¡Has ganado!',
               style: TextStyle(
-                fontSize: 56,
+                fontSize: titleFontSize * 2.25,
                 fontWeight: FontWeight.bold,
+                fontFamily: titleFontFamily,
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
@@ -89,33 +100,49 @@ class _VictoryButton extends StatelessWidget {
           color: Colors.white,
           shape: const CircleBorder(),
           elevation: 8,
-          child: InkWell(
-            onTap: () {
-              print('Button tapped: $label'); // Debug
-              onPressed();
-            },
-            customBorder: const CircleBorder(),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Icon(
-                icon,
-                size: 60,
-                color: Colors.blue.shade400,
-              ),
+            child: Builder(
+              builder: (context) {
+                final userColor = AppService().currentUser != null
+                    ? Color(int.parse(AppService().currentUser!.preferences.primaryColor))
+                    : Colors.blue.shade400;
+                return InkWell(
+                  onTap: () {
+                    print('Button tapped: $label'); // Debug
+                    onPressed();
+                  },
+                  customBorder: const CircleBorder(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Icon(
+                      icon,
+                      size: 60,
+                      color: userColor,
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
         ),
         
         const SizedBox(height: 16),
         
         // Etiqueta del botón
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+        Builder(
+          builder: (context) {
+            // final prefs = PreferenceProvider.of(context);
+            final currentUser = AppService().currentUser;
+            final labelFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+            final labelFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+            return Text(
+              label,
+              style: TextStyle(
+                fontSize: labelFontSize * 1.1,
+                fontWeight: FontWeight.w600,
+                fontFamily: labelFontFamily,
+                color: Colors.white,
+              ),
+            );
+          },
         ),
       ],
     );

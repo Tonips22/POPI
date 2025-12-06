@@ -10,9 +10,14 @@ import '../services/app_service.dart';
 // import '../widgets/preference_provider.dart';
 import '../widgets/voice_text.dart';
 
-class CustomizationScreen extends StatelessWidget {
+class CustomizationScreen extends StatefulWidget {
   const CustomizationScreen({super.key});
 
+  @override
+  State<CustomizationScreen> createState() => _CustomizationScreenState();
+}
+
+class _CustomizationScreenState extends State<CustomizationScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
@@ -21,8 +26,9 @@ class CustomizationScreen extends StatelessWidget {
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
 
-    final double titleFontSize = 18.0;
-    final String titleFontFamily = 'Roboto';
+    // Obtener preferencias de fuente del usuario
+    final double titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
+    final String titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -81,13 +87,15 @@ class CustomizationScreen extends StatelessWidget {
                 backgroundColor: Colors.purple,
                 fontSize: titleFontSize,
                 fontFamily: titleFontFamily,
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const FontSettingsScreen(),
                     ),
                   );
+                  // Actualizar la pantalla cuando se regrese
+                  setState(() {});
                 },
               ),
 
