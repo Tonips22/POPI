@@ -1,18 +1,22 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:popi/screens/settings_screen.dart';
+import 'package:popi/screens/settings_screen_restar.dart';
 import '../widgets/check_icon_overlay.dart';
-// import '../widgets/preference_provider.dart';
 import '../services/app_service.dart';
+
 
 /// ---------------------------------------------------------------------------
 /// CONTROLADOR DEL JUEGO: RESTAS PARA IGUALAR RECIPIENTES
 /// ---------------------------------------------------------------------------
 class EqualSubtractionController {
   final Random _random = Random();
+  // Parámetros configurables de dificultad (se cambian en RestarDifficultyScreen)
+  static int containersCountSetting = 3;      // nº de jarras (2–6)
+  static int minInitialBallsSetting = 3;      // mínimo de bolas iniciales por jarra
+  static int maxInitialBallsSetting = 20;      // máximo de bolas iniciales por jarra
 
-  static const int _containersCount = 3; // nº de recipientes
+
   late List<List<int>> containers;       // ids de bolas en cada jarra
   late List<int> initialCounts;          // nº inicial de bolas en cada jarra
   late int targetCount;                  // objetivo (mínimo inicial)
@@ -31,31 +35,37 @@ class EqualSubtractionController {
     // Generamos cantidades iniciales entre 3 y 8, asegurando que no todas sean iguales
     while (true) {
       initialCounts = List<int>.generate(
-        _containersCount,
-            (_) => 3 + _random.nextInt(6), // 3..8
+        containersCountSetting,
+            (_) => minInitialBallsSetting +
+            _random.nextInt(
+              (maxInitialBallsSetting - minInitialBallsSetting + 1)
+                  .clamp(1, 100), // por seguridad
+            ),
       );
       final unique = initialCounts.toSet();
       if (unique.length > 1) break; // evitamos empezar ya igualados
     }
 
+
     // El objetivo será el menor de los recipientes
     targetCount = initialCounts.reduce((a, b) => a < b ? a : b);
 
     containers = List<List<int>>.generate(
-      _containersCount,
+      containersCountSetting,
           (_) => <int>[],
     );
     _nextBallId = 0;
 
     // Creamos las bolas
-    for (int j = 0; j < _containersCount; j++) {
+    for (int j = 0; j < containersCountSetting; j++) {
       for (int k = 0; k < initialCounts[j]; k++) {
         containers[j].add(_nextBallId++);
       }
     }
+
   }
 
-  int get containersCount => _containersCount;
+  int get containersCount => containersCountSetting;
   int get target => targetCount;
 
   List<int> ballsInJar(int jarIndex) =>
@@ -66,6 +76,13 @@ class EqualSubtractionController {
   void removeBallFromJar(int jarIndex, int ballId) {
     containers[jarIndex].remove(ballId);
   }
+
+  void removeBallAnywhere(int ballId) {
+    for (final jar in containers) {
+      jar.remove(ballId);
+    }
+  }
+
 
   bool get allJarsEqual {
     final counts = containers.map((c) => c.length).toSet();
@@ -121,26 +138,71 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
   Widget build(BuildContext context) {
     final controller = widget.controller;
     final size = MediaQuery.of(context).size;
-    final jarWidth = size.width * 0.22;
-    final jarHeight = size.height * 0.4;
+    final int totalJars = controller.containersCount;
+
+    // Decidimos cómo repartir las jarras en filas
+    final List<List<int>> rows = _computeRows(totalJars);
+
+    // Para calcular el tamaño de cada jarra, miramos cuántas hay en la fila más larga
+    final int maxJarsInRow = rows
+        .map((r) => r.length)
+        .fold<int>(0, (prev, len) => len > prev ? len : prev);
+
+    // Anchura y altura de cada jarra según cuántas haya
+    final double jarWidth = size.width / (maxJarsInRow * 1.6);
+    final double jarHeight = rows.length == 1
+        ? size.height * 0.40
+        : size.height * 0.20;   // (antes 0.26)
+
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(
-            controller.containersCount,
-                (index) => _buildJar(
-              index: index,
-              width: jarWidth,
-              height: jarHeight,
-              controller: controller,
+        for (final row in rows)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                for (final index in row)
+                  _buildJar(
+                    index: index,
+                    width: jarWidth,
+                    height: jarHeight,
+                    controller: controller,
+                  ),
+              ],
             ),
           ),
-        ),
       ],
     );
+  }
+
+  List<List<int>> _computeRows(int total) {
+    if (total <= 3) {
+      // 1, 2 o 3 jarras: todas en una fila
+      return [
+        List<int>.generate(total, (i) => i),
+      ];
+    } else if (total == 4) {
+      // 2 y 2
+      return [
+        [0, 1],
+        [2, 3],
+      ];
+    } else if (total == 5) {
+      // 3 arriba, 2 abajo
+      return [
+        [0, 1, 2],
+        [3, 4],
+      ];
+    } else {
+      // 6 jarras: 3 y 3
+      return [
+        [0, 1, 2],
+        [3, 4, 5],
+      ];
+    }
   }
 
   Widget _buildJar({
@@ -151,43 +213,72 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
   }) {
     final ballsInJar = controller.ballsInJar(index);
     final int currentCount = controller.countForJar(index);
+    final int initial = controller.initialCounts[index];
+    // Calculamos el tamaño de las bolas en función del espacio disponible
+    // y del número máximo de bolas que hay en cualquier jarra.
+    final int maxBalls = controller.initialCounts
+        .reduce((a, b) => a > b ? a : b); // máximo nº de bolas entre todas las jarras
+    final int approxRows = (maxBalls / 2).ceil(); // suponemos 2 columnas de bolas
+
+    // Espacio útil dentro de la jarra (restamos padding y algo de separación)
+    final double maxBallWidth = (width - 16) / 2 - 6;        // 2 columnas
+    final double maxBallHeight = (height - 16) / approxRows - 6;
+
+    double ballSize =
+    maxBallWidth < maxBallHeight ? maxBallWidth : maxBallHeight;
+
+    // Limitamos para que no sean ni minúsculas ni gigantes
+    if (ballSize > 64) ballSize = 64;
+    if (ballSize < 28) ballSize = 28;
+
+
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: width,
-          height: height,
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.grey.shade400, width: 3),
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+        DragTarget<int>(
+          onWillAccept: (_) => true,  // cualquier bola que pase por aquí se considera "aceptada"
+          onAccept: (_) {
+            // No hacemos nada: la bola no cambia de sitio,
+            // solo usamos esto para que Draggable sepa que ha sido aceptado.
+          },
+          builder: (context, candidate, rejected) {
+            return Container(
+              width: width,
+              height: height,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.grey.shade400, width: 3),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 6,
-              runSpacing: 6,
-              children: ballsInJar
-                  .map((id) => _buildBall(id, index))
-                  .toList(),
-            ),
-          ),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: ballsInJar
+                      .map((id) => _buildBall(id, index, ballSize))
+                      .toList(),
+
+                ),
+              ),
+            );
+          },
         ),
-        const SizedBox(height: 8),
-        // Debajo mostramos la cantidad actual en grande
+
+        const SizedBox(height: 4),
         Container(
-          width: 80,
-          height: 80,
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
             color: Colors.grey.shade200,
             shape: BoxShape.circle,
@@ -200,23 +291,33 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
             child: Text(
               '$currentCount',
               style: const TextStyle(
-                fontSize: 32,
+                fontSize: 24,              // antes 32
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
           ),
         ),
+        const SizedBox(height: 2),
+        Text(
+          'Inicial: $initial',
+          style: const TextStyle(
+            fontSize: 14,                 // antes 16
+            color: Colors.black54,
+          ),
+        ),
+
+
       ],
     );
   }
 
-  Widget _buildBall(int id, int jarIndex) {
+  Widget _buildBall(int id, int jarIndex, double size) {
     final controller = widget.controller;
 
     final visual = Container(
-      width: 64,
-      height: 64,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: widget.primaryColor,
         shape: BoxShape.circle,
@@ -231,6 +332,7 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
     );
 
     return GestureDetector(
+      // Tap: sigue funcionando como antes (quitar una bola)
       onTap: () {
         if (_roundLocked) return;
 
@@ -245,9 +347,39 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
         });
         _checkCompletion();
       },
-      child: visual,
+      child: Draggable<int>(
+        data: id,
+        feedback: Material(
+          color: Colors.transparent,
+          child: visual,
+        ),
+        childWhenDragging: Opacity(
+          opacity: 0.3,
+          child: visual,
+        ),
+        child: visual,
+        onDragEnd: (details) {
+          if (_roundLocked) return;
+
+          // Si NO ha caído sobre una jarra (ningún DragTarget lo aceptó),
+          // lo interpretamos como "quitar bola".
+          if (!details.wasAccepted) {
+            final currentCount = controller.countForJar(jarIndex);
+            final target = controller.target;
+
+            // No permitir bajar de la cantidad objetivo
+            if (currentCount <= target) return;
+
+            setState(() {
+              controller.removeBallFromJar(jarIndex, id);
+            });
+            _checkCompletion();
+          }
+        },
+      ),
     );
   }
+
 
   void _checkCompletion() {
     final controller = widget.controller;
@@ -318,7 +450,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
             'tiempo: ${elapsed.inSeconds}s',
       );
 
-      Future.delayed(const Duration(milliseconds: 800), () {
+      Future.delayed(const Duration(milliseconds: 2000), () {
         if (!mounted) return;
         _restartRound();
       });
@@ -370,7 +502,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
+                  builder: (context) => const SettingsScreenRestar(),
                 ),
               );
               setState(() {
@@ -381,6 +513,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                 _attempts = 0;
               });
             },
+
           ),
         ],
       ),
@@ -392,12 +525,47 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
               constraints: const BoxConstraints(maxWidth: 1000),
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: EqualSubtractionBoard(
-                  key: ValueKey(_roundIndex),
-                  controller: _controller,
-                  onRoundUpdate: _handleRoundUpdate,
-                  primaryColor: userColor,
-                  secondaryColor: secondaryColor,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Instrucciones arriba
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'Quita bolas hasta que todas las jarras tengan el mismo número',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    // Objetivo numérico
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        'Objetivo: ${_controller.target}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                    ),
+
+                    // Tablero ocupando el resto del espacio
+                    Expanded(
+                      child: EqualSubtractionBoard(
+                        key: ValueKey(_roundIndex),
+                        controller: _controller,
+                        onRoundUpdate: _handleRoundUpdate,
+                        primaryColor: userColor,
+                        secondaryColor: secondaryColor,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

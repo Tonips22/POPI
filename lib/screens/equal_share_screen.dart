@@ -5,6 +5,8 @@ import 'package:popi/screens/settings_screen.dart';
 import '../widgets/check_icon_overlay.dart';
 // import '../widgets/preference_provider.dart';
 import '../services/app_service.dart';
+import 'settings_screen_sumar.dart';
+
 
 /// ---------------------------------------------------------------------------
 /// CONTROLADOR DEL JUEGO: SUMAS EN CADA RECIPIENTE
@@ -13,7 +15,27 @@ class EqualShareController {
   final Random _random = Random();
 
   static const int _containersCount = 2; // ahora mismo siempre 2
-  static const int _ballsCount = 4; // nº de bolas
+
+  // Estos valores ahora son configurables desde la pantalla de dificultad
+  static int _ballsCount = 4; // nº de bolas por defecto
+  static int _minBallValue = 1;
+  static int _maxBallValue = 10;
+
+  // Getters y setters estáticos para que la Difficulty los pueda cambiar
+  static int get ballsCount => _ballsCount;
+  static int get minBallValue => _minBallValue;
+  static int get maxBallValue => _maxBallValue;
+
+  static void setBallsCount(int value) {
+    // por si acaso, acotamos a un rango razonable
+    _ballsCount = value.clamp(2, 10);
+  }
+
+  static void setBallValueMax(int max) {
+    if (max < _minBallValue) return;
+    _maxBallValue = max;
+  }
+
 
   late List<int> ballValues; // valor de cada bola
   late List<int> targetValues; // número debajo de cada recipiente
@@ -32,9 +54,13 @@ class EqualShareController {
   void _startNewRound() {
     // Generamos una combinación de bolas y objetivos que tenga solución
     while (true) {
-      // Valores de las bolas entre 1 y 4 (para que las sumas no se disparen)
-      ballValues =
-      List<int>.generate(_ballsCount, (_) => 1 + _random.nextInt(4));
+      // Valores de las bolas entre _minBallValue y _maxBallValue (configurables)
+      ballValues = List<int>.generate(
+        _ballsCount,
+            (_) =>
+        _minBallValue + _random.nextInt(_maxBallValue - _minBallValue + 1),
+      );
+
 
       // Elegimos una partición aleatoria de las bolas en dos grupos:
       // grupo 1 -> recipiente 0, grupo 2 -> recipiente 1
@@ -58,11 +84,12 @@ class EqualShareController {
       final int sum2 =
       group2.fold(0, (s, idx) => s + ballValues[idx]);
 
-      // Queremos objetivos entre 1 y 10
-      if (sum1 >= 1 && sum1 <= 10 && sum2 >= 1 && sum2 <= 10) {
+      // Nos basta con que ambas sumas sean > 0 (ya que los valores son positivos)
+      if (sum1 > 0 && sum2 > 0) {
         targetValues = [sum1, sum2];
         break;
       }
+
     }
 
     // Todas las bolas empiezan en el "pool" de arriba
@@ -236,6 +263,15 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
     final ballsInJar = controller.containers[index];
     final int target = controller.targetValues[index];
 
+    // Color del círculo del objetivo:
+    // gris por defecto, verde cuando la suma en esta jarra
+    // coincide con el número objetivo (aunque aún queden bolas arriba).
+    Color indicatorColor = Colors.grey.shade200;
+    if (controller.jarMatchesTarget(index)) {
+      indicatorColor = Colors.green.withOpacity(0.6);
+    }
+
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -317,7 +353,7 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
           width: 90,
           height: 90,
           decoration: BoxDecoration(
-            color: Colors.grey.shade200,
+            color: indicatorColor,
             shape: BoxShape.circle,
             border: Border.all(
               color: Colors.grey.shade400,
@@ -471,7 +507,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
       // Aquí registrarías acierto + tiempo
       debugPrint('Acierto $_hits, tiempo: ${elapsed.inSeconds}s');
 
-      Future.delayed(const Duration(milliseconds: 800), () {
+      Future.delayed(const Duration(milliseconds: 2000), () {
         if (!mounted) return;
         _restartRound();
       });
@@ -484,7 +520,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
       // Aquí registrarías el error + tiempo
       debugPrint('Error $_errors, tiempo hasta el fallo: ${elapsed.inSeconds}s');
 
-      Future.delayed(const Duration(milliseconds: 800), () {
+      Future.delayed(const Duration(milliseconds: 2000), () {
         if (!mounted) return;
         setState(() {
           _showErrorIcon = false;
@@ -533,7 +569,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
+                  builder: (context) => const SettingsScreenSumar(),
                 ),
               );
               setState(() {
@@ -555,13 +591,35 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
               constraints: const BoxConstraints(maxWidth: 1000),
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: EqualShareBoard(
-                  key: ValueKey(_roundIndex),
-                  controller: _controller,
-                  onRoundEnd: _handleRoundEnd,
-                  primaryColor: userColor,
-                  secondaryColor: secondaryColor,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Instrucciones arriba
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        'Lleva las bolas a las jarras para alcanzar la cantidad deseada',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    // Tablero ocupando el espacio central
+                    Expanded(
+                      child: EqualShareBoard(
+                        key: ValueKey(_roundIndex),
+                        controller: _controller,
+                        onRoundEnd: _handleRoundEnd,
+                        primaryColor: userColor,
+                        secondaryColor: secondaryColor,
+                      ),
+                    ),
+                  ],
                 ),
+
               ),
             ),
           ),
