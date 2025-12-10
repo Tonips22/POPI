@@ -101,7 +101,7 @@ class _CustomizationScreenState extends State<CustomizationScreen> {
 
               _GridOptionCard(
                 icon: Icons.looks_one,
-                title: 'Formato de números',
+                title: 'Formas',
                 backgroundColor: Colors.green,
                 fontSize: titleFontSize,
                 fontFamily: titleFontFamily,
