@@ -43,6 +43,7 @@ class UserPreferences {
   final String backgroundColor;
   final String fontFamily;
   final String fontSize; // 'extra_small', 'small', 'medium', 'large', 'extra_large'
+  final String shape; // 'circle', 'square', 'triangle'
   final bool canCustomize;
 
   UserPreferences({
@@ -51,6 +52,7 @@ class UserPreferences {
     this.backgroundColor = '0xFFFFFFFF',
     this.fontFamily = 'default',
     this.fontSize = 'default',
+    this.shape = 'circle',
     this.canCustomize = false,
   });
 
@@ -61,6 +63,7 @@ class UserPreferences {
       'backgroundColor': backgroundColor,
       'fontFamily': fontFamily,
       'fontSize': fontSize, // Ahora es String directamente
+      'shape': shape,
       'canCustomize': canCustomize,
     };
   }
@@ -109,12 +112,22 @@ class UserPreferences {
       }
     }
     
+    // Manejar shape: validar valores
+    String shape = 'circle';
+    if (map['shape'] != null) {
+      String value = map['shape'] as String;
+      if (value == 'circle' || value == 'square' || value == 'triangle') {
+        shape = value;
+      }
+    }
+    
     return UserPreferences(
       primaryColor: map['primaryColor'] ?? '0xFF2196F3',
       secondaryColor: map['secondaryColor'] ?? '0xFFFFC107',
       backgroundColor: map['backgroundColor'] ?? '0xFFFFFFFF',
       fontFamily: fontFamily,
       fontSize: fontSize,
+      shape: shape,
       canCustomize: map['canCustomize'] ?? false,
     );
   }
@@ -126,6 +139,7 @@ class UserPreferences {
     String? backgroundColor,
     String? fontFamily,
     String? fontSize,
+    String? shape,
     bool?  canCustomize,
   }) {
     return UserPreferences(
@@ -134,6 +148,7 @@ class UserPreferences {
       backgroundColor: backgroundColor ?? this.backgroundColor,
       fontFamily: fontFamily ?? this.fontFamily,
       fontSize: fontSize ?? this.fontSize,
+      shape: shape ?? this.shape,
       canCustomize: canCustomize ?? this.canCustomize,
     );
   }

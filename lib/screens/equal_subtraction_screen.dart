@@ -117,6 +117,9 @@ class EqualSubtractionBoard extends StatefulWidget {
     required this.onRoundUpdate,
     required this.primaryColor,
     required this.secondaryColor,
+    this.shape = 'circle',
+    required this.titleFontSize,
+    required this.titleFontFamily,
   });
 
   final EqualSubtractionController controller;
@@ -126,6 +129,9 @@ class EqualSubtractionBoard extends StatefulWidget {
   final void Function(bool isCorrect, String equation) onRoundUpdate;
   final Color primaryColor;
   final Color secondaryColor;
+  final String shape;
+  final double titleFontSize;
+  final String titleFontFamily;
 
   @override
   State<EqualSubtractionBoard> createState() => _EqualSubtractionBoardState();
@@ -276,24 +282,29 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
         ),
 
         const SizedBox(height: 4),
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.grey.shade400,
-              width: 2,
+        ClipPath(
+          clipper: widget.shape == 'triangle' ? TriangleClipper() : null,
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              shape: widget.shape == 'circle' ? BoxShape.circle : BoxShape.rectangle,
+              borderRadius: widget.shape == 'square' ? BorderRadius.circular(12) : null,
+              border: Border.all(
+                color: Colors.grey.shade400,
+                width: 2,
+              ),
             ),
-          ),
-          child: Center(
-            child: Text(
-              '$currentCount',
-              style: const TextStyle(
-                fontSize: 24,              // antes 32
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+            child: Center(
+              child: Text(
+                '$currentCount',
+                style: TextStyle(
+                  fontSize: widget.titleFontSize * 1.2,
+                  fontFamily: widget.titleFontFamily,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
             ),
           ),
@@ -301,8 +312,9 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
         const SizedBox(height: 2),
         Text(
           'Inicial: $initial',
-          style: const TextStyle(
-            fontSize: 14,                 // antes 16
+          style: TextStyle(
+            fontSize: widget.titleFontSize * 0.7,
+            fontFamily: widget.titleFontFamily,
             color: Colors.black54,
           ),
         ),
@@ -315,19 +327,23 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
   Widget _buildBall(int id, int jarIndex, double size) {
     final controller = widget.controller;
 
-    final visual = Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: widget.primaryColor,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
+    final visual = ClipPath(
+      clipper: widget.shape == 'triangle' ? TriangleClipper() : null,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: widget.primaryColor,
+          shape: widget.shape == 'circle' ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: widget.shape == 'square' ? BorderRadius.circular(size * 0.2) : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -476,6 +492,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
         : Colors.grey[50]!;
     final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
     final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -484,8 +501,8 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
         title: Text(
           'Resta para igualar',
           style: TextStyle(
-            fontSize: 18,
-            fontFamily: 'Roboto',
+            fontSize: titleFontSize * 0.9,
+            fontFamily: titleFontFamily,
           ),
         ),
         centerTitle: true,
@@ -534,8 +551,9 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                       child: Text(
                         'Quita bolas hasta que todas las jarras tengan el mismo número',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: titleFontSize * 0.9,
+                          fontFamily: titleFontFamily,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -547,10 +565,11 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                       child: Text(
                         'Objetivo: ${_controller.target}',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: titleFontSize * 1.1,
+                          fontFamily: titleFontFamily,
                           fontWeight: FontWeight.w700,
-                          color: Colors.blueAccent,
+                          color: userColor,
                         ),
                       ),
                     ),
@@ -563,6 +582,9 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                         onRoundUpdate: _handleRoundUpdate,
                         primaryColor: userColor,
                         secondaryColor: secondaryColor,
+                        shape: userShape,
+                        titleFontSize: titleFontSize,
+                        titleFontFamily: titleFontFamily,
                       ),
                     ),
                   ],
@@ -577,4 +599,20 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
       ),
     );
   }
+}
+
+/// CustomClipper para crear triángulos
+class TriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(size.width / 2, 0); // Punto superior (centro arriba)
+    path.lineTo(size.width, size.height); // Esquina inferior derecha
+    path.lineTo(0, size.height); // Esquina inferior izquierda
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

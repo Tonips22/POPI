@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import '../models/number_format_preferences.dart';
-import '../widgets/number_format_option_card.dart';
-import '../widgets/upload_option_card.dart';
 import '../services/app_service.dart';
 
-/// Pantalla de configuración de visualización de números
+/// Pantalla de configuración de formas de objetos
 /// 
-/// Permite al estudiante personalizar:
-/// 1. Cómo se muestran los números (grafía, pictograma, audio, dibujo)
-/// 2. Imágenes personalizadas para los objetos
-/// 3. Audios personalizados para los números
+/// Permite al estudiante personalizar la forma en que se visualizan
+/// los objetos en los juegos:
+/// - Círculo
+/// - Cuadrado (con bordes redondeados)
+/// - Triángulo
 /// 
-/// Estos ajustes mejoran la accesibilidad y adaptación del juego
-/// a las necesidades específicas de cada estudiante
+/// Esta preferencia se guarda en Firebase y se aplica a todos los juegos
 class NumberFormatScreen extends StatefulWidget {
   const NumberFormatScreen({super.key});
 
@@ -21,19 +18,78 @@ class NumberFormatScreen extends StatefulWidget {
 }
 
 class _NumberFormatScreenState extends State<NumberFormatScreen> {
+  final AppService _service = AppService();
+  
   // === ESTADO DE LA PANTALLA ===
-  // Estos valores deberían cargarse desde Firebase al iniciar
-  // y guardarse cuando se modifiquen
-  
-  // Tipo de visualización seleccionado
-  NumberDisplayType selectedDisplayType = NumberDisplayType.grafia;
-  
-  // URLs de contenido personalizado
-  String? customImageUrl;
-  String? customAudioUrl;
+  String selectedShape = 'circle';
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserShapePreference();
+  }
+
+  /// Carga la forma seleccionada desde las preferencias del usuario
+  void _loadUserShapePreference() {
+    final user = _service.currentUser;
+    if (user != null) {
+      setState(() {
+        selectedShape = user.preferences.shape;
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        selectedShape = 'circle';
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Guarda la forma seleccionada en Firebase
+  Future<void> _saveShapePreference(String shape) async {
+    final user = _service.currentUser;
+    if (user == null) return;
+
+    // Actualizar las preferencias con la nueva forma
+    final updatedPreferences = user.preferences.copyWith(shape: shape);
+
+    // Guardar en Firebase
+    bool success = await _service.updatePreferences(user.id, updatedPreferences);
+    
+    if (success) {
+      // Actualizar en memoria
+      _service.updateCurrentUserPreferences(updatedPreferences);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Forma guardada correctamente'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Error al guardar la forma'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    
     final currentUser = AppService().currentUser;
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
@@ -51,7 +107,7 @@ class _NumberFormatScreenState extends State<NumberFormatScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Visualización de números',
+          'Formas de objetos',
           style: TextStyle(
             fontSize: titleFontSize * 1.2,
             fontWeight: FontWeight.bold,
@@ -64,269 +120,154 @@ class _NumberFormatScreenState extends State<NumberFormatScreen> {
       ),
       
       // === CONTENIDO DE LA PANTALLA ===
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // === SECCIÓN 1: VISUALIZACIÓN DE NÚMEROS ===
-            _buildNumberDisplaySection(),
-            
-            const SizedBox(height: 48),
-            
-            // === SECCIÓN 2: PERSONALIZACIÓN DE OBJETOS ===
-            _buildCustomizationSection(),
-          ],
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // === TÍTULO/INSTRUCCIÓN ===
+              Text(
+                'Elige la forma de los objetos',
+                style: TextStyle(
+                  fontSize: titleFontSize * 1.4,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: titleFontFamily,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              const SizedBox(height: 48),
+              
+              // === GRID DE OPCIONES (3 formas) ===
+              _buildShapesGrid(titleFontSize, titleFontFamily),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// Construye la sección de selección de visualización de números
-  Widget _buildNumberDisplaySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  /// Construye el grid con las 3 opciones de forma
+  Widget _buildShapesGrid(double fontSize, String fontFamily) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // No necesitamos título, el título está en el AppBar
+        // OPCIÓN 1: Círculo
+        Expanded(
+          child: _buildShapeOption(
+            shape: 'circle',
+            label: 'Círculo',
+            icon: Icons.circle,
+            fontSize: fontSize,
+            fontFamily: fontFamily,
+          ),
+        ),
         
-        // === GRID DE OPCIONES (4 botones en 2 filas) ===
-        GridView.count(
-          // Desactivamos el scroll del GridView porque ya está dentro de un SingleChildScrollView
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          
-          // 4 columnas (una por opción, pero se adaptará en tablets pequeñas)
-          crossAxisCount: 4,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          // Ajustamos la proporción para que los botones sean cuadrados
-          childAspectRatio: 1.0,
-          
-          children: [
-            // OPCIÓN 1: Grafía de números (123)
-            NumberFormatOptionCard(
-              icon: Icons.numbers,
-              label: NumberDisplayType.grafia.displayName,
-              isSelected: selectedDisplayType == NumberDisplayType.grafia,
-              onTap: () {
-                setState(() {
-                  selectedDisplayType = NumberDisplayType.grafia;
-                });
-                _savePreferences();
-              },
-            ),
-            
-            // OPCIÓN 2: Pictograma
-            NumberFormatOptionCard(
-              icon: Icons.extension,
-              label: NumberDisplayType.pictograma.displayName,
-              isSelected: selectedDisplayType == NumberDisplayType.pictograma,
-              onTap: () {
-                setState(() {
-                  selectedDisplayType = NumberDisplayType.pictograma;
-                });
-                _savePreferences();
-              },
-            ),
-            
-            // OPCIÓN 3: Audio
-            NumberFormatOptionCard(
-              icon: Icons.volume_up,
-              label: NumberDisplayType.audio.displayName,
-              isSelected: selectedDisplayType == NumberDisplayType.audio,
-              onTap: () {
-                setState(() {
-                  selectedDisplayType = NumberDisplayType.audio;
-                });
-                _savePreferences();
-              },
-            ),
-            
-            // OPCIÓN 4: Dibujo
-            NumberFormatOptionCard(
-              icon: Icons.palette,
-              label: NumberDisplayType.dibujo.displayName,
-              isSelected: selectedDisplayType == NumberDisplayType.dibujo,
-              onTap: () {
-                setState(() {
-                  selectedDisplayType = NumberDisplayType.dibujo;
-                });
-                _savePreferences();
-              },
-            ),
-          ],
+        const SizedBox(width: 24),
+        
+        // OPCIÓN 2: Cuadrado
+        Expanded(
+          child: _buildShapeOption(
+            shape: 'square',
+            label: 'Cuadrado',
+            icon: Icons.square_rounded,
+            fontSize: fontSize,
+            fontFamily: fontFamily,
+          ),
+        ),
+        
+        const SizedBox(width: 24),
+        
+        // OPCIÓN 3: Triángulo
+        Expanded(
+          child: _buildShapeOption(
+            shape: 'triangle',
+            label: 'Triángulo',
+            icon: Icons.change_history,
+            fontSize: fontSize,
+            fontFamily: fontFamily,
+          ),
         ),
       ],
     );
   }
 
-  /// Construye la sección de personalización de objetos
-  Widget _buildCustomizationSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // === TÍTULO DE LA SECCIÓN ===
-        const Text(
-          'Personalización de objetos',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+  /// Construye una tarjeta de opción de forma
+  Widget _buildShapeOption({
+    required String shape,
+    required String label,
+    required IconData icon,
+    required double fontSize,
+    required String fontFamily,
+  }) {
+    final isSelected = selectedShape == shape;
+    final currentUser = _service.currentUser;
+    final primaryColor = currentUser != null
+        ? Color(int.parse(currentUser.preferences.primaryColor))
+        : Colors.blue;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedShape = shape;
+        });
+        _saveShapePreference(shape);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? primaryColor : Colors.grey.shade300,
+            width: isSelected ? 3 : 2,
           ),
-        ),
-        
-        const SizedBox(height: 24),
-        
-        // === FILA CON 2 OPCIONES ===
-        Row(
-          children: [
-            // OPCIÓN 1: Subir imagen propia
-            Expanded(
-              child: UploadOptionCard(
-                icon: Icons.add_photo_alternate,
-                label: 'Subir imagen propia',
-                hasContent: customImageUrl != null,
-                onTap: () {
-                  _uploadCustomImage();
-                },
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: primaryColor.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-            ),
-            
-            const SizedBox(width: 24),
-            
-            // OPCIÓN 2: Subir audio propio
-            Expanded(
-              child: UploadOptionCard(
-                icon: Icons.mic,
-                label: 'Subir audio propio',
-                hasContent: customAudioUrl != null,
-                onTap: () {
-                  _uploadCustomAudio();
-                },
-              ),
-            ),
           ],
         ),
-      ],
-    );
-  }
-
-  /// Guarda las preferencias en Firebase
-  /// 
-  /// TODO: Implementar cuando Firebase esté configurado
-  void _savePreferences() {
-    final preferences = NumberFormatPreferences(
-      displayType: selectedDisplayType,
-      customImageUrl: customImageUrl,
-      customAudioUrl: customAudioUrl,
-    );
-    
-    // TODO: Guardar en Firebase
-    // await FirebaseFirestore.instance
-    //   .collection('students')
-    //   .doc(studentId)
-    //   .update({
-    //     'preferences.numberFormat': preferences.toMap(),
-    //   });
-    
-    print('Preferencias guardadas: ${preferences.toMap()}');
-  }
-
-  /// Abre el selector de imágenes para subir una imagen personalizada
-  /// 
-  /// TODO: Implementar con image_picker y Firebase Storage
-  Future<void> _uploadCustomImage() async {
-    // TODO: Implementar selector de imágenes
-    // 1. Usar el paquete image_picker para seleccionar una imagen
-    // 2. Subir la imagen a Firebase Storage
-    // 3. Obtener la URL de descarga
-    // 4. Guardar la URL en customImageUrl
-    
-    print('Abrir selector de imágenes');
-    
-    // Ejemplo de cómo se haría (comentado para más adelante):
-    /*
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image != null) {
-      // Subir a Firebase Storage
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('student_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
-      
-      await storageRef.putFile(File(image.path));
-      final url = await storageRef.getDownloadURL();
-      
-      setState(() {
-        customImageUrl = url;
-      });
-      
-      _savePreferences();
-    }
-    */
-    
-    // Por ahora, simulamos que se subió una imagen
-    _showUploadDialog('Imagen', () {
-      setState(() {
-        customImageUrl = 'https://ejemplo.com/imagen.jpg';
-      });
-      _savePreferences();
-    });
-  }
-
-  /// Abre el selector/grabador de audio para subir un audio personalizado
-  /// 
-  /// TODO: Implementar con record y Firebase Storage
-  Future<void> _uploadCustomAudio() async {
-    // TODO: Implementar grabador o selector de audio
-    // 1. Usar el paquete record para grabar audio o file_picker para seleccionarlo
-    // 2. Subir el audio a Firebase Storage
-    // 3. Obtener la URL de descarga
-    // 4. Guardar la URL en customAudioUrl
-    
-    print('Abrir grabador/selector de audio');
-    
-    // Por ahora, simulamos que se subió un audio
-    _showUploadDialog('Audio', () {
-      setState(() {
-        customAudioUrl = 'https://ejemplo.com/audio.mp3';
-      });
-      _savePreferences();
-    });
-  }
-
-  /// Muestra un diálogo de simulación de subida
-  /// (Solo para testing, se eliminará cuando se implemente de verdad)
-  void _showUploadDialog(String type, VoidCallback onConfirm) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Subir $type'),
-        content: Text(
-          'Esta funcionalidad se implementará más adelante.\n\n'
-          '¿Simular que se subió un $type?',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icono de la forma
+            Icon(
+              icon,
+              size: 80,
+              color: isSelected ? primaryColor : Colors.grey.shade600,
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Etiqueta
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: fontSize * 1.1,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? primaryColor : Colors.grey.shade800,
+                fontFamily: fontFamily,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            
+            // Indicador de selección
+            if (isSelected) ...[
+              const SizedBox(height: 8),
+              Icon(
+                Icons.check_circle,
+                color: primaryColor,
+                size: 28,
+              ),
+            ],
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              onConfirm();
-              Navigator.pop(context);
-              
-              // Mostramos un mensaje de confirmación
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('$type subido correctamente'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text('Simular subida'),
-          ),
-        ],
       ),
     );
   }

@@ -5,11 +5,13 @@ import '../screens/sort_numbers_game.dart' show DragItem;
 ///
 /// - draggableData: dato que se "transporta" al arrastrar.
 /// - onTap: acción cuando se toca la ficha (p. ej. colocar en la primera casilla libre).
+/// - shape: forma del tile ('circle', 'square', 'triangle')
 class NumberTile extends StatelessWidget {
   final int value;
   final VoidCallback? onTap;
   final DragItem draggableData;
   final Color color;
+  final String shape;
 
   const NumberTile({
     super.key,
@@ -17,6 +19,7 @@ class NumberTile extends StatelessWidget {
     this.onTap,
     required this.draggableData,
     this.color = const Color(0xFF42A5F5), // Colors.blue.shade400 default
+    this.shape = 'circle',
   });
 
   @override
@@ -42,30 +45,50 @@ class NumberTile extends StatelessWidget {
   }
 
   Widget _buildTile(double size, {double opacity = 1.0}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color.withOpacity(opacity),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          '$value',
-          style: const TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+    return ClipPath(
+      clipper: shape == 'triangle' ? TriangleClipper() : null,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: color.withOpacity(opacity),
+          shape: shape == 'circle' ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: shape == 'square' ? BorderRadius.circular(16) : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            '$value',
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// CustomClipper para crear triángulos
+class TriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(size.width / 2, 0); // Punto superior (centro arriba)
+    path.lineTo(size.width, size.height); // Esquina inferior derecha
+    path.lineTo(0, size.height); // Esquina inferior izquierda
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

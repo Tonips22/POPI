@@ -5,12 +5,14 @@ class NumberGrid extends StatelessWidget {
   final GameController controller;
   final Function(bool) onAnswer;
   final Color primaryColor;
+  final String shape;
 
   const NumberGrid({
     super.key,
     required this.controller,
     required this.onAnswer,
     required this.primaryColor,
+    this.shape = 'circle',
   });
 
   @override
@@ -58,29 +60,33 @@ class NumberGrid extends StatelessWidget {
                     bool isCorrect = controller.checkAnswer(num);
                     onAnswer(isCorrect);
                   },
-                  child: Container(
-                    width: circleSize,
-                    height: circleSize,
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        '$num',
-                        style: TextStyle(
-                          fontSize: circleSize * 0.45,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                  child: ClipPath(
+                    clipper: shape == 'triangle' ? TriangleClipper() : null,
+                    child: Container(
+                      width: circleSize,
+                      height: circleSize,
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        shape: shape == 'circle' ? BoxShape.circle : BoxShape.rectangle,
+                        borderRadius: shape == 'square' ? BorderRadius.circular(16) : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '$num',
+                          style: TextStyle(
+                            fontSize: circleSize * 0.45,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -118,4 +124,20 @@ class NumberGrid extends StatelessWidget {
       },
     );
   }
+}
+
+/// CustomClipper para crear triángulos
+class TriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(size.width / 2, 0); // Punto superior (centro arriba)
+    path.lineTo(size.width, size.height); // Esquina inferior derecha
+    path.lineTo(0, size.height); // Esquina inferior izquierda
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

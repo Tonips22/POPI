@@ -80,6 +80,7 @@ class _NumberScreenState extends State<NumberScreen> {
         : Colors.grey[50]!;
     final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
     final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -157,6 +158,7 @@ class _NumberScreenState extends State<NumberScreen> {
                         controller: _controller,
                         onAnswer: _handleAnswer,
                         primaryColor: userColor,
+                        shape: userShape,
                       ),
                     ),
 
