@@ -169,12 +169,14 @@ class EqualShareBoard extends StatefulWidget {
     required this.onRoundEnd,
     required this.primaryColor,
     required this.secondaryColor,
+    this.shape = 'circle',
   });
 
   final EqualShareController controller;
   final void Function(bool isCorrect, String equation) onRoundEnd;
   final Color primaryColor;
   final Color secondaryColor;
+  final String shape;
 
   @override
   State<EqualShareBoard> createState() => _EqualShareBoardState();
@@ -381,27 +383,31 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
     final bool isSelected = _selectedBallId == id;
     final bool isInPool = controller.ballsInPool.contains(id);
 
-    final visual = Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: isSelected ? widget.primaryColor.withOpacity(0.5) : widget.primaryColor,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          '$value',
-          style: const TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+    final visual = ClipPath(
+      clipper: widget.shape == 'triangle' ? TriangleClipper() : null,
+      child: Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          color: isSelected ? widget.primaryColor.withOpacity(0.5) : widget.primaryColor,
+          shape: widget.shape == 'circle' ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: widget.shape == 'square' ? BorderRadius.circular(16) : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            '$value',
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
@@ -543,6 +549,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
         : Colors.grey[50]!;
     final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
     final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -615,6 +622,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
                         onRoundEnd: _handleRoundEnd,
                         primaryColor: userColor,
                         secondaryColor: secondaryColor,
+                        shape: userShape,
                       ),
                     ),
                   ],
@@ -636,4 +644,20 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
       ),
     );
   }
+}
+
+/// CustomClipper para crear triángulos
+class TriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(size.width / 2, 0); // Punto superior (centro arriba)
+    path.lineTo(size.width, size.height); // Esquina inferior derecha
+    path.lineTo(0, size.height); // Esquina inferior izquierda
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

@@ -117,6 +117,7 @@ class EqualSubtractionBoard extends StatefulWidget {
     required this.onRoundUpdate,
     required this.primaryColor,
     required this.secondaryColor,
+    this.shape = 'circle',
   });
 
   final EqualSubtractionController controller;
@@ -126,6 +127,7 @@ class EqualSubtractionBoard extends StatefulWidget {
   final void Function(bool isCorrect, String equation) onRoundUpdate;
   final Color primaryColor;
   final Color secondaryColor;
+  final String shape;
 
   @override
   State<EqualSubtractionBoard> createState() => _EqualSubtractionBoardState();
@@ -315,19 +317,23 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
   Widget _buildBall(int id, int jarIndex, double size) {
     final controller = widget.controller;
 
-    final visual = Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: widget.primaryColor,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
+    final visual = ClipPath(
+      clipper: widget.shape == 'triangle' ? TriangleClipper() : null,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: widget.primaryColor,
+          shape: widget.shape == 'circle' ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: widget.shape == 'square' ? BorderRadius.circular(size * 0.2) : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -476,6 +482,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
         : Colors.grey[50]!;
     final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
     final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -563,6 +570,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                         onRoundUpdate: _handleRoundUpdate,
                         primaryColor: userColor,
                         secondaryColor: secondaryColor,
+                        shape: userShape,
                       ),
                     ),
                   ],
@@ -577,4 +585,20 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
       ),
     );
   }
+}
+
+/// CustomClipper para crear triángulos
+class TriangleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(size.width / 2, 0); // Punto superior (centro arriba)
+    path.lineTo(size.width, size.height); // Esquina inferior derecha
+    path.lineTo(0, size.height); // Esquina inferior izquierda
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
