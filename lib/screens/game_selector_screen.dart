@@ -243,7 +243,7 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: size.width * 0.02,
+                    fontSize: (currentUser?.preferences.getFontSizeValue() ?? 20.0) * 0.9,
                     fontFamily: titleFontFamily,
                     color: Colors.white,
                   ),
