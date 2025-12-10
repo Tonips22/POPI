@@ -170,6 +170,8 @@ class EqualShareBoard extends StatefulWidget {
     required this.primaryColor,
     required this.secondaryColor,
     this.shape = 'circle',
+    required this.titleFontSize,
+    required this.titleFontFamily,
   });
 
   final EqualShareController controller;
@@ -177,6 +179,8 @@ class EqualShareBoard extends StatefulWidget {
   final Color primaryColor;
   final Color secondaryColor;
   final String shape;
+  final double titleFontSize;
+  final String titleFontFamily;
 
   @override
   State<EqualShareBoard> createState() => _EqualShareBoardState();
@@ -266,11 +270,11 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
     final int target = controller.targetValues[index];
 
     // Color del círculo del objetivo:
-    // gris por defecto, verde cuando la suma en esta jarra
+    // gris por defecto, color secundario cuando la suma en esta jarra
     // coincide con el número objetivo (aunque aún queden bolas arriba).
     Color indicatorColor = Colors.grey.shade200;
     if (controller.jarMatchesTarget(index)) {
-      indicatorColor = Colors.green.withOpacity(0.6);
+      indicatorColor = widget.secondaryColor.withOpacity(0.6);
     }
 
 
@@ -351,24 +355,29 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            color: indicatorColor,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.grey.shade400,
-              width: 2,
+        ClipPath(
+          clipper: widget.shape == 'triangle' ? TriangleClipper() : null,
+          child: Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              color: indicatorColor,
+              shape: widget.shape == 'circle' ? BoxShape.circle : BoxShape.rectangle,
+              borderRadius: widget.shape == 'square' ? BorderRadius.circular(18) : null,
+              border: Border.all(
+                color: Colors.grey.shade400,
+                width: 2,
+              ),
             ),
-          ),
-          child: Center(
-            child: Text(
-              '$target',
-              style: const TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 36,
+            child: Center(
+              child: Text(
+                '$target',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: widget.titleFontSize * 1.8,
+                  fontFamily: widget.titleFontFamily,
+                ),
               ),
             ),
           ),
@@ -558,8 +567,8 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
         title: Text(
           'Reparto de sumas',
           style: TextStyle(
-            fontSize: 18,
-            fontFamily: 'Roboto',
+            fontSize: titleFontSize * 0.9,
+            fontFamily: titleFontFamily,
           ),
         ),
         centerTitle: true,
@@ -607,8 +616,9 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
                       child: Text(
                         'Lleva las bolas a las jarras para alcanzar la cantidad deseada',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: titleFontSize * 0.9,
+                          fontFamily: titleFontFamily,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -623,6 +633,8 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
                         primaryColor: userColor,
                         secondaryColor: secondaryColor,
                         shape: userShape,
+                        titleFontSize: titleFontSize,
+                        titleFontFamily: titleFontFamily,
                       ),
                     ),
                   ],
