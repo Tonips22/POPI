@@ -148,6 +148,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
         : Colors.grey[50]!;
     final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
     final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -220,6 +221,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
                               child: NumberTile(
                                 value: value,
                                 color: userColor,
+                                shape: userShape,
                                 onTap: () {
                                   final idx = targets.indexOf(null);
                                   if (idx == -1) return;
@@ -253,6 +255,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
                           index: i,
                           value: targets[i],
                           color: userColor,
+                          shape: userShape,
                           onAccept: (drag) => _handleDrop(drag, i),
                           onRemove: () => _removeFromTarget(i),
                         );
