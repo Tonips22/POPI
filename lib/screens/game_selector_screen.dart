@@ -23,12 +23,13 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
-    final currentUser = AppService().currentUser;
+    final appService = AppService();
+    final currentUser = appService.currentUser;
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.white;
-    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final titleFontSize = appService.fontSizeWithFallback();
+    final titleFontFamily = appService.fontFamilyWithFallback();
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final availableHeight = screenHeight - kToolbarHeight - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom;
@@ -201,8 +202,9 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
         VoidCallback? onTap,
       }) {
     // final prefs = PreferenceProvider.of(context);
-    final currentUser = AppService().currentUser;
-    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final appService = AppService();
+    final titleFontFamily = appService.fontFamilyWithFallback();
+    final baseFontSize = appService.fontSizeWithFallback();
     final size = MediaQuery.of(context).size;
     final buttonPadding = size.width * 0.01;
     final imageSize = size.width * 0.12;
@@ -254,7 +256,7 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: (currentUser?.preferences.getFontSizeValue() ?? 20.0) * 0.9,
+                    fontSize: baseFontSize * 0.9,
                     fontFamily: titleFontFamily,
                     color: Colors.white,
                   ),

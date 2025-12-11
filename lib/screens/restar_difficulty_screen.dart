@@ -42,16 +42,16 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = AppService().currentUser;
+    final appService = AppService();
+    final currentUser = appService.currentUser;
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
     final primaryColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue;
-    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily =
-        currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final titleFontSize = appService.fontSizeWithFallback();
+    final titleFontFamily = appService.fontFamilyWithFallback();
 
     return Scaffold(
       backgroundColor: backgroundColor,

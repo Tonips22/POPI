@@ -111,8 +111,8 @@ class _ColorSettingsScreenState extends State<ColorSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final user = _service.currentUser;
-    final titleFontSize = user?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily = user?.preferences.getFontFamilyName() ?? 'Roboto';
+    final titleFontSize = _service.fontSizeWithFallback();
+    final titleFontFamily = _service.fontFamilyWithFallback();
     
     if (_isLoading) {
       return Scaffold(

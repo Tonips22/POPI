@@ -90,12 +90,13 @@ class _NumberFormatScreenState extends State<NumberFormatScreen> {
       );
     }
     
-    final currentUser = AppService().currentUser;
+    final appService = AppService();
+    final currentUser = appService.currentUser;
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
-    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final titleFontSize = appService.fontSizeWithFallback();
+    final titleFontFamily = appService.fontFamilyWithFallback();
         
     return Scaffold(
       backgroundColor: backgroundColor,

@@ -16,12 +16,13 @@ class GameVictoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
-    final currentUser = AppService().currentUser;
+    final appService = AppService();
+    final currentUser = appService.currentUser;
     final userColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue.shade400;
-    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final titleFontSize = appService.fontSizeWithFallback();
+    final titleFontFamily = appService.fontFamilyWithFallback();
     
     return Scaffold(
       backgroundColor: userColor,
@@ -129,10 +130,9 @@ class _VictoryButton extends StatelessWidget {
         // Etiqueta del botón
         Builder(
           builder: (context) {
-            // final prefs = PreferenceProvider.of(context);
-            final currentUser = AppService().currentUser;
-            final labelFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-            final labelFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+            final appService = AppService();
+            final labelFontSize = appService.fontSizeWithFallback();
+            final labelFontFamily = appService.fontFamilyWithFallback();
             return Text(
               label,
               style: TextStyle(

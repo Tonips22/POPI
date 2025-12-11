@@ -40,15 +40,16 @@ class _OrdenarDifficultyScreenState extends State<OrdenarDifficultyScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
-    final currentUser = AppService().currentUser;
+    final appService = AppService();
+    final currentUser = appService.currentUser;
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
     final primaryColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue;
-    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final titleFontSize = appService.fontSizeWithFallback();
+    final titleFontFamily = appService.fontFamilyWithFallback();
 
     double maxValue = (_ranges[_selectedRangeIndex]['max'] == 10) ? 10 : 12;
 

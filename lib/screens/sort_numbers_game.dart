@@ -146,8 +146,8 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     final backgroundColor = _service.currentUser != null
         ? Color(int.parse(_service.currentUser!.preferences.backgroundColor))
         : Colors.grey[50]!;
-    final titleFontSize = _service.currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily = _service.currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final titleFontSize = _service.fontSizeWithFallback();
+    final titleFontFamily = _service.fontFamilyWithFallback();
     final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
     return Scaffold(

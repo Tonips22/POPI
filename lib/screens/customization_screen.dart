@@ -22,14 +22,15 @@ class _CustomizationScreenState extends State<CustomizationScreen> {
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
-    final currentUser = AppService().currentUser;
+    final appService = AppService();
+    final currentUser = appService.currentUser;
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
 
     // Obtener preferencias de fuente del usuario
-    final double titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final String titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final double titleFontSize = appService.fontSizeWithFallback();
+    final String titleFontFamily = appService.fontFamilyWithFallback();
 
     return Scaffold(
       backgroundColor: backgroundColor,

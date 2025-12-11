@@ -269,38 +269,52 @@ class _PasswordScreenState extends State<PasswordScreen> {
             );
           }
 
-          // ===== Layout final SIN scroll =====
-          return Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: pagePad,
-                vertical: pagePad * 0.7,
-              ),
+          final needsScroll = h < 620;
+          final column = Column(
+            mainAxisSize: needsScroll ? MainAxisSize.min : MainAxisSize.max,
+            mainAxisAlignment: needsScroll
+                ? MainAxisAlignment.start
+                : MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              topAvatar(),
+              SizedBox(height: clamp(base * 0.035, 18, 26)),
+              passwordBox(),
+              SizedBox(height: clamp(base * 0.035, 20, 30)),
+              loginButton(context),
+              SizedBox(height: clamp(base * 0.035, 18, 26)),
+              animalsGrid(),
+              if (_pwd.length == 4) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Contraseña lista (4 símbolos)',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ],
+          );
+
+          final content = Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: pagePad,
+              vertical: pagePad * 0.7,
+            ),
+            child: Align(
+              alignment:
+                  needsScroll ? Alignment.topCenter : Alignment.center,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 900),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    topAvatar(),
-                    SizedBox(height: clamp(base * 0.035, 18, 26)),
-                    passwordBox(),
-                    SizedBox(height: clamp(base * 0.035, 20, 30)),
-                    loginButton(context),
-                    SizedBox(height: clamp(base * 0.035, 18, 26)),
-                    animalsGrid(),
-                    if (_pwd.length == 4) ...[
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Contraseña lista (4 símbolos)',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ],
-                  ],
-                ),
+                child: column,
               ),
             ),
           );
+
+          return needsScroll
+              ? SingleChildScrollView(
+                  padding: EdgeInsets.zero,
+                  child: content,
+                )
+              : Center(child: content);
         },
       ),
     );

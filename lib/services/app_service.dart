@@ -21,7 +21,29 @@ class AppService {
   final ValueNotifier<int> userChangeNotifier = ValueNotifier<int>(0);
 
   /// Obtiene el usuario actual
-  UserModel?  get currentUser => _currentUser;
+  UserModel? get currentUser => _currentUser;
+
+  /// Indica si la sesión activa pertenece a un estudiante
+  bool get hasStudentSession =>
+      _currentUser != null && _currentUser!.role.toLowerCase() == 'student';
+
+  /// Preferencias solo disponibles cuando hay un estudiante logueado
+  UserPreferences? get studentPreferences =>
+      hasStudentSession ? _currentUser?.preferences : null;
+
+  /// Tamaño de letra efectivo para estudiantes
+  double get studentFontSizeValue =>
+      studentPreferences?.getFontSizeValue() ?? 20.0;
+
+  /// Fuente efectiva para estudiantes
+  String get studentFontFamilyName =>
+      studentPreferences?.getFontFamilyName() ?? 'Roboto';
+
+  double fontSizeWithFallback([double fallback = 20.0]) =>
+      hasStudentSession ? studentFontSizeValue : fallback;
+
+  String fontFamilyWithFallback([String fallback = 'Roboto']) =>
+      hasStudentSession ? studentFontFamilyName : fallback;
 
   /// Obtiene las preferencias del usuario actual
   UserPreferences? get preferences => _currentUser?.preferences;
@@ -106,7 +128,11 @@ class AppService {
     userChangeNotifier.value++;
     
     // Inicializar controlador de voz con las preferencias del usuario
-    VoiceController().initFromPreferences(user.preferences);
+    if (hasStudentSession) {
+      VoiceController().initFromPreferences(user.preferences);
+    } else {
+      VoiceController().reset();
+    }
     
     print('✅ Sesión iniciada: ${user. name} (${user.role})');
   }
@@ -114,6 +140,7 @@ class AppService {
   /// Cierra la sesión actual
   void logout() {
     print('👋 Sesión cerrada: ${_currentUser?.name}');
+    VoiceController().reset();
     _currentUser = null;
     userChangeNotifier.value++;
   }

@@ -56,4 +56,11 @@ class VoiceController {
     await _tts.stop();
     await _tts.speak(text);
   }
+
+  /// Restablece el estado para sesiones no estudiantiles
+  void reset() {
+    isEnabled = false;
+    activationMode = 'none';
+    _tts.stop();
+  }
 }

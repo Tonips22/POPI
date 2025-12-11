@@ -35,16 +35,16 @@ class _SumarDifficultyScreenState extends State<SumarDifficultyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = AppService().currentUser;
+    final appService = AppService();
+    final currentUser = appService.currentUser;
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
     final primaryColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue;
-    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily =
-        currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final titleFontSize = appService.fontSizeWithFallback();
+    final titleFontFamily = appService.fontFamilyWithFallback();
 
     const double minBalls = 2;
     const double maxBalls = 10;

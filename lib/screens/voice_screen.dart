@@ -111,9 +111,10 @@ class _VoiceScreenState extends State<VoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = AppService()?.currentUser;
-    final titleFontSize = currentUser?.preferences.getFontSizeValue() ?? 20.0;
-    final titleFontFamily = currentUser?.preferences.getFontFamilyName() ?? 'Roboto';
+    final appService = AppService();
+    final currentUser = appService.currentUser;
+    final titleFontSize = appService.fontSizeWithFallback();
+    final titleFontFamily = appService.fontFamilyWithFallback();
     
     return Scaffold(
       appBar: AppBar(
