@@ -5,6 +5,7 @@ import '../logic/game_controller.dart';
 import '../widget/number_grid.dart';
 // import '../widgets/preference_provider.dart';
 import '../widgets/check_icon_overlay.dart';
+import '../widgets/reaction_overlay.dart';
 import '../services/app_service.dart';
 import '../services/game_session_tracker.dart';
 
@@ -24,6 +25,7 @@ class _NumberScreenState extends State<NumberScreen> {
   GameSessionTracker? _sessionTracker;
   int _hits = 0;
   int _fails = 0;
+  bool _showReactionEffect = false;
 
   @override
   void initState() {
@@ -47,14 +49,20 @@ class _NumberScreenState extends State<NumberScreen> {
     if (isCorrect) {
       _hits++;
       _sessionTracker?.recordHit();
+      final bool showReaction =
+          _service.currentUser?.preferences.reactionType == 'confetti';
       setState(() {
         _showCheckIcon = true;
+        _showReactionEffect = showReaction;
       });
 
-      Future.delayed(const Duration(milliseconds: 800), () {
+      final successDelay =
+          showReaction ? const Duration(milliseconds: 1400) : const Duration(milliseconds: 800);
+      Future.delayed(successDelay, () {
         setState(() {
           _controller.nextRound();
           _showCheckIcon = false;
+          _showReactionEffect = false;
         });
         _speakInstruction();
       });
@@ -209,6 +217,8 @@ class _NumberScreenState extends State<NumberScreen> {
 
           if (_showCheckIcon)
             CheckIconOverlay(color: secondaryColor),
+
+          ReactionOverlay(enabled: _showReactionEffect),
 
           if (_showErrorIcon)
             CheckIconOverlay(

@@ -4,7 +4,7 @@ import 'package:popi/screens/voice_screen.dart';
 import 'color_settings_screen.dart';
 import 'fonts_settings_screen.dart';
 import 'number_format_screen.dart';
-import 'examples/login_screen_example.dart';
+import 'reactions_screen.dart';
 
 import '../services/user_service.dart';
 import '../services/app_service.dart';
@@ -143,7 +143,7 @@ class _CustomizationScreenState extends State<CustomizationScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LoginScreenExample(),
+                      builder: (context) => const ReactionsScreen(),
                     ),
                   );
                 },

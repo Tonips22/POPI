@@ -50,6 +50,7 @@ class UserPreferences {
   final String shape; // 'circle', 'square', 'triangle'
   final bool canCustomize;
   final String? voiceText; // 'none', 'double', 'long' or null (default)
+  final String? reactionType; // tipo de reacción seleccionada
 
   UserPreferences({
     this.primaryColor = '0xFF2196F3',
@@ -60,6 +61,7 @@ class UserPreferences {
     this.shape = 'circle',
     this.canCustomize = false,
     this.voiceText,
+    this.reactionType,
   });
 
   Map<String, dynamic> toMap() {
@@ -72,6 +74,7 @@ class UserPreferences {
       'shape': shape,
       'canCustomize': canCustomize,
       'voiceText': voiceText,
+      'tipo_reaccion': reactionType,
     };
   }
 
@@ -137,8 +140,11 @@ class UserPreferences {
       shape: shape,
       canCustomize: map['canCustomize'] ?? false,
       voiceText: map['voiceText'],
+      reactionType: map['tipo_reaccion'],
     );
   }
+
+  static const _unset = Object();
 
   /// Crea una copia modificando algunos campos
   UserPreferences copyWith({
@@ -149,7 +155,8 @@ class UserPreferences {
     String? fontSize,
     String? shape,
     bool?  canCustomize,
-    String? voiceText,
+    Object? voiceText = _unset,
+    Object? reactionType = _unset,
   }) {
     return UserPreferences(
       primaryColor: primaryColor ?? this.primaryColor,
@@ -159,7 +166,10 @@ class UserPreferences {
       fontSize: fontSize ?? this.fontSize,
       shape: shape ?? this.shape,
       canCustomize: canCustomize ?? this.canCustomize,
-      voiceText: voiceText ?? this.voiceText,
+      voiceText: identical(voiceText, _unset) ? this.voiceText : voiceText as String?,
+      reactionType: identical(reactionType, _unset)
+          ? this.reactionType
+          : reactionType as String?,
     );
   }
 
