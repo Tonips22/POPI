@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import '../widgets/voice_text.dart';
 import 'difficulty_screen.dart';
 import 'customization_screen.dart';
 import '../services/app_service.dart';
+// import '../widgets/voice_text.dart';
 // import '../widgets/preference_provider.dart';
 
 class SettingsScreen extends StatelessWidget {

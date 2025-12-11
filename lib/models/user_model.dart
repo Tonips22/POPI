@@ -45,6 +45,7 @@ class UserPreferences {
   final String fontSize; // 'extra_small', 'small', 'medium', 'large', 'extra_large'
   final String shape; // 'circle', 'square', 'triangle'
   final bool canCustomize;
+  final String? voiceText; // 'none', 'double', 'long' or null (default)
 
   UserPreferences({
     this.primaryColor = '0xFF2196F3',
@@ -54,6 +55,7 @@ class UserPreferences {
     this.fontSize = 'default',
     this.shape = 'circle',
     this.canCustomize = false,
+    this.voiceText,
   });
 
   Map<String, dynamic> toMap() {
@@ -65,6 +67,7 @@ class UserPreferences {
       'fontSize': fontSize, // Ahora es String directamente
       'shape': shape,
       'canCustomize': canCustomize,
+      'voiceText': voiceText,
     };
   }
 
@@ -129,6 +132,7 @@ class UserPreferences {
       fontSize: fontSize,
       shape: shape,
       canCustomize: map['canCustomize'] ?? false,
+      voiceText: map['voiceText'],
     );
   }
 
@@ -141,6 +145,7 @@ class UserPreferences {
     String? fontSize,
     String? shape,
     bool?  canCustomize,
+    String? voiceText,
   }) {
     return UserPreferences(
       primaryColor: primaryColor ?? this.primaryColor,
@@ -150,6 +155,7 @@ class UserPreferences {
       fontSize: fontSize ?? this.fontSize,
       shape: shape ?? this.shape,
       canCustomize: canCustomize ?? this.canCustomize,
+      voiceText: voiceText ?? this.voiceText,
     );
   }
 

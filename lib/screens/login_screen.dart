@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import '../widgets/voice_text.dart';
 import '/services/app_service.dart';
 import '/models/user_model.dart';
 import '/screens/home_tutor_screen.dart';
 import '/screens/admin_screen.dart';
 import '/screens/game_selector_screen.dart';
+// import '../widgets/voice_text.dart';
 import 'dart:math' as math;
 
 class LoginScreen extends StatefulWidget {

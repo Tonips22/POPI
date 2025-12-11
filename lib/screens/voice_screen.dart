@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import '../widgets/voice_text.dart';
 import '../logic/voice_controller.dart';
 import '../widgets/voice_text.dart';
 import '../services/app_service.dart';
@@ -17,9 +18,15 @@ class _VoiceScreenState extends State<VoiceScreen> {
   @override
   void initState() {
     super.initState();
-    // Cargamos el estado global actual
-    activationMode =
-    controller.isEnabled ? controller.activationMode : 'none';
+    // Cargamos el estado desde las preferencias del usuario si existe
+    final currentUser = AppService().currentUser;
+    if (currentUser != null && currentUser.preferences.voiceText != null) {
+      activationMode = currentUser.preferences.voiceText!;
+      // Sincronizamos el controlador
+      controller.initFromPreferences(currentUser.preferences);
+    } else {
+      activationMode = controller.isEnabled ? controller.activationMode : 'none';
+    }
   }
 
   void _setActivationMode(String mode) {
@@ -32,6 +39,21 @@ class _VoiceScreenState extends State<VoiceScreen> {
         controller.setActivationMode('none');
       }
     });
+
+    // Guardar en preferencias del usuario
+    final currentUser = AppService().currentUser;
+    if (currentUser != null) {
+      // Actualizar en Firestore
+      AppService().updatePreferences(
+        currentUser.id, 
+        currentUser.preferences.copyWith(voiceText: mode == 'none' ? null : mode)
+      );
+      
+      // Actualizar en memoria local
+      AppService().updateCurrentUserPreferences(
+        currentUser.preferences.copyWith(voiceText: mode == 'none' ? null : mode)
+      );
+    }
 
     // Mensaje de confirmación hablado
     switch (mode) {
@@ -72,7 +94,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
         child: Row(
           children: [
             Expanded(
-              child: VoiceText(
+              child: Text(
                 text,
                 style: const TextStyle(fontSize: 18),
               ),
@@ -98,7 +120,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 1,
-        title: VoiceText(
+        title: Text(
           "Texto de voz",
           style: TextStyle(
             fontSize: titleFontSize * 1.3,
@@ -113,7 +135,7 @@ class _VoiceScreenState extends State<VoiceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            VoiceText(
+            Text(
               "Opciones:",
               style: const TextStyle(
                 fontSize: 22,

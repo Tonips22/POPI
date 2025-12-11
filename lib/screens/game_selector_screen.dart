@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import '../widgets/voice_text.dart';
 import 'number_screen.dart';
 import 'sort_numbers_game.dart';
 import 'equal_share_screen.dart';
@@ -6,6 +7,7 @@ import 'equal_subtraction_screen.dart';
 import 'customization_screen.dart';
 import '../utils/accessible_routes.dart';
 import '../services/app_service.dart';
+// import '../widgets/voice_text.dart';
 // import '../widgets/preference_provider.dart';
 
 

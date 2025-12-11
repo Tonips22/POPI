@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import '../widgets/voice_text.dart';
 import '../services/app_service.dart';
 import 'equal_share_screen.dart';
 

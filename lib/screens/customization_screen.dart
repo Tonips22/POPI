@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import '../widgets/voice_text.dart';
 import 'package:popi/screens/voice_screen.dart';
 import 'color_settings_screen.dart';
 import 'fonts_settings_screen.dart';
@@ -40,7 +41,7 @@ class _CustomizationScreenState extends State<CustomizationScreen> {
             Navigator.pop(context);
           },
         ),
-        title: VoiceText(
+        title: Text(
           'Personalizar',
           style: TextStyle(
             fontSize: titleFontSize,
@@ -208,7 +209,7 @@ class _GridOptionCard extends StatelessWidget {
                 color: Colors.white,
               ),
               const SizedBox(height: 12),
-              VoiceText(
+              Text(
                 title,
                 textAlign: TextAlign.center,
                 style: TextStyle(

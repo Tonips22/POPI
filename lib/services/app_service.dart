@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
+import '../logic/voice_controller.dart';
 
 /// Servicio único que maneja usuarios y sesión
 /// Patrón Singleton: solo existe UNA instancia en toda la app
@@ -103,6 +104,10 @@ class AppService {
   void login(UserModel user) {
     _currentUser = user;
     userChangeNotifier.value++;
+    
+    // Inicializar controlador de voz con las preferencias del usuario
+    VoiceController().initFromPreferences(user.preferences);
+    
     print('✅ Sesión iniciada: ${user. name} (${user.role})');
   }
 

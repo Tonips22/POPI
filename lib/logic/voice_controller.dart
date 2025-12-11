@@ -32,6 +32,23 @@ class VoiceController {
     activationMode = mode;
   }
 
+  /// Inicializa el controlador desde las preferencias del usuario
+  void initFromPreferences(dynamic preferences) {
+    // Usamos dynamic para evitar importar el modelo aquí si no es necesario,
+    // o idealmente importar user_model.dart.
+    // Asumimos que preferences tiene un campo voiceText.
+    if (preferences == null) return;
+    
+    final String? voiceText = preferences.voiceText;
+    if (voiceText != null && voiceText != 'none') {
+      isEnabled = true;
+      activationMode = voiceText;
+    } else {
+      isEnabled = false;
+      activationMode = 'none';
+    }
+  }
+
   /// Habla el texto indicado.
   /// NO miramos isEnabled aquí: VoiceText decide cuándo llamar a speak().
   Future<void> speak(String text) async {

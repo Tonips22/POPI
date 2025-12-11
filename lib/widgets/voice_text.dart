@@ -1,15 +1,16 @@
 // lib/widgets/voice_text.dart
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as material;
+import 'package:flutter/material.dart' show TextStyle, TextAlign, TextOverflow, BuildContext, StatelessWidget, GestureDetector, Widget;
 import '../logic/voice_controller.dart';
 
-class VoiceText extends StatelessWidget {
+class Text extends StatelessWidget {
   final String text;
   final TextStyle? style;
   final TextAlign? textAlign;
   final int? maxLines;
   final TextOverflow? overflow;
 
-  const VoiceText(
+  const Text(
       this.text, {
         super.key,
         this.style,
@@ -22,7 +23,7 @@ class VoiceText extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = VoiceController();
 
-    final baseText = Text(
+    final baseText = material.Text(
       text,
       style: style,
       textAlign: textAlign,

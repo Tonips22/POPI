@@ -126,6 +126,7 @@ class UserService {
         String? fontSize,
         String? primaryColor,
         String? secondaryColor,
+        String? voiceText,
       }) async {
     try {
       final docRef = _fs.collection(_collection).doc(userId);
@@ -136,6 +137,7 @@ class UserService {
       if (fontSize != null) updates['fontSize'] = fontSize;
       if (primaryColor != null) updates['primaryColor'] = primaryColor;
       if (secondaryColor != null) updates['secondaryColor'] = secondaryColor;
+      if (voiceText != null) updates['voiceText'] = voiceText;
 
       if (updates.isNotEmpty) {
         await docRef.update(updates);
