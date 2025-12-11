@@ -11,6 +11,7 @@ import '../services/app_service.dart';
 import 'settings_screen_ordenar.dart';
 import 'game_selector_screen.dart';
 import 'game_victory_screen.dart';
+import '../services/game_session_tracker.dart';
 
 class SortNumbersGame extends StatefulWidget {
   const SortNumbersGame({super.key});
@@ -24,6 +25,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
 
   final OrdenarGameController _controller = OrdenarGameController();
   final AppService _service = AppService();
+  GameSessionTracker? _sessionTracker;
 
   late List<int> pool;
   late List<int?> targets;
@@ -33,6 +35,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
   int? _shakingValue;
 
   bool _showCheckIcon = false;
+  int _hits = 0;
 
   @override
   void initState() {
@@ -45,6 +48,17 @@ class _SortNumbersGameState extends State<SortNumbersGame>
 
     _controller.initGame();
     _startRound();
+    _initSessionTracker();
+  }
+
+  void _initSessionTracker() {
+    if (!_service.hasStudentSession) return;
+    final tracker = GameSessionTracker(
+      gameType: 2,
+      userNumericId: _service.numericUserId,
+    );
+    _sessionTracker = tracker;
+    tracker.start();
   }
 
   void _startRound() {
@@ -58,6 +72,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
 
   @override
   void dispose() {
+    _sessionTracker?.finish();
     _shakeController.dispose();
     super.dispose();
   }
@@ -113,6 +128,9 @@ class _SortNumbersGameState extends State<SortNumbersGame>
       if (targets[i] != _controller.sorted[i]) return;
     }
 
+    _hits++;
+    _sessionTracker?.recordHit();
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -150,126 +168,129 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     final titleFontFamily = _service.fontFamilyWithFallback();
     final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-
-      appBar: AppBar(
-        title: Text(
-          'Ordena la secuencia',
-          style: TextStyle(
-            fontSize: titleFontSize * 0.9,
-            fontFamily: titleFontFamily,
+    return WillPopScope(
+      onWillPop: () async {
+        await _sessionTracker?.finish();
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        appBar: AppBar(
+          title: Text(
+            'Ordena la secuencia',
+            style: TextStyle(
+              fontSize: titleFontSize * 0.9,
+              fontFamily: titleFontFamily,
+            ),
           ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const SettingsScreenOrdenar(),
-                ),
-              );
-
-              _controller.initGame();
-              _startRound();
-            },
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
           ),
-        ],
-      ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SettingsScreenOrdenar(),
+                  ),
+                );
 
-      body: Stack(
-        children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1000),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // POOL
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: pool.map((value) {
-                          final shake = value == _shakingValue;
+                _controller.initGame();
+                _startRound();
+              },
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // POOL
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: pool.map((value) {
+                            final shake = value == _shakingValue;
 
-                          return Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: AnimatedBuilder(
-                              animation: _shakeController,
-                              builder: (context, child) {
-                                final offset = shake
-                                    ? math.sin(_shakeController.value * math.pi * 4) * 10
-                                    : 0.0;
+                            return Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: AnimatedBuilder(
+                                animation: _shakeController,
+                                builder: (context, child) {
+                                  final offset = shake
+                                      ? math.sin(_shakeController.value * math.pi * 4) * 10
+                                      : 0.0;
 
-                                return Transform.translate(
-                                  offset: Offset(offset, 0),
-                                  child: child,
-                                );
-                              },
-                              child: NumberTile(
-                                value: value,
-                                color: userColor,
-                                shape: userShape,
-                                onTap: () {
-                                  final idx = targets.indexOf(null);
-                                  if (idx == -1) return;
-
-                                  if (_controller.isCorrectPlacement(value, idx)) {
-                                    _handleDrop(
-                                      DragItem(value: value, fromIndex: -1),
-                                      idx,
-                                    );
-                                  } else {
-                                    _shakeNumber(value);
-                                  }
+                                  return Transform.translate(
+                                    offset: Offset(offset, 0),
+                                    child: child,
+                                  );
                                 },
-                                draggableData:
-                                DragItem(value: value, fromIndex: -1),
+                                child: NumberTile(
+                                  value: value,
+                                  color: userColor,
+                                  shape: userShape,
+                                  onTap: () {
+                                    final idx = targets.indexOf(null);
+                                    if (idx == -1) return;
+
+                                    if (_controller.isCorrectPlacement(value, idx)) {
+                                      _handleDrop(
+                                        DragItem(value: value, fromIndex: -1),
+                                        idx,
+                                      );
+                                    } else {
+                                      _shakeNumber(value);
+                                    }
+                                  },
+                                  draggableData:
+                                      DragItem(value: value, fromIndex: -1),
+                                ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 32),
+                      const SizedBox(height: 32),
 
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: List.generate(count, (i) {
-                        return TargetSlot(
-                          index: i,
-                          value: targets[i],
-                          color: userColor,
-                          shape: userShape,
-                          onAccept: (drag) => _handleDrop(drag, i),
-                          onRemove: () => _removeFromTarget(i),
-                        );
-                      }),
-                    ),
-                  ],
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 16,
+                        runSpacing: 16,
+                        children: List.generate(count, (i) {
+                          return TargetSlot(
+                            index: i,
+                            value: targets[i],
+                            color: userColor,
+                            shape: userShape,
+                            onAccept: (drag) => _handleDrop(drag, i),
+                            onRemove: () => _removeFromTarget(i),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          if (_showCheckIcon)
-            CheckIconOverlay(color: secondaryColor),
-        ],
+            if (_showCheckIcon)
+              CheckIconOverlay(color: secondaryColor),
+          ],
+        ),
       ),
     );
   }

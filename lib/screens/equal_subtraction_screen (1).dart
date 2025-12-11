@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:popi/screens/settings_screen_restar.dart';
 import '../widgets/check_icon_overlay.dart';
 import '../services/app_service.dart';
+import '../services/game_session_tracker.dart';
 
 
 /// ---------------------------------------------------------------------------
@@ -409,6 +410,7 @@ class EqualSubtractionScreen extends StatefulWidget {
 class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
   final EqualSubtractionController _controller = EqualSubtractionController();
   final AppService _service = AppService();
+  GameSessionTracker? _sessionTracker;
 
   bool _showCheckIcon = false;
 
@@ -422,6 +424,17 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
     super.initState();
     _controller.initGame();
     _roundStart = DateTime.now();
+    _initSessionTracker();
+  }
+
+  void _initSessionTracker() {
+    if (!_service.hasStudentSession) return;
+    final tracker = GameSessionTracker(
+      gameType: 4,
+      userNumericId: _service.numericUserId,
+    );
+    _sessionTracker = tracker;
+    tracker.start();
   }
 
   void _restartRound() {
@@ -443,6 +456,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
         _successes++;
         _showCheckIcon = true;
       });
+      _sessionTracker?.recordHit();
 
       // Registro de progreso
       debugPrint(
@@ -462,6 +476,16 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
     }
   }
 
+  Future<void> _finishSession() async {
+    await _sessionTracker?.finish();
+  }
+
+  @override
+  void dispose() {
+    _sessionTracker?.finish();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
@@ -477,10 +501,15 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
     final titleFontSize = _service.fontSizeWithFallback();
     final titleFontFamily = _service.fontFamilyWithFallback();
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
+    return WillPopScope(
+      onWillPop: () async {
+        await _finishSession();
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
 
-      appBar: AppBar(
+        appBar: AppBar(
         title: Text(
           'Resta para igualar',
           style: TextStyle(
@@ -574,6 +603,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
           if (_showCheckIcon)
             CheckIconOverlay(color: secondaryColor),
         ],
+        ),
       ),
     );
   }

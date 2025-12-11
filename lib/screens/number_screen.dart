@@ -6,6 +6,7 @@ import '../widget/number_grid.dart';
 // import '../widgets/preference_provider.dart';
 import '../widgets/check_icon_overlay.dart';
 import '../services/app_service.dart';
+import '../services/game_session_tracker.dart';
 
 class NumberScreen extends StatefulWidget {
   const NumberScreen({super.key});
@@ -20,16 +21,32 @@ class _NumberScreenState extends State<NumberScreen> {
   final AppService _service = AppService();
   bool _showCheckIcon = false;
   bool _showErrorIcon = false;
+  GameSessionTracker? _sessionTracker;
+  int _hits = 0;
+  int _fails = 0;
 
   @override
   void initState() {
     super.initState();
     _controller.initGame();
     _speakInstruction();
+    _initSessionTracker();
+  }
+
+  void _initSessionTracker() {
+    if (!_service.hasStudentSession) return;
+    final tracker = GameSessionTracker(
+      gameType: 1,
+      userNumericId: _service.numericUserId,
+    );
+    _sessionTracker = tracker;
+    tracker.start();
   }
 
   void _handleAnswer(bool isCorrect) {
     if (isCorrect) {
+      _hits++;
+      _sessionTracker?.recordHit();
       setState(() {
         _showCheckIcon = true;
       });
@@ -42,6 +59,8 @@ class _NumberScreenState extends State<NumberScreen> {
         _speakInstruction();
       });
     } else {
+      _fails++;
+      _sessionTracker?.recordFail();
       setState(() {
         _showErrorIcon = true;
       });
@@ -66,6 +85,17 @@ class _NumberScreenState extends State<NumberScreen> {
     await _flutterTts.speak("Toca el número ${_controller.targetNumber}");
   }
 
+  Future<void> _finishSession() async {
+    await _sessionTracker?.finish();
+  }
+
+  @override
+  void dispose() {
+    _sessionTracker?.finish();
+    _flutterTts.stop();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // final prefs = PreferenceProvider.of(context);
@@ -82,8 +112,13 @@ class _NumberScreenState extends State<NumberScreen> {
     final titleFontFamily = _service.fontFamilyWithFallback();
     final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
+    return WillPopScope(
+      onWillPop: () async {
+        await _finishSession();
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
 
       appBar: AppBar(
         title: Text(
@@ -182,6 +217,7 @@ class _NumberScreenState extends State<NumberScreen> {
             ),
         ],
       ),
+    ),
     );
   }
 }

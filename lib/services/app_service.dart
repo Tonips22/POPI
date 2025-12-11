@@ -23,6 +23,13 @@ class AppService {
   /// Obtiene el usuario actual
   UserModel? get currentUser => _currentUser;
 
+  /// Devuelve el ID numérico del usuario actual (o 0 si no es válido)
+  int get numericUserId {
+    final rawId = _currentUser?.id;
+    if (rawId == null) return 0;
+    return int.tryParse(rawId) ?? 0;
+  }
+
   /// Indica si la sesión activa pertenece a un estudiante
   bool get hasStudentSession =>
       _currentUser != null && _currentUser!.role.toLowerCase() == 'student';

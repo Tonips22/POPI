@@ -170,4 +170,107 @@ class SesionJuegoService {
       rethrow;
     }
   }
+
+  /// Obtiene el siguiente id_sesion incremental
+  Future<int> getNextSessionId() async {
+    try {
+      final snapshot = await _fs
+          .collection(_collection)
+          .orderBy('id_sesion', descending: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        return 1;
+      }
+
+      final data = snapshot.docs.first.data();
+      final dynamic currentId = data['id_sesion'];
+      if (currentId is int) return currentId + 1;
+      if (currentId is num) return currentId.toInt() + 1;
+      if (currentId is String) {
+        final parsed = int.tryParse(currentId);
+        if (parsed != null) return parsed + 1;
+      }
+      return 1;
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en getNextSessionId: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') return 1;
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en getNextSessionId: $e');
+      return 1;
+    }
+  }
+
+  /// Crea una sesión vacía para registrar resultados posteriormente
+  Future<String> createEmptySession({
+    required int sessionId,
+    required int userNumericId,
+    required int gameType,
+  }) async {
+    try {
+      final doc = await _fs.collection(_collection).add({
+        'id_sesion': sessionId,
+        'id_usuario': userNumericId,
+        'tipo_juego': gameType,
+        'n_aciertos': 0,
+        'n_fallos': 0,
+        'fecha_sesion': Timestamp.fromDate(DateTime.now()),
+      });
+      print('✅ Sesión creada: $sessionId (doc ${doc.id})');
+      return doc.id;
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en createEmptySession: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') {
+        print('⚠️ Firestore unavailable en createEmptySession.');
+        rethrow;
+      }
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en createEmptySession: $e');
+      rethrow;
+    }
+  }
+
+  /// Actualiza los contadores de una sesión existente
+  Future<void> updateSessionStats({
+    required String docId,
+    required int hits,
+    required int fails,
+  }) async {
+    try {
+      await _fs.collection(_collection).doc(docId).update({
+        'n_aciertos': hits,
+        'n_fallos': fails,
+        'fecha_sesion': Timestamp.fromDate(DateTime.now()),
+      });
+      print('✅ Sesión actualizada ($docId): hits=$hits, fails=$fails');
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en updateSessionStats: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') {
+        print('⚠️ Firestore unavailable en updateSessionStats.');
+        return;
+      }
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en updateSessionStats: $e');
+      rethrow;
+    }
+  }
+
+  /// Elimina por completo la sesión indicada
+  Future<void> deleteSessionByDoc(String docId) async {
+    try {
+      await _fs.collection(_collection).doc(docId).delete();
+      print('🗑️ Sesión eliminada: $docId');
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en deleteSessionByDoc: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') return;
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en deleteSessionByDoc: $e');
+      rethrow;
+    }
+  }
 }

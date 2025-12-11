@@ -5,6 +5,7 @@ import 'package:popi/screens/settings_screen.dart';
 import '../widgets/check_icon_overlay.dart';
 // import '../widgets/preference_provider.dart';
 import '../services/app_service.dart';
+import '../services/game_session_tracker.dart';
 import 'settings_screen_sumar.dart';
 
 
@@ -484,6 +485,7 @@ class EqualShareScreen extends StatefulWidget {
 class _EqualShareScreenState extends State<EqualShareScreen> {
   final EqualShareController _controller = EqualShareController();
   final AppService _service = AppService();
+  GameSessionTracker? _sessionTracker;
 
   bool _showCheckIcon = false;
   bool _showErrorIcon = false;
@@ -498,6 +500,17 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
     super.initState();
     _controller.initGame();
     _roundStart = DateTime.now();
+    _initSessionTracker();
+  }
+
+  void _initSessionTracker() {
+    if (!_service.hasStudentSession) return;
+    final tracker = GameSessionTracker(
+      gameType: 3,
+      userNumericId: _service.numericUserId,
+    );
+    _sessionTracker = tracker;
+    tracker.start();
   }
 
   void _restartRound() {
@@ -518,6 +531,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
         _hits++;
         _showCheckIcon = true;
       });
+      _sessionTracker?.recordHit();
 
       // Aquí registrarías acierto + tiempo
       debugPrint('Acierto $_hits, tiempo: ${elapsed.inSeconds}s');
@@ -531,6 +545,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
         _errors++;
         _showErrorIcon = true;
       });
+      _sessionTracker?.recordFail();
 
       // Aquí registrarías el error + tiempo
       debugPrint('Error $_errors, tiempo hasta el fallo: ${elapsed.inSeconds}s');
@@ -542,6 +557,16 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
         });
       });
     }
+  }
+
+  Future<void> _finishSession() async {
+    await _sessionTracker?.finish();
+  }
+
+  @override
+  void dispose() {
+    _sessionTracker?.finish();
+    super.dispose();
   }
 
   @override
@@ -560,10 +585,15 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
     final titleFontFamily = _service.fontFamilyWithFallback();
     final userShape = _service.currentUser?.preferences.shape ?? 'circle';
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
+    return WillPopScope(
+      onWillPop: () async {
+        await _finishSession();
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
 
-      appBar: AppBar(
+        appBar: AppBar(
         title: Text(
           'Reparto de sumas',
           style: TextStyle(
@@ -600,7 +630,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
         ],
       ),
 
-      body: Stack(
+        body: Stack(
         children: [
           Center(
             child: ConstrainedBox(
@@ -653,6 +683,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
               icon: Icons.cancel,
             ),
         ],
+        ),
       ),
     );
   }
