@@ -7,6 +7,8 @@ import '../widgets/check_icon_overlay.dart';
 import '../services/app_service.dart';
 import '../services/game_session_tracker.dart';
 import 'settings_screen_sumar.dart';
+import 'game_selector_screen.dart';
+import 'game_victory_screen.dart';
 
 
 /// ---------------------------------------------------------------------------
@@ -495,6 +497,11 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
   late DateTime _roundStart;
   int _roundIndex = 0; // para reconstruir el tablero entre rondas
 
+  int get _targetRounds {
+    final prefs = _service.currentUser?.preferences;
+    return prefs?.shareGameRounds ?? 5;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -532,13 +539,23 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
         _showCheckIcon = true;
       });
       _sessionTracker?.recordHit();
+      final maxRounds = _targetRounds;
+      final bool hasCompletedSession =
+          maxRounds > 0 && _hits >= maxRounds;
 
       // Aquí registrarías acierto + tiempo
       debugPrint('Acierto $_hits, tiempo: ${elapsed.inSeconds}s');
 
-      Future.delayed(const Duration(milliseconds: 2000), () {
+      Future.delayed(const Duration(milliseconds: 2000), () async {
         if (!mounted) return;
-        _restartRound();
+        if (hasCompletedSession) {
+          setState(() {
+            _showCheckIcon = false;
+          });
+          await _showVictoryScreen();
+        } else {
+          _restartRound();
+        }
       });
     } else {
       setState(() {
@@ -561,6 +578,30 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
 
   Future<void> _finishSession() async {
     await _sessionTracker?.finish();
+  }
+
+  Future<void> _showVictoryScreen() async {
+    await _finishSession();
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (victoryContext) => GameVictoryScreen(
+          onRestart: () {
+            Navigator.pushReplacement(
+              victoryContext,
+              MaterialPageRoute(builder: (_) => const EqualShareScreen()),
+            );
+          },
+          onHome: () {
+            Navigator.pushReplacement(
+              victoryContext,
+              MaterialPageRoute(builder: (_) => const ChooseGameScreen()),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   @override

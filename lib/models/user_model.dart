@@ -51,6 +51,10 @@ class UserPreferences {
   final bool canCustomize;
   final String? voiceText; // 'none', 'double', 'long' or null (default)
   final String? reactionType; // tipo de reacción seleccionada
+  final int touchGameRounds;
+  final int sortGameRounds;
+  final int shareGameRounds;
+  final int subtractGameRounds;
 
   UserPreferences({
     this.primaryColor = '0xFF2196F3',
@@ -62,6 +66,10 @@ class UserPreferences {
     this.canCustomize = false,
     this.voiceText,
     this.reactionType,
+    this.touchGameRounds = 5,
+    this.sortGameRounds = 5,
+    this.shareGameRounds = 5,
+    this.subtractGameRounds = 5,
   });
 
   Map<String, dynamic> toMap() {
@@ -75,6 +83,10 @@ class UserPreferences {
       'canCustomize': canCustomize,
       'voiceText': voiceText,
       'tipo_reaccion': reactionType,
+      'touchGameRounds': touchGameRounds,
+      'sortGameRounds': sortGameRounds,
+      'shareGameRounds': shareGameRounds,
+      'subtractGameRounds': subtractGameRounds,
     };
   }
 
@@ -141,10 +153,24 @@ class UserPreferences {
       canCustomize: map['canCustomize'] ?? false,
       voiceText: map['voiceText'],
       reactionType: map['tipo_reaccion'],
+      touchGameRounds: _parseRounds(map['touchGameRounds']),
+      sortGameRounds: _parseRounds(map['sortGameRounds']),
+      shareGameRounds: _parseRounds(map['shareGameRounds']),
+      subtractGameRounds: _parseRounds(map['subtractGameRounds']),
     );
   }
 
   static const _unset = Object();
+
+  static int _parseRounds(dynamic value, {int fallback = 5}) {
+    if (value is int) {
+      return value.clamp(1, 20);
+    }
+    if (value is num) {
+      return value.toInt().clamp(1, 20);
+    }
+    return fallback;
+  }
 
   /// Crea una copia modificando algunos campos
   UserPreferences copyWith({
@@ -157,6 +183,10 @@ class UserPreferences {
     bool?  canCustomize,
     Object? voiceText = _unset,
     Object? reactionType = _unset,
+    int? touchGameRounds,
+    int? sortGameRounds,
+    int? shareGameRounds,
+    int? subtractGameRounds,
   }) {
     return UserPreferences(
       primaryColor: primaryColor ?? this.primaryColor,
@@ -170,6 +200,10 @@ class UserPreferences {
       reactionType: identical(reactionType, _unset)
           ? this.reactionType
           : reactionType as String?,
+      touchGameRounds: touchGameRounds ?? this.touchGameRounds,
+      sortGameRounds: sortGameRounds ?? this.sortGameRounds,
+      shareGameRounds: shareGameRounds ?? this.shareGameRounds,
+      subtractGameRounds: subtractGameRounds ?? this.subtractGameRounds,
     );
   }
 

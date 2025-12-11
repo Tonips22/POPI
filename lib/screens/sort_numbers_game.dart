@@ -36,6 +36,10 @@ class _SortNumbersGameState extends State<SortNumbersGame>
 
   bool _showCheckIcon = false;
   int _hits = 0;
+  int get _targetRounds {
+    final prefs = _service.currentUser?.preferences;
+    return prefs?.sortGameRounds ?? 5;
+  }
 
   @override
   void initState() {
@@ -131,6 +135,18 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     _hits++;
     _sessionTracker?.recordHit();
 
+    final int maxRounds = _targetRounds;
+    if (maxRounds > 0 && _hits >= maxRounds) {
+      _showVictoryScreen();
+    } else {
+      _controller.initGame();
+      _startRound();
+    }
+  }
+
+  Future<void> _showVictoryScreen() async {
+    await _sessionTracker?.finish();
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(

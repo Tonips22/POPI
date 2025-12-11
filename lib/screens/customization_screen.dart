@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' hide Text;
 import '../widgets/voice_text.dart';
 import 'package:popi/screens/voice_screen.dart';
 import 'color_settings_screen.dart';
+import 'game_preferences_screen.dart';
 import 'fonts_settings_screen.dart';
 import 'number_format_screen.dart';
 import 'reactions_screen.dart';
@@ -155,14 +156,14 @@ class _CustomizationScreenState extends State<CustomizationScreen> {
                 backgroundColor: Colors.red,
                 fontSize: titleFontSize,
                 fontFamily: titleFontFamily,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Configuración de juegos - Próximamente',
-                      ),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GamePreferencesScreen(),
                     ),
                   );
+                  setState(() {});
                 },
               ),
             ],

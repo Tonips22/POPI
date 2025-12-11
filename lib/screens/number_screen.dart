@@ -8,6 +8,8 @@ import '../widgets/check_icon_overlay.dart';
 import '../widgets/reaction_overlay.dart';
 import '../services/app_service.dart';
 import '../services/game_session_tracker.dart';
+import 'game_selector_screen.dart';
+import 'game_victory_screen.dart';
 
 class NumberScreen extends StatefulWidget {
   const NumberScreen({super.key});
@@ -26,6 +28,11 @@ class _NumberScreenState extends State<NumberScreen> {
   int _hits = 0;
   int _fails = 0;
   bool _showReactionEffect = false;
+
+  int get _targetRounds {
+    final prefs = _service.currentUser?.preferences;
+    return prefs?.touchGameRounds ?? 5;
+  }
 
   @override
   void initState() {
@@ -48,6 +55,9 @@ class _NumberScreenState extends State<NumberScreen> {
   void _handleAnswer(bool isCorrect) {
     if (isCorrect) {
       _hits++;
+      final int maxRounds = _targetRounds;
+      final bool hasCompletedSession =
+          maxRounds > 0 && _hits >= maxRounds;
       _sessionTracker?.recordHit();
       final bool showReaction =
           _service.currentUser?.preferences.reactionType == 'confetti';
@@ -58,13 +68,19 @@ class _NumberScreenState extends State<NumberScreen> {
 
       final successDelay =
           showReaction ? const Duration(milliseconds: 1400) : const Duration(milliseconds: 800);
-      Future.delayed(successDelay, () {
+      Future.delayed(successDelay, () async {
         setState(() {
-          _controller.nextRound();
           _showCheckIcon = false;
           _showReactionEffect = false;
+          if (!hasCompletedSession) {
+            _controller.nextRound();
+          }
         });
-        _speakInstruction();
+        if (hasCompletedSession) {
+          await _showVictoryScreen();
+        } else {
+          _speakInstruction();
+        }
       });
     } else {
       _fails++;
@@ -95,6 +111,30 @@ class _NumberScreenState extends State<NumberScreen> {
 
   Future<void> _finishSession() async {
     await _sessionTracker?.finish();
+  }
+
+  Future<void> _showVictoryScreen() async {
+    await _finishSession();
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (victoryContext) => GameVictoryScreen(
+          onRestart: () {
+            Navigator.pushReplacement(
+              victoryContext,
+              MaterialPageRoute(builder: (_) => const NumberScreen()),
+            );
+          },
+          onHome: () {
+            Navigator.pushReplacement(
+              victoryContext,
+              MaterialPageRoute(builder: (_) => const ChooseGameScreen()),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   @override
