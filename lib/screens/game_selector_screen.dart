@@ -8,6 +8,7 @@ import 'customization_screen.dart';
 import '../utils/accessible_routes.dart';
 import '../services/app_service.dart';
 import 'login_screen.dart';
+import 'resultados.dart';
 // import '../widgets/voice_text.dart';
 // import '../widgets/preference_provider.dart';
 
@@ -59,6 +60,40 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
           },
         ),
         actions: [
+          IconButton(
+            tooltip: 'Resultados',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const ResultadosScreen(),
+                ),
+              );
+            },
+            icon: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.green.shade600,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'R',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ),
           if (currentUser != null)
             Padding(
               padding: const EdgeInsets.only(right: 8.0),

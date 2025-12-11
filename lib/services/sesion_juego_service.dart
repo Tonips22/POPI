@@ -203,11 +203,48 @@ class SesionJuegoService {
     }
   }
 
+  /// Obtiene el siguiente contador de sesión para un usuario específico sin requerir índices compuestos.
+  Future<int> getNextSessionCounter(int userId) async {
+    try {
+      final snapshot = await _fs
+          .collection(_collection)
+          .where('id_usuario', isEqualTo: userId)
+          .get();
+
+      int maxCounter = 0;
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final dynamic current = data['sesion_contador'];
+        if (current is int) {
+          if (current > maxCounter) maxCounter = current;
+        } else if (current is num) {
+          final value = current.toInt();
+          if (value > maxCounter) maxCounter = value;
+        } else if (current is String) {
+          final value = int.tryParse(current);
+          if (value != null && value > maxCounter) {
+            maxCounter = value;
+          }
+        }
+      }
+
+      return maxCounter + 1;
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en getNextSessionCounter: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') return 1;
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en getNextSessionCounter: $e');
+      return 1;
+    }
+  }
+
   /// Crea una sesión vacía para registrar resultados posteriormente
   Future<String> createEmptySession({
     required int sessionId,
     required int userNumericId,
     required int gameType,
+    required int sessionCounter,
   }) async {
     try {
       final doc = await _fs.collection(_collection).add({
@@ -217,6 +254,7 @@ class SesionJuegoService {
         'n_aciertos': 0,
         'n_fallos': 0,
         'fecha_sesion': Timestamp.fromDate(DateTime.now()),
+        'sesion_contador': sessionCounter,
       });
       print('✅ Sesión creada: $sessionId (doc ${doc.id})');
       return doc.id;

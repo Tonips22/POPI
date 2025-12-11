@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../services/sesion_juego_service.dart';
 import '../models/sesion_juego.dart';
+import '../services/app_service.dart';
 
 class HistorialResultadosScreen extends StatefulWidget {
   const HistorialResultadosScreen({super.key});
@@ -12,8 +13,10 @@ class HistorialResultadosScreen extends StatefulWidget {
 
 class _HistorialResultadosScreenState extends State<HistorialResultadosScreen> {
   final SesionJuegoService _sesionService = SesionJuegoService();
+  final AppService _appService = AppService();
   List<SesionJuego> _sesiones = [];
   bool _isLoading = true;
+  bool _missingUser = false;
 
   @override
   void initState() {
@@ -24,11 +27,22 @@ class _HistorialResultadosScreenState extends State<HistorialResultadosScreen> {
   Future<void> _loadResultados() async {
     setState(() => _isLoading = true);
     try {
-      final sesiones = await _sesionService.getAllSesiones();
-      sesiones.sort((a, b) => a.idSesion.compareTo(b.idSesion));
+      final userId = _appService.numericUserId;
+      if (userId <= 0) {
+        setState(() {
+          _sesiones = [];
+          _missingUser = true;
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final sesiones = await _sesionService.getSesionesByUsuario(userId);
+      sesiones.sort((a, b) => b.sessionCounter.compareTo(a.sessionCounter));
 
       setState(() {
         _sesiones = sesiones;
+        _missingUser = false;
         _isLoading = false;
       });
     } catch (e) {
@@ -60,7 +74,26 @@ class _HistorialResultadosScreenState extends State<HistorialResultadosScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _sesiones.isEmpty
+          : _missingUser
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.lock_outline, size: 64, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Inicia sesión para ver tus resultados.',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadResultados,
+                        child: const Text('Reintentar'),
+                      ),
+                    ],
+                  ),
+                )
+              : _sesiones.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -111,7 +144,7 @@ class _HistorialResultadosScreenState extends State<HistorialResultadosScreen> {
             ),
             child: Center(
               child: Text(
-                '${sesion.idSesion}',
+                '${sesion.sessionCounter > 0 ? sesion.sessionCounter : sesion.idSesion}',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -126,7 +159,7 @@ class _HistorialResultadosScreenState extends State<HistorialResultadosScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sesión ${sesion.idSesion}',
+                  'Sesión ${sesion.sessionCounter > 0 ? sesion.sessionCounter : sesion.idSesion}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

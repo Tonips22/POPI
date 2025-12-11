@@ -28,10 +28,13 @@ class GameSessionTracker {
   Future<void> _createSession() async {
     try {
       final nextId = await _service.getNextSessionId();
+      final nextCounter =
+          await _service.getNextSessionCounter(userNumericId);
       _docId = await _service.createEmptySession(
         sessionId: nextId,
         userNumericId: userNumericId,
         gameType: gameType,
+        sessionCounter: nextCounter,
       );
       _hasStarted = true;
     } catch (e) {

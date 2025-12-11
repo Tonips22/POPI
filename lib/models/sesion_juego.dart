@@ -7,6 +7,7 @@ class SesionJuego {
   final int nAciertos;
   final int nFallos;
   final DateTime fechaSesion;
+  final int sessionCounter;
 
   SesionJuego({
     required this.idSesion,
@@ -15,6 +16,7 @@ class SesionJuego {
     required this.nAciertos,
     required this.nFallos,
     required this.fechaSesion,
+    this.sessionCounter = 0,
   });
 
   factory SesionJuego.fromFirestore(DocumentSnapshot doc) {
@@ -49,6 +51,7 @@ class SesionJuego {
       nAciertos: toInt(data['n_aciertos'], 0),
       nFallos: toInt(data['n_fallos'], 0),
       fechaSesion: toDateTime(data['fecha_sesion']),
+      sessionCounter: toInt(data['sesion_contador'], 0),
     );
   }
 
@@ -78,6 +81,7 @@ class SesionJuego {
       nAciertos: toInt(data['n_aciertos'], 0),
       nFallos: toInt(data['n_fallos'], 0),
       fechaSesion: toDateTime(data['fecha_sesion']),
+      sessionCounter: toInt(data['sesion_contador'], 0),
     );
   }
 

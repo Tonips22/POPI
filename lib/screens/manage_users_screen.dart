@@ -307,7 +307,7 @@ class ManageUsersScreen extends StatelessWidget {
             );
           }
 
-          return Padding(
+          return SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: pagePad, vertical: pagePad * 0.8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,35 +331,33 @@ class ManageUsersScreen extends StatelessWidget {
                 SizedBox(height: pagePad * 0.8),
                 headerBar(),
                 ...users.map(rowItem),
-                const Spacer(),
+                SizedBox(height: pagePad * 0.8),
 
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _btnCreate,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
-                        textStyle: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _btnCreate,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                      textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CrearUsuarioScreen()),
-                        );
-                      },
-                      child: const Text('Crear usuario'),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CrearUsuarioScreen()),
+                      );
+                    },
+                    child: const Text('Crear usuario'),
                   ),
                 ),
+                SizedBox(height: pagePad * 0.4),
               ],
             ),
           );
