@@ -7,6 +7,7 @@ import 'equal_subtraction_screen.dart';
 import 'customization_screen.dart';
 import '../utils/accessible_routes.dart';
 import '../services/app_service.dart';
+import 'login_screen.dart';
 // import '../widgets/voice_text.dart';
 // import '../widgets/preference_provider.dart';
 
@@ -46,7 +47,15 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            AppService().logout();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LoginScreen(),
+              ),
+            );
+          },
         ),
         actions: [
           if (currentUser != null)

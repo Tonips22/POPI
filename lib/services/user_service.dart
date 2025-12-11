@@ -159,6 +159,22 @@ class UserService {
     }
   }
 
+  /// Actualiza solo la contraseña del usuario
+  Future<void> updatePassword(String userId, String? password) async {
+    try {
+      final docRef = _fs.collection(_collection).doc(userId);
+      await docRef.update({'password': password});
+      print('✅ Contraseña actualizada para el usuario: $userId');
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en updatePassword: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') return;
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en updatePassword: $e');
+      rethrow;
+    }
+  }
+
   /// Actualiza el perfil completo del usuario
   ///
   /// Igual que arriba: en caso de `unavailable`, se evita reventar la app.

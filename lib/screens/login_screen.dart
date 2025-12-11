@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart' hide Text;
-import '../widgets/voice_text.dart';
-import '/services/app_service.dart';
-import '/models/user_model.dart';
-import '/screens/home_tutor_screen.dart';
+import 'package:flutter/material.dart';
+import '../models/user_model.dart';
+import '../services/app_service.dart';
+import '../services/user_service.dart';
+import 'game_selector_screen.dart';
+import 'password_screen.dart'; // Importar pantalla de contraseña
 import '/screens/admin_screen.dart';
-import '/screens/game_selector_screen.dart';
+import '/screens/home_tutor_screen.dart'; // Keep this import as it's used later
 // import '../widgets/voice_text.dart';
 import 'dart:math' as math;
 
@@ -45,16 +46,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _onStudentSelected(UserModel student, int index) async {
     setState(() => _selectedIndex = index);
-    _service.login(student);
     
     await Future.delayed(const Duration(milliseconds: 200));
     if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const ChooseGameScreen(),
-        ),
-      );
+      // Verificar si el usuario tiene contraseña
+      if (student.password != null && student.password!.isNotEmpty) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PasswordScreen(user: student),
+          ),
+        );
+      } else {
+        // Login directo si no tiene contraseña
+        _service.login(student);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ChooseGameScreen(),
+          ),
+        );
+      }
     }
   }
 

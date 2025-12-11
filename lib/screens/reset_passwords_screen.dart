@@ -1,8 +1,39 @@
 import 'package:flutter/material.dart';
 import 'change_passwords_screen.dart';
+import '../services/user_service.dart';
+import '../models/user_model.dart';
 
-class ResetPasswordsScreen extends StatelessWidget {
+class ResetPasswordsScreen extends StatefulWidget {
   const ResetPasswordsScreen({super.key});
+
+  @override
+  State<ResetPasswordsScreen> createState() => _ResetPasswordsScreenState();
+}
+
+class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
+  final UserService _userService = UserService();
+  List<UserModel> _users = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
+
+  Future<void> _loadUsers() async {
+    setState(() => _isLoading = true);
+    try {
+      final users = await _userService.getAllUsers();
+      setState(() {
+        _users = users;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error cargando usuarios: $e');
+      setState(() => _isLoading = false);
+    }
+  }
 
   static const _blueAppBar = Color(0xFF77A9F4);
   static const _bluePill   = Color(0xFF77A9F4);
@@ -73,13 +104,13 @@ class ResetPasswordsScreen extends StatelessWidget {
           final colChangeW = totalWidth - (colAvatarW + colNameW + colRoleW + colGap * 3);
 
           // Datos del boceto
-          final users = <_User>[
-            _User(color: const Color(0xFF9ED7E6), emoji: '👤', name: 'Mario',  role: 'Estudiante'),
-            _User(color: const Color(0xFFF7E07D), emoji: '🐻', name: 'Jesús',  role: 'Estudiante'),
-            _User(color: const Color(0xFFF6B7A4), emoji: '🦊', name: 'Laura',  role: 'Profesora'),
-            _User(color: const Color(0xFFB6E2C8), emoji: '🦒', name: 'Rosa',   role: 'Estudiante'),
-            _User(color: const Color(0xFFCFCBEA), emoji: '🐘', name: 'Pedro',  role: 'Profesor'),
-          ];
+          // final users = <_User>[
+          //   _User(color: const Color(0xFF9ED7E6), emoji: '👤', name: 'Mario',  role: 'Estudiante'),
+          //   _User(color: const Color(0xFFF7E07D), emoji: '🐻', name: 'Jesús',  role: 'Estudiante'),
+          //   _User(color: const Color(0xFFF6B7A4), emoji: '🦊', name: 'Laura',  role: 'Profesora'),
+          //   _User(color: const Color(0xFFB6E2C8), emoji: '🦒', name: 'Rosa',   role: 'Estudiante'),
+          //   _User(color: const Color(0xFFCFCBEA), emoji: '🐘', name: 'Pedro',  role: 'Profesor'),
+          // ];
 
           // Cabecera
           Widget headerBar() {
@@ -176,7 +207,18 @@ class ResetPasswordsScreen extends StatelessWidget {
 
 
           // Fila
-          Widget rowItem(_User u) {
+          Widget rowItem(UserModel u, int index) {
+            final colors = [
+              const Color(0xFF9ED7E6),
+              const Color(0xFFF7E07D),
+              const Color(0xFFF6B7A4),
+              const Color(0xFFB6E2C8),
+              const Color(0xFFCFCBEA),
+            ];
+            final avatarColor = colors[index % colors.length];
+            final emojis = ['👤', '🐻', '🦊', '🦒', '🐘'];
+            final emoji = emojis[index % emojis.length];
+
             return SizedBox(
               height: rowH,
               child: Row(
@@ -189,11 +231,11 @@ class ResetPasswordsScreen extends StatelessWidget {
                         width: avatar,
                         height: avatar,
                         decoration: BoxDecoration(
-                          color: u.color,
+                          color: avatarColor,
                           borderRadius: BorderRadius.circular(avatarR.toDouble()),
                         ),
                         alignment: Alignment.center,
-                        child: Text(u.emoji, style: TextStyle(fontSize: avatar * 0.58)),
+                        child: Text(emoji, style: TextStyle(fontSize: avatar * 0.58)),
                       ),
                     ),
                   ),
@@ -238,9 +280,10 @@ class ResetPasswordsScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (_) => ChangePasswordsScreen(
+                                userId: u.id,
                                 userName: u.name,
-                                avatarColor: u.color,
-                                emoji: u.emoji,
+                                avatarColor: avatarColor,
+                                emoji: emoji,
                               ),
                             ),
                           );
@@ -281,9 +324,20 @@ class ResetPasswordsScreen extends StatelessWidget {
                 headerBar(),
 
                 // Filas
-                ...users.map(rowItem),
-
-                const Spacer(),
+                // Filas
+                if (_isLoading)
+                  const Expanded(child: Center(child: CircularProgressIndicator()))
+                else if (_users.isEmpty)
+                  const Expanded(child: Center(child: Text("No hay usuarios")))
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _users.length,
+                      itemBuilder: (context, index) {
+                        return rowItem(_users[index], index);
+                      },
+                    ),
+                  ),
               ],
             ),
           );
@@ -293,16 +347,16 @@ class ResetPasswordsScreen extends StatelessWidget {
   }
 }
 
-class _User {
-  final Color color;
-  final String emoji;
-  final String name;
-  final String role;
-
-  const _User({
-    required this.color,
-    required this.emoji,
-    required this.name,
-    required this.role,
-  });
-}
+// class _User {
+//   final Color color;
+//   final String emoji;
+//   final String name;
+//   final String role;
+//
+//   const _User({
+//     required this.color,
+//     required this.emoji,
+//     required this.name,
+//     required this.role,
+//   });
+// }

@@ -4,6 +4,7 @@ class UserModel {
   final String name;
   final String role;
   final int avatarIndex;
+  final String? password; // Password de 4 dígitos (opcional)
   final UserPreferences preferences;
 
   UserModel({
@@ -11,6 +12,7 @@ class UserModel {
     required this. name,
     required this.role,
     required this.avatarIndex,
+    this.password,
     required this.preferences,
   });
 
@@ -20,6 +22,7 @@ class UserModel {
       'name': name,
       'role': role,
       'avatarIndex': avatarIndex,
+      'password': password,
       'preferences': preferences.toMap(),
     };
   }
@@ -31,6 +34,7 @@ class UserModel {
       name: map['name'] ?? '',
       role: map['role'] ?? 'student',
       avatarIndex: map['avatarIndex'] ??  0,
+      password: map['password'],
       preferences: UserPreferences.fromMap(map['preferences'] ?? {}),
     );
   }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:popi/screens/home_tutor_screen.dart';
 import '../models/user_model.dart';
+import '../services/app_service.dart';
+import 'game_selector_screen.dart';
+import 'login_screen.dart';
 
 class PasswordScreen extends StatefulWidget {
-  final UserModel? user;
-
-  const PasswordScreen({super.key, this.user});
+  final UserModel user;
+  const PasswordScreen({super.key, required this.user});
 
   @override
   State<PasswordScreen> createState() => _PasswordScreenState();
@@ -43,7 +44,14 @@ class _PasswordScreenState extends State<PasswordScreen> {
         backgroundColor: const Color(0xFFFFFFFF),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.maybePop(context),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LoginScreen(),
+              ),
+            );
+          },
         ),
         elevation: 0,
       ),
@@ -92,27 +100,30 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   ),
                 ],
               ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.account_circle,
-                size: avatar * 1,
-                color: Colors.white,
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/avatar${(widget.user.avatarIndex % 6) + 0}.png',
+                  width: avatar,
+                  height: avatar,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      Icons.account_circle,
+                      size: avatar * 0.8,
+                      color: Colors.white,
+                    );
+                  },
+                ),
               ),
             );
           }
 
-          // ===== Rectángulo azul con casillas y botón borrar =====
+          // ===== Caja de contraseña (4 huecos) =====
           Widget passwordBox() {
-            final delGap   = clamp(base * 0.012, 6, 10);
-            final delSize  = slotSize * 0.92;
-            final innerW   = (slotSize * 4) +
-                (slotGap * 3) +
-                delGap +
-                delSize +
-                (boxPadX * 2);
+            final delSize = clamp(boxH * 0.45, 36, 48);
+            final delGap  = clamp(base * 0.02, 10, 16);
 
-            return SizedBox(
-              width: innerW,
+            return Center(
               child: Container(
                 height: boxH,
                 padding: EdgeInsets.symmetric(horizontal: boxPadX),
@@ -178,45 +189,29 @@ class _PasswordScreenState extends State<PasswordScreen> {
           // ===== Botón “Iniciar sesión” =====
           Widget loginButton(BuildContext context) {
             return ElevatedButton(
-              onPressed: _pwd.length != 4
+              onPressed: _pwd.isEmpty
                   ? null
                   : () {
-                // Validar contraseña
-                if (widget.user != null && widget.user!.password != null) {
-                  // Convertir la lista de índices a String
-                  final enteredPassword = _pwd.join('');
-                  
-                  // Comparar con la contraseña almacenada
-                  if (enteredPassword == widget.user!.password) {
-                    // Contraseña correcta
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ChooseGameScreen(),
-                      ),
-                    );
-                  } else {
-                    // Contraseña incorrecta
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Contraseña incorrecta'),
-                        backgroundColor: Colors.red,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                    // Limpiar la contraseña ingresada
-                    setState(() {
-                      _pwd.clear();
-                    });
-                  }
-                } else {
-                  // Si no hay usuario o no tiene contraseña configurada, permitir acceso
+                // Lógica de login
+                final enteredPassword = _pwd.join('');
+                if (widget.user.password == enteredPassword) {
+                  AppService().login(widget.user);
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ChooseGameScreen(),
                     ),
                   );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Contraseña incorrecta'),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
+                  setState(() {
+                    _pwd.clear();
+                  });
                 }
               },
               style: ElevatedButton.styleFrom(

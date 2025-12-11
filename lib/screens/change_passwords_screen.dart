@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../services/user_service.dart';
+
 class ChangePasswordsScreen extends StatefulWidget {
   const ChangePasswordsScreen({
     super.key,
+    required this.userId,
     required this.userName,
     required this.avatarColor,
     required this.emoji,
   });
 
+  final String userId;
   final String userName;
   final Color avatarColor;
   final String emoji;
@@ -311,13 +315,56 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 12.0),
-                      child: Text(
-                        'Contraseña lista (4 símbolos)',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                          fontSize: clamp(base * 0.024, 13, 16),
-                        ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Contraseña lista (4 símbolos)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                              fontSize: clamp(base * 0.024, 13, 16),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2E7D32),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () async {
+                              final password = _pwd.join('');
+                              try {
+                                await UserService().updatePassword(widget.userId, password);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Contraseña guardada correctamente'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  Navigator.pop(context);
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error al guardar: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text(
+                              'GUARDAR CONTRASEÑA',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
