@@ -5,6 +5,7 @@ class UserModel {
   final String role;
   final int avatarIndex;
   final String? password; // Password de 4 dígitos (opcional)
+  final int? tutorId;
   final UserPreferences preferences;
 
   UserModel({
@@ -13,6 +14,7 @@ class UserModel {
     required this.role,
     required this.avatarIndex,
     this.password,
+    this.tutorId,
     required this.preferences,
   });
 
@@ -23,18 +25,30 @@ class UserModel {
       'role': role,
       'avatarIndex': avatarIndex,
       'password': password,
+      'tutorId': tutorId,
       'preferences': preferences.toMap(),
     };
   }
 
   /// Crea un usuario desde Firestore
-  factory UserModel. fromMap(Map<String, dynamic> map, String docId) {
+  factory UserModel.fromMap(Map<String, dynamic> map, String docId) {
+    int? tutorId;
+    final dynamic rawTutorId = map['tutorId'];
+    if (rawTutorId is int) {
+      tutorId = rawTutorId;
+    } else if (rawTutorId is num) {
+      tutorId = rawTutorId.toInt();
+    } else if (rawTutorId is String) {
+      tutorId = int.tryParse(rawTutorId);
+    }
+
     return UserModel(
       id: docId,
       name: map['name'] ?? '',
       role: map['role'] ?? 'student',
-      avatarIndex: map['avatarIndex'] ??  0,
+      avatarIndex: map['avatarIndex'] ?? 0,
       password: map['password'],
+      tutorId: tutorId,
       preferences: UserPreferences.fromMap(map['preferences'] ?? {}),
     );
   }
@@ -55,6 +69,10 @@ class UserPreferences {
   final int sortGameRounds;
   final int shareGameRounds;
   final int subtractGameRounds;
+  final bool showTutorialJuego1;
+  final bool showTutorialJuego2;
+  final bool showTutorialJuego3;
+  final bool showTutorialJuego4;
 
   UserPreferences({
     this.primaryColor = '0xFF2196F3',
@@ -70,6 +88,10 @@ class UserPreferences {
     this.sortGameRounds = 5,
     this.shareGameRounds = 5,
     this.subtractGameRounds = 5,
+    this.showTutorialJuego1 = true,
+    this.showTutorialJuego2 = true,
+    this.showTutorialJuego3 = true,
+    this.showTutorialJuego4 = true,
   });
 
   Map<String, dynamic> toMap() {
@@ -87,6 +109,10 @@ class UserPreferences {
       'sortGameRounds': sortGameRounds,
       'shareGameRounds': shareGameRounds,
       'subtractGameRounds': subtractGameRounds,
+      'showTutorialJuego1': showTutorialJuego1,
+      'showTutorialJuego2': showTutorialJuego2,
+      'showTutorialJuego3': showTutorialJuego3,
+      'showTutorialJuego4': showTutorialJuego4,
     };
   }
 
@@ -157,6 +183,14 @@ class UserPreferences {
       sortGameRounds: _parseRounds(map['sortGameRounds']),
       shareGameRounds: _parseRounds(map['shareGameRounds']),
       subtractGameRounds: _parseRounds(map['subtractGameRounds']),
+      showTutorialJuego1:
+          map['showTutorialJuego1'] is bool ? map['showTutorialJuego1'] as bool : true,
+      showTutorialJuego2:
+          map['showTutorialJuego2'] is bool ? map['showTutorialJuego2'] as bool : true,
+      showTutorialJuego3:
+          map['showTutorialJuego3'] is bool ? map['showTutorialJuego3'] as bool : true,
+      showTutorialJuego4:
+          map['showTutorialJuego4'] is bool ? map['showTutorialJuego4'] as bool : true,
     );
   }
 
@@ -187,6 +221,10 @@ class UserPreferences {
     int? sortGameRounds,
     int? shareGameRounds,
     int? subtractGameRounds,
+    bool? showTutorialJuego1,
+    bool? showTutorialJuego2,
+    bool? showTutorialJuego3,
+    bool? showTutorialJuego4,
   }) {
     return UserPreferences(
       primaryColor: primaryColor ?? this.primaryColor,
@@ -204,6 +242,10 @@ class UserPreferences {
       sortGameRounds: sortGameRounds ?? this.sortGameRounds,
       shareGameRounds: shareGameRounds ?? this.shareGameRounds,
       subtractGameRounds: subtractGameRounds ?? this.subtractGameRounds,
+      showTutorialJuego1: showTutorialJuego1 ?? this.showTutorialJuego1,
+      showTutorialJuego2: showTutorialJuego2 ?? this.showTutorialJuego2,
+      showTutorialJuego3: showTutorialJuego3 ?? this.showTutorialJuego3,
+      showTutorialJuego4: showTutorialJuego4 ?? this.showTutorialJuego4,
     );
   }
 

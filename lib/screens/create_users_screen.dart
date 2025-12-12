@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
+import '../services/app_service.dart';
 import '../models/user_model.dart';
 
 class CrearUsuarioScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
   // Controladores de los campos
   final _nombreCtrl = TextEditingController();
   final _tutorCtrl  = TextEditingController();
+  final AppService _appService = AppService();
   
   // Para el Dropdown de Rol (Sin Admin)
   String? _selectedRole;
@@ -337,6 +339,7 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                               onPressed: () async {
                                 final nombre = _nombreCtrl.text.trim();
                                 final rol = _selectedRole;
+                                final normalizedRole = rol != null ? _normalizeRole(rol) : null;
                                 
                                 if (nombre.isEmpty || rol == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -358,11 +361,19 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                                 try {
                                   // Creamos un objeto temporal. El ID se ignorará en el servicio
                                   // porque generará uno nuevo numérico.
+                                  final tutorCandidate = _appService.currentUser;
+                                  final shouldAssignTutor = normalizedRole == 'student' &&
+                                      tutorCandidate != null &&
+                                      tutorCandidate.role.toLowerCase() == 'tutor';
+                                  final int? tutorNumericId = shouldAssignTutor
+                                      ? int.tryParse(tutorCandidate!.id)
+                                      : null;
                                   final tempUser = UserModel(
                                     id: '', 
                                     name: nombre,
-                                    role: _normalizeRole(rol),
+                                    role: normalizedRole!,
                                     avatarIndex: _selectedAvatarIndex,
+                                    tutorId: tutorNumericId,
                                     preferences: UserPreferences(),
                                   );
             
@@ -489,4 +500,3 @@ class _FieldRow extends StatelessWidget {
     );
   }
 }
-

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
+import '../services/app_service.dart';
 import '../models/user_model.dart';
 
 class CreateProfileScreen extends StatefulWidget {
@@ -13,10 +14,11 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   static const _blueAppBar = Color(0xFF5CA7FF);
   
   final TextEditingController _nameController = TextEditingController();
+  final AppService _appService = AppService();
 
   // Para el Avatar
   int _selectedAvatarIndex = 0;
-  final List<String> _avatarNames = ['avatar1', 'avatar2', 'avatar3', 'avatar4'];
+  final List<String> _avatarNames = ['avatar0','avatar1', 'avatar2', 'avatar3', 'avatar4', 'avatar5'];
 
   @override
   void dispose() {
@@ -263,11 +265,18 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
                       try {
                         // Crear el perfil del alumno
+                        final current = _appService.currentUser;
+                        final bool isTutor =
+                            current != null && current.role.toLowerCase() == 'tutor';
+                        final int? tutorNumericId =
+                            isTutor ? int.tryParse(current!.id) : null;
+
                         final newStudent = UserModel(
                           id: '', // Se genera automáticamente en el servicio
                           name: nombre,
                           role: 'student',
                           avatarIndex: _selectedAvatarIndex,
+                          tutorId: tutorNumericId,
                           preferences: UserPreferences(),
                         );
 

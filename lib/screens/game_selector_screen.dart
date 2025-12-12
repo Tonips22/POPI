@@ -9,6 +9,10 @@ import '../utils/accessible_routes.dart';
 import '../services/app_service.dart';
 import 'login_screen.dart';
 import 'resultados.dart';
+import 'tutorial_juego_1.dart';
+import 'tutorial_juego_2.dart';
+import 'tutorial_juego_3.dart';
+import 'tutorial_juego_4.dart';
 // import '../widgets/voice_text.dart';
 // import '../widgets/preference_provider.dart';
 
@@ -169,56 +173,28 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
                     imagePath: 'images/games/touch_game.png',
                     label: 'Toca el número',
                     color: Colors.blue,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        buildAccessibleFadeRoute(
-                          context: context,
-                          page: const NumberScreen(),
-                        ),
-                      );
-                    },
+                    onTap: () => _handleNumberGameTap(context, appService),
                   ),
                   _buildGameButton(
                     context,
                     imagePath: 'images/games/sort_name.png',
                     label: 'Ordena los números',
                     color: Colors.green,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        buildAccessibleFadeRoute(
-                          context: context,
-                          page: const SortNumbersGame(),
-                        ),
-                      );
-                    },
+                    onTap: () => _handleSortGameTap(context, appService),
                   ),
                   _buildGameButton(
                     context,
                     imagePath: 'images/games/sum_game.png',
                     label: 'Reparte los números',
                     color: Colors.orange,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        buildAccessibleFadeRoute(
-                          context: context,
-                          page: const EqualShareScreen(),
-                        ),
-                      );
-                    },
+                    onTap: () => _handleEqualShareGameTap(context, appService),
                   ),
                   _buildGameButton(
                     context,
                     imagePath: 'images/games/rest_game.png',
                     label: 'Deja el mismo número',
                     color: Colors.purple,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        buildAccessibleFadeRoute(
-                          context: context,
-                          page: const EqualSubtractionScreen(),
-                        ),
-                      );
-                    },
+                    onTap: () => _handleEqualSubtractionGameTap(context, appService),
                   ),
                 ],
               ),
@@ -302,5 +278,85 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
         ),
       ),
     );
+  }
+
+  void _handleNumberGameTap(BuildContext context, AppService appService) {
+    final user = appService.currentUser;
+    final shouldShowTutorial = user?.preferences.showTutorialJuego1 ?? true;
+
+    if (shouldShowTutorial) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const TutorialJuego1Screen(),
+        ),
+      );
+    } else {
+      Navigator.of(context).push(
+        buildAccessibleFadeRoute(
+          context: context,
+          page: const NumberScreen(),
+        ),
+      );
+    }
+  }
+
+  void _handleSortGameTap(BuildContext context, AppService appService) {
+    final user = appService.currentUser;
+    final shouldShowTutorial = user?.preferences.showTutorialJuego2 ?? true;
+
+    if (shouldShowTutorial) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const TutorialJuego2Screen(),
+        ),
+      );
+    } else {
+      Navigator.of(context).push(
+        buildAccessibleFadeRoute(
+          context: context,
+          page: const SortNumbersGame(),
+        ),
+      );
+    }
+  }
+
+  void _handleEqualShareGameTap(BuildContext context, AppService appService) {
+    final user = appService.currentUser;
+    final shouldShowTutorial = user?.preferences.showTutorialJuego3 ?? true;
+
+    if (shouldShowTutorial) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const TutorialJuego3Screen(),
+        ),
+      );
+    } else {
+      Navigator.of(context).push(
+        buildAccessibleFadeRoute(
+          context: context,
+          page: const EqualShareScreen(),
+        ),
+      );
+    }
+  }
+
+  void _handleEqualSubtractionGameTap(BuildContext context, AppService appService) {
+    final user = appService.currentUser;
+    final shouldShowTutorial = user?.preferences.showTutorialJuego4 ?? true;
+
+    if (shouldShowTutorial) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const TutorialJuego4Screen(),
+        ),
+      );
+    } else {
+      Navigator.of(context).push(
+        buildAccessibleFadeRoute(
+          context: context,
+          page: const EqualSubtractionScreen(),
+        ),
+      );
+    }
   }
 }

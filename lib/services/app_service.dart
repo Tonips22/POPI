@@ -185,6 +185,8 @@ class AppService {
         name: _currentUser!.name,
         role: _currentUser!.role,
         avatarIndex: _currentUser!.avatarIndex,
+        password: _currentUser!.password,
+        tutorId: _currentUser!.tutorId,
         preferences: newPreferences,
       );
       userChangeNotifier.value++;
