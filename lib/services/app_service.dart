@@ -82,6 +82,31 @@ class AppService {
     }
   }
 
+  /// Valida credenciales para TUTOR o ADMIN
+  Future<UserModel?> validateTutorCredentials(String name, String password) async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .where('role', whereIn: ['tutor', 'admin'])
+          .where('name', isEqualTo: name)
+          .where('password', isEqualTo: password)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        print('⚠ No coinciden credenciales');
+        return null;
+      }
+
+      final doc = snapshot.docs.first;
+      return UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+
+    } catch (e) {
+      print('❌ Error en validateTutorCredentials: $e');
+      return null;
+    }
+  }
+
+
   /// Obtiene un usuario específico por ID
   Future<UserModel? > getUserById(String userId) async {
     try {
