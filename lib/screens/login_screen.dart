@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/app_service.dart';
-import '../services/user_service.dart';
 import 'game_selector_screen.dart';
 import 'password_screen.dart'; // Importar pantalla de contraseña
-import '/screens/admin_screen.dart';
-import '/screens/home_tutor_screen.dart'; // Keep this import as it's used later
+import 'home_screen.dart';
 // import '../widgets/voice_text.dart';
 import 'dart:math' as math;
 
@@ -70,28 +68,49 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Color _applyOpacity(Color color, double opacity) {
+    final double clamped = opacity.clamp(0.0, 1.0);
+    return color.withAlpha((255 * clamped).round());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Selecciona tu perfil',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+            );
+          },
+        ),
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double w = constraints.maxWidth;
             final double h = constraints.maxHeight;
 
-            final bool isDesktop = w >= 1200;
-            final bool needScroll = h < 650;
-
             const double kMaxContentWidth = 1200.0;
-            final double hMargin = (w * 0.08).clamp(24, 250);
 
             final double titleFont = (w * 0.08).clamp(60, 100);
             final double titleLetterSpacing = (w * 0.012).clamp(8, 20);
             final double sectionTitle = (w * 0.035).clamp(28, 40);
             final double gridSpacing = (w * 0.025).clamp(20, 32);
             final double logoSize = (w * 0.25).clamp(200, 350);
-            final double linksFont = (w * 0.02).clamp(16, 18);
 
             const int gridCols = 3;
 
@@ -221,8 +240,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       boxShadow: [
                                                         BoxShadow(
                                                           color: isHovered || isSelected
-                                                              ? const Color(0xFF2596BE).withOpacity(0.5)
-                                                              : Colors.black.withOpacity(0.2),
+                                                              ? _applyOpacity(const Color(0xFF2596BE), 0.5)
+                                                              : _applyOpacity(Colors.black, 0.2),
                                                           offset: const Offset(0, 4),
                                                           blurRadius: isHovered || isSelected ? 16 : 8,
                                                           spreadRadius: isHovered || isSelected ? 2 : 0,
@@ -281,68 +300,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                 ),
                       
-                      const SizedBox(height: 40),
-                      
-                      // Enlaces tutor y administrador
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: hMargin),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const TutorHomeScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'Iniciar sesión como tutor',
-                                style: TextStyle(
-                                  color: const Color(0xFF2596BE),
-                                  fontSize: linksFont,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: const Color(0xFF2596BE),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const AdminScreen(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'Iniciar sesión como administrador',
-                                style: TextStyle(
-                                  color: const Color(0xFF2596BE),
-                                  fontSize: linksFont,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: const Color(0xFF2596BE),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
             );
 
-            if (needScroll) {
-              return SingleChildScrollView(child: content);
-            } else {
-              return content;
-            }
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: h),
+                child: content,
+              ),
+            );
           },
         ),
       ),

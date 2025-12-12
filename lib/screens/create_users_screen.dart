@@ -24,7 +24,7 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
 
   // Para el Avatar
   int _selectedAvatarIndex = 0;
-  final List<String> _avatarNames = ['avatar1', 'avatar2', 'avatar3', 'avatar4'];
+  final List<String> _avatarNames = ['avatar0','avatar1', 'avatar2', 'avatar3', 'avatar4', 'avatar5'];
 
   @override
   void dispose() {

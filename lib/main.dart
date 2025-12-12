@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:popi/screens/home_tutor_screen.dart';
-import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 import 'services/app_service.dart';
 
 // Firebase
@@ -62,7 +61,7 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
         useMaterial3: true,
       ),
-      home: const LoginScreen(),
+      home: const HomeScreen(),
     );
   }
 }

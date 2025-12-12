@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'tutor_login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,9 +19,9 @@ class HomeScreen extends StatelessWidget {
               colors: const [Color(0xFF1F8CF1), Color(0xFF1271D1)],
               onTap: () => _openLogin(context),
             ),
-            const _AccessCard(
+            _AccessCard(
               title: 'Tutores / Admin',
-              subtitle: 'Gestión y resultados (próximamente)',
+              subtitle: 'Gestión y resultados',
               icon: Icons.admin_panel_settings_rounded,
               colors: [Color(0xFF9498A5), Color(0xFF6B6E78)],
               onTap: () => _openLoginTutorAdmin(context),
