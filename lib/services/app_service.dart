@@ -106,6 +106,31 @@ class AppService {
     }
   }
 
+  /// Obtiene los estudiantes asignados a un tutor específico
+  Future<List<UserModel>> getStudentsByTutor(String tutorId) async {
+    try {
+      QuerySnapshot snapshot = await _firestore
+          .collection('users')
+          .where('role', isEqualTo: 'student')
+          .where('tutorId', isEqualTo: tutorId)
+          .get();
+
+      List<UserModel> assignedStudents = snapshot.docs
+          .map((doc) =>
+          UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .toList();
+
+      print('📘 Estudiantes cargados para tutor $tutorId: ${assignedStudents.length}');
+      return assignedStudents;
+
+    } catch (e) {
+      print('❌ Error al obtener estudiantes por tutor: $e');
+      return [];
+    }
+  }
+
+
+
 
   /// Obtiene un usuario específico por ID
   Future<UserModel? > getUserById(String userId) async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 import '../services/app_service.dart';
 import '../models/user_model.dart';
+import 'create_profile_screen_2.dart';
 
 class CreateProfileScreen extends StatefulWidget {
   const CreateProfileScreen({super.key});
@@ -232,18 +233,14 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                   const SizedBox(width: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 40),
+                      backgroundColor: const Color(0xFF5CA7FF),
+                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      elevation: 2,
                     ),
                     onPressed: () async {
                       final nombre = _nameController.text.trim();
-                      
                       if (nombre.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -254,64 +251,35 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                         return;
                       }
 
-                      // Mostrar loading
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (ctx) => const Center(
-                          child: CircularProgressIndicator(color: Color(0xFF5CA7FF)),
+                      // Abrimos CreateProfileScreen2 y esperamos resultado
+                      final created = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CreateProfileScreen2(
+                            studentName: nombre,
+                            avatarIndex: _selectedAvatarIndex,
+                            tutorId: _appService.currentUser!.id,
+                          ),
                         ),
                       );
 
-                      try {
-                        // Crear el perfil del alumno
-                        final current = _appService.currentUser;
-                        final bool isTutor =
-                            current != null && current.role.toLowerCase() == 'tutor';
-                        final int? tutorNumericId =
-                            isTutor ? int.tryParse(current!.id) : null;
-
-                        final newStudent = UserModel(
-                          id: '', // Se genera automáticamente en el servicio
-                          name: nombre,
-                          role: 'student',
-                          avatarIndex: _selectedAvatarIndex,
-                          tutorId: tutorNumericId,
-                          preferences: UserPreferences(),
-                        );
-
-                        await UserService().createUser(newStudent);
-
-                        if (context.mounted) {
-                          Navigator.pop(context); // Cerrar loading
-                          Navigator.pop(context); // Volver a pantalla anterior
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Alumno "$nombre" creado con éxito'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (context.mounted) {
-                          Navigator.pop(context); // Cerrar loading
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error al crear alumno: $e'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
+                      // Si se creó el alumno, hacemos pop hacia Home con true
+                      if (created == true) {
+                        Navigator.pop(context, true);
                       }
                     },
+
                     child: const Text(
-                      'Crear Alumno',
+                      'Continuar',
                       style: TextStyle(
                         fontSize: 20,
+                        color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
                   ),
+
                 ],
               ),
             ],
@@ -320,6 +288,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       ),
     );
   }
+
+
 
   Widget _buildInputField({
     required String label,

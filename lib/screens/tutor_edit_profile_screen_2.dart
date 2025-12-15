@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:popi/screens/home_tutor_screen.dart';
-import 'tutor_edit_profile_screen_3.dart';
 
 class TutorEditProfileScreen2 extends StatefulWidget {
   final String studentName;
@@ -167,7 +166,7 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => TutorEditProfileScreen3(studentName: widget.studentName, avatarPath: widget.avatarPath)),
+                      MaterialPageRoute(builder: (_) => TutorHomeScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

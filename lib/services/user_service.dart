@@ -15,46 +15,35 @@ class UserService {
   /// Busca el ID más alto actual (parseando los IDs de los documentos),
   /// le suma 1 y crea el nuevo usuario con ese ID.
   /// El campo 'id' se guarda como número en la BD, pero el ID del documento es el String.
-  Future<void> createUser(UserModel user) async {
+  Future<String> createUser(UserModel user) async {
     try {
-      // 1. Obtener todos los usuarios para calcular el nuevo ID
-      // Nota: Esto no es lo más eficiente para bases de datos enormes,
-      // pero para esta app es aceptable.
       final snapshot = await _fs.collection(_collection).get();
-      
+
       int maxId = 0;
       for (var doc in snapshot.docs) {
-        // Intentamos parsear el ID del documento
         final docId = int.tryParse(doc.id);
-        if (docId != null) {
-          if (docId > maxId) maxId = docId;
+        if (docId != null && docId > maxId) {
+          maxId = docId;
         }
       }
 
       final newIdInt = maxId + 1;
       final newIdStr = newIdInt.toString();
 
-      // 2. Usar el método toMap() del usuario que ya tiene la estructura correcta
       final Map<String, dynamic> userData = user.toMap();
-      
-      // Sobrescribir el ID para asegurar que sea el correcto
       userData['id'] = newIdStr;
 
-      // 3. Crear el documento con el ID numérico como nombre del documento
       await _fs.collection(_collection).doc(newIdStr).set(userData);
+
       print('✅ Usuario creado: $newIdStr (${user.name})');
 
-    } on FirebaseException catch (e) {
-      print('❌ FirebaseException en createUser: [${e.code}] ${e.message}');
-      if (e.code == 'unavailable') {
-        print('⚠️ Firestore unavailable. No se pudo crear usuario.');
-      }
-      rethrow;
+      return newIdStr; // 👈 DEVOLVEMOS EL ID
     } catch (e) {
-      print('❌ Error genérico en createUser: $e');
+      print('❌ Error en createUser: $e');
       rethrow;
     }
   }
+
 
   /// Asegura que exista un documento users/{userId}. Devuelve true si ya existía.
   ///

@@ -5,7 +5,7 @@ class UserModel {
   final String role;
   final int avatarIndex;
   final String? password; // Password de 4 dígitos (opcional)
-  final int? tutorId;
+  final String? tutorId;
   final UserPreferences preferences;
 
   UserModel({
@@ -32,14 +32,11 @@ class UserModel {
 
   /// Crea un usuario desde Firestore
   factory UserModel.fromMap(Map<String, dynamic> map, String docId) {
-    int? tutorId;
+    String? tutorId;
+
     final dynamic rawTutorId = map['tutorId'];
-    if (rawTutorId is int) {
-      tutorId = rawTutorId;
-    } else if (rawTutorId is num) {
-      tutorId = rawTutorId.toInt();
-    } else if (rawTutorId is String) {
-      tutorId = int.tryParse(rawTutorId);
+    if (rawTutorId != null) {
+      tutorId = rawTutorId.toString(); //
     }
 
     return UserModel(

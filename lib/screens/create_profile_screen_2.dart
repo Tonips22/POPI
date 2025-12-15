@@ -1,245 +1,284 @@
 import 'package:flutter/material.dart';
-import 'create_profile_screen_3.dart';
+import '../services/user_service.dart';
+import '../models/user_model.dart';
 
 class CreateProfileScreen2 extends StatefulWidget {
-  const CreateProfileScreen2({super.key});
+  final String studentName;
+  final int avatarIndex;
+  final String tutorId;
+
+  const CreateProfileScreen2({
+    super.key,
+    required this.studentName,
+    required this.avatarIndex,
+    required this.tutorId,
+  });
 
   @override
   State<CreateProfileScreen2> createState() => _CreateProfileScreen2State();
 }
 
 class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
-  final List<String> _imagePaths = List.generate(
-    16,
-        (index) => 'assets/images/avatar${(index % 4) + 1}.png',
-  );
+  static const _blueAppBar = Color(0xFF5CA7FF);
+  static const _tileBg = Color(0xFFD9D9D9);
 
-  // Lista de imágenes seleccionadas (para la contraseña)
-  final List<int> _selectedIndexes = [];
+  final List<int> _password = [];
 
-  static const double itemSize = 90.0;
-  static const double spacing = 8.0;
+  final List<_Animal> _animals = const [
+    _Animal('🦁', Color(0xFFFFF3CD)), // 0
+    _Animal('🧸', Color(0xFFF5E6FF)), // 1
+    _Animal('🐯', Color(0xFFFFE0B2)), // 2
+    _Animal('🦓', Color(0xFFE0E0E0)), // 3
+    _Animal('🐊', Color(0xFFD4EDDA)), // 4
+    _Animal('🐸', Color(0xFFDFF5FF)), // 5
+    _Animal('🦥', Color(0xFFFCE4EC)), // 6
+    _Animal('🦒', Color(0xFFE8F5E9)), // 7
+  ];
+
+  void _addAnimal(int index) {
+    if (_password.length >= 4) return;
+    setState(() => _password.add(index));
+  }
+
+  void _backspace() {
+    if (_password.isEmpty) return;
+    setState(() => _password.removeLast());
+  }
+
+  /// Convierte [0,1,2,3] → "0123"
+  String _passwordToNumbers() {
+    return _password.join('');
+  }
 
   @override
   Widget build(BuildContext context) {
-    final double totalWidth = 8 * itemSize + 7 * spacing;
+    const double gridSpacing = 6;
+    const double slotSize = 60;
+    const double slotGap = 8;
+
+    Widget header() {
+      return Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black, width: 2),
+              color: Colors.white,
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/avatar${widget.avatarIndex}.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            widget.studentName,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget passwordSlots() {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          for (int i = 0; i < 4; i++) ...[
+            Container(
+              width: slotSize,
+              height: slotSize,
+              decoration: BoxDecoration(
+                color: i < _password.length
+                    ? _animals[_password[i]].bg
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black, width: 2),
+              ),
+              alignment: Alignment.center,
+              child: i < _password.length
+                  ? Text(
+                _animals[_password[i]].emoji,
+                style: const TextStyle(fontSize: 28),
+              )
+                  : null,
+            ),
+            if (i < 3) const SizedBox(width: slotGap),
+          ],
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: _backspace,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: slotSize,
+              height: slotSize,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.black, width: 2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.backspace_outlined, size: 22),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget animalsGrid() {
+      return Center(
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: _tileBg,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.black26, width: 1),
+          ),
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: gridSpacing,
+              crossAxisSpacing: gridSpacing,
+              mainAxisExtent: 80,
+            ),
+            itemCount: _animals.length,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              return InkWell(
+                onTap: _password.length < 4
+                    ? () => _addAnimal(index)
+                    : null,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: _animals[index].bg,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey, width: 1.2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _animals[index].emoji,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: _blueAppBar,
+        centerTitle: true,
         title: const Text(
           'Crear perfil de alumno',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 26,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
-        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 8.0),
-            child: Icon(Icons.more_vert),
-          ),
-        ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _buildSectionContainer(
-                title: 'Inicio de sesión accesible',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Pro tip: Selecciona 4 animales en un orden concreto para definir la contraseña del alumno',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 12),
-
-                    const Text(
-                      'Contraseña seleccionada',
-                      style:
-                      TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Contraseña seleccionada con imágenes
-                    Row(
-                      children: [
-                        ...List.generate(4, (index) {
-                          return Container(
-                            width: itemSize,
-                            height: itemSize,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border:
-                              Border.all(color: Colors.black, width: 2),
-                              borderRadius: BorderRadius.circular(8),
-                              image: index < _selectedIndexes.length
-                                  ? DecorationImage(
-                                image: AssetImage(_imagePaths[
-                                _selectedIndexes[index]]),
-                                fit: BoxFit.cover,
-                              )
-                                  : null,
-                            ),
-                          );
-                        }),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.black87),
-                          onPressed: () {
-                            setState(() {
-                              if (_selectedIndexes.isNotEmpty) {
-                                _selectedIndexes.removeLast();
-                              }
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      'Imágenes disponibles',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Contenedor igual que en la Pantalla1
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: totalWidth,
-                        child: Wrap(
-                          spacing: spacing,
-                          runSpacing: spacing,
-                          children: List.generate(_imagePaths.length, (index) {
-                            final bool selected =
-                            _selectedIndexes.contains(index);
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  if (_selectedIndexes.length < 4 &&
-                                      !_selectedIndexes.contains(index)) {
-                                    _selectedIndexes.add(index);
-                                  }
-                                });
-                              },
-                              child: Container(
-                                width: itemSize,
-                                height: itemSize,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[300],
-                                  border: Border.all(
-                                    color: selected
-                                        ? Colors.black
-                                        : Colors.grey,
-                                    width: selected ? 3 : 2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
-                                    image: AssetImage(_imagePaths[index]),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                    ),
-                  ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            header(),
+            const SizedBox(height: 20),
+            const Text(
+              'Contraseña seleccionada',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            const SizedBox(height: 10),
+            passwordSlots(),
+            const SizedBox(height: 20),
+            const Text(
+              'Selecciona de 1 a 4 emojis en orden',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            animalsGrid(),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
                 ),
-              ),
-
-              const SizedBox(height: 40),
-
-              // Botones inferiores
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'Cancelar',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E7D32),
+                    foregroundColor: Colors.white,
                   ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5CA7FF),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const CreateProfileScreen3()),
+                  onPressed: _password.isNotEmpty
+                      ? () async {
+                    final password = _passwordToNumbers();
+
+                    try {
+                      final student = UserModel(
+                        id: '',
+                        name: widget.studentName,
+                        role: 'student',
+                        avatarIndex: widget.avatarIndex,
+                        tutorId: widget.tutorId,
+                        preferences: UserPreferences(),
                       );
-                    },
-                    child: const Text(
-                      'Continuar',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+
+                      final userId =
+                      await UserService().createUser(student);
+                      await UserService()
+                          .updatePassword(userId, password);
+
+                      if (!context.mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Alumno creado correctamente'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+
+                      // Avisamos al TutorHomeScreen
+                      Navigator.pop(context, true);
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error al crear alumno: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                      : null,
+                  child: const Text(
+                    'Crear usuario',
+                    style:
+                    TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildSectionContainer({required String title, required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF5CA7FF),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style:
-              const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-          const Divider(color: Colors.black),
-          child,
-        ],
-      ),
-    );
-  }
+class _Animal {
+  final String emoji;
+  final Color bg;
+  const _Animal(this.emoji, this.bg);
 }

@@ -362,23 +362,27 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                                   // Creamos un objeto temporal. El ID se ignorará en el servicio
                                   // porque generará uno nuevo numérico.
                                   final tutorCandidate = _appService.currentUser;
-                                  final shouldAssignTutor = normalizedRole == 'student' &&
-                                      tutorCandidate != null &&
-                                      tutorCandidate.role.toLowerCase() == 'tutor';
-                                  final int? tutorNumericId = shouldAssignTutor
-                                      ? int.tryParse(tutorCandidate!.id)
-                                      : null;
+
+                                  final shouldAssignTutor =
+                                      normalizedRole == 'student' &&
+                                          tutorCandidate != null &&
+                                          tutorCandidate.role.toLowerCase() == 'tutor';
+
+                                  final String? tutorId =
+                                  shouldAssignTutor ? tutorCandidate!.id : null;
+
                                   final tempUser = UserModel(
-                                    id: '', 
+                                    id: '',
                                     name: nombre,
                                     role: normalizedRole!,
                                     avatarIndex: _selectedAvatarIndex,
-                                    tutorId: tutorNumericId,
+                                    tutorId: tutorId, // 👈 STRING
                                     preferences: UserPreferences(),
                                   );
-            
+
                                   await UserService().createUser(tempUser);
-            
+
+
                                   if (context.mounted) {
                                     Navigator.pop(context); // Cerrar loading
                                     Navigator.pop(context); // Cerrar pantalla
