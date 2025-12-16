@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/app_service.dart';
 import '../models/user_model.dart';
-import 'tutor_edit_profile_screen_2.dart';
+import 'tutor_edit_password_screen.dart';
 
 class TutorEditProfileScreen extends StatefulWidget {
   final String studentId;
@@ -114,10 +114,9 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
     );
   }
 
-  Future<void> _goToNextScreen() async {
+  Future<void> _goToPasswordScreen() async {
     if (_student == null) return;
 
-    // Creamos un UserModel actualizado con el nombre y avatar seleccionados
     final updatedStudent = _student!.copyWith(
       name: _nameController.text.trim(),
       avatarIndex: _selectedAvatarIndex,
@@ -126,7 +125,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) => TutorEditProfileScreen2(student: updatedStudent),
+        builder: (_) => TutorEditPasswordScreen(student: updatedStudent),
       ),
     );
 
@@ -163,7 +162,6 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Cabecera
           Row(
             children: [
               CircleAvatar(
@@ -183,8 +181,6 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
             ],
           ),
           const SizedBox(height: 20),
-
-          // Nombre
           const Text(
             "Nombre del alumno",
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -202,10 +198,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 16),
-
-          // Avatar
           const Text(
             "Avatar del alumno",
             style: TextStyle(fontWeight: FontWeight.bold),
@@ -237,10 +230,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
               style: TextStyle(fontSize: 12),
             ),
           ),
-
           const SizedBox(height: 32),
-
-          // Botones
           Row(
             children: [
               Expanded(
@@ -256,7 +246,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent),
-                  onPressed: _goToNextScreen,
+                  onPressed: _goToPasswordScreen,
                   child: const Text("Continuar"),
                 ),
               ),

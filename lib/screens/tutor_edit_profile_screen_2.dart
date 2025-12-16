@@ -72,6 +72,7 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
       ),
     );
 
+    // Guardar usuario completo en Firestore
     await _appService.saveUser(updatedStudent);
 
     if (mounted) Navigator.pop(context, true);
@@ -134,9 +135,6 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
 
   @override
   Widget build(BuildContext context) {
-    final currentFontSize = _getFontSizePreview(fontSizeValue);
-    final currentFontFamily = _getFontFamilyName(selectedFontFamily);
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF71B1FF),
@@ -206,8 +204,8 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFontTypeSelector(), // <--- reducido
-                  const SizedBox(height: 12),
+                  _buildFontTypeSelector(),
+                  const SizedBox(height: 24),
                   _buildFontSizeSelector(),
                 ],
               ),
@@ -331,33 +329,24 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
             fontFamily: 'Roboto',
             isSelected: selectedFontFamily == 'default',
             onTap: () => setState(() => selectedFontFamily = 'default'),
-            fontSize: 12,
-            paddingV: 6,
-            paddingH: 4,
           ),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 16),
         Expanded(
           child: _FontTypeButton(
             label: 'Amigable',
             fontFamily: 'ComicNeue',
             isSelected: selectedFontFamily == 'friendly',
             onTap: () => setState(() => selectedFontFamily = 'friendly'),
-            fontSize: 12,
-            paddingV: 6,
-            paddingH: 4,
           ),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 16),
         Expanded(
           child: _FontTypeButton(
             label: 'Lectura Fácil',
             fontFamily: 'OpenDyslexic',
             isSelected: selectedFontFamily == 'easy-reading',
             onTap: () => setState(() => selectedFontFamily = 'easy-reading'),
-            fontSize: 12,
-            paddingV: 6,
-            paddingH: 4,
           ),
         ),
       ],
@@ -410,18 +399,12 @@ class _FontTypeButton extends StatelessWidget {
   final String fontFamily;
   final bool isSelected;
   final VoidCallback onTap;
-  final double fontSize;
-  final double paddingV;
-  final double paddingH;
 
   const _FontTypeButton({
     required this.label,
     required this.fontFamily,
     required this.isSelected,
     required this.onTap,
-    this.fontSize = 12,
-    this.paddingV = 6,
-    this.paddingH = 4,
   });
 
   @override
@@ -429,23 +412,22 @@ class _FontTypeButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: paddingV, horizontal: paddingH),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
               color: isSelected ? Colors.blue : Colors.grey.shade300,
-              width: isSelected ? 2 : 1.2),
+              width: isSelected ? 3 : 1.5),
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
-              fontSize: fontSize,
+              fontSize: 16,
               fontFamily: fontFamily,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       ),
