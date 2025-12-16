@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'tutor_edit_profile_screen_4.dart';
 import '../models/user_model.dart';
-import '../services/app_service.dart';
 
 class TutorEditProfileScreen3 extends StatefulWidget {
   final UserModel student;
@@ -13,12 +13,8 @@ class TutorEditProfileScreen3 extends StatefulWidget {
 }
 
 class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
-  final AppService _appService = AppService();
-
   late String selectedShape;
   late String selectedReaction;
-
-  bool _isSaving = false;
 
   @override
   void initState() {
@@ -27,11 +23,7 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
     selectedReaction = widget.student.preferences.reactionType ?? 'none';
   }
 
-  Future<void> _savePreferences() async {
-    if (_isSaving) return;
-
-    setState(() => _isSaving = true);
-
+  Future<void> _goToScreen4() async {
     final updatedStudent = widget.student.copyWith(
       preferences: widget.student.preferences.copyWith(
         shape: selectedShape,
@@ -40,22 +32,25 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
       ),
     );
 
-    await _appService.saveUser(updatedStudent);
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TutorEditProfileScreen4(
+          student: updatedStudent,
+        ),
+      ),
+    );
 
-    if (mounted) {
-      setState(() => _isSaving = false);
+    if (saved == true && mounted) {
       Navigator.pop(context, true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Colors.blue;
-    final backgroundColor = Colors.white;
-
+    const primaryColor = Colors.blue;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: const Color(0xFF71B1FF),
         title: const Text(
@@ -86,8 +81,6 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
     );
   }
 
-  // ================= HEADER =================
-
   Widget _buildStudentHeader() {
     return Container(
       padding: const EdgeInsets.all(8),
@@ -116,46 +109,27 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
     );
   }
 
-  // ================= SHAPES =================
-
   Widget _buildShapesSection(Color primaryColor) {
     return _section(
       'Forma de los objetos',
       Row(
         children: [
-          _shapeCard(
-              shape: 'circle',
-              icon: Icons.circle,
-              label: 'Círculo',
-              primaryColor: primaryColor),
-          _shapeCard(
-              shape: 'square',
-              icon: Icons.square_rounded,
-              label: 'Cuadrado',
-              primaryColor: primaryColor),
-          _shapeCard(
-              shape: 'triangle',
-              icon: Icons.change_history,
-              label: 'Triángulo',
-              primaryColor: primaryColor),
+          _shapeCard('circle', Icons.circle, 'Círculo', primaryColor),
+          _shapeCard('square', Icons.square_rounded, 'Cuadrado', primaryColor),
+          _shapeCard('triangle', Icons.change_history, 'Triángulo', primaryColor),
         ],
       ),
     );
   }
 
-  Widget _shapeCard({
-    required String shape,
-    required IconData icon,
-    required String label,
-    required Color primaryColor,
-  }) {
+  Widget _shapeCard(
+      String shape, IconData icon, String label, Color primaryColor) {
     final isSelected = selectedShape == shape;
 
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => selectedShape = shape),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+        child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -170,21 +144,14 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
             children: [
               Icon(icon,
                   size: 48,
-                  color: isSelected
-                      ? primaryColor
-                      : Colors.grey.shade600),
+                  color:
+                  isSelected ? primaryColor : Colors.grey.shade600),
               const SizedBox(height: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight:
-                  isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-              if (isSelected)
-                const Icon(Icons.check_circle,
-                    color: Colors.green, size: 20),
+              Text(label,
+                  style: TextStyle(
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal)),
             ],
           ),
         ),
@@ -192,46 +159,28 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
     );
   }
 
-  // ================= REACTIONS =================
-
   Widget _buildReactionsSection(Color primaryColor) {
     return _section(
       'Reacción al acertar',
       Column(
         children: [
-          _reactionCard(
-            id: 'none',
-            title: 'Sin reacción',
-            description: 'No se mostrará ninguna animación.',
-            icon: Icons.block,
-            primaryColor: primaryColor,
-          ),
+          _reactionCard('none', 'Sin reacción',
+              'No se mostrará ninguna animación.', Icons.block, primaryColor),
           const SizedBox(height: 8),
-          _reactionCard(
-            id: 'confetti',
-            title: 'Confeti',
-            description: 'Lluvia de confeti al acertar.',
-            icon: Icons.celebration,
-            primaryColor: primaryColor,
-          ),
+          _reactionCard('confetti', 'Confeti',
+              'Lluvia de confeti al acertar.', Icons.celebration, primaryColor),
         ],
       ),
     );
   }
 
-  Widget _reactionCard({
-    required String id,
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color primaryColor,
-  }) {
+  Widget _reactionCard(String id, String title, String desc,
+      IconData icon, Color primaryColor) {
     final isSelected = selectedReaction == id;
 
     return GestureDetector(
       onTap: () => setState(() => selectedReaction = id),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -244,37 +193,26 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
         child: Row(
           children: [
             Icon(icon,
-                size: 36,
                 color:
                 isSelected ? primaryColor : Colors.grey.shade600),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold)),
-                  Text(description,
-                      style:
-                      const TextStyle(fontSize: 12, color: Colors.grey)),
-                ],
-              ),
-            ),
-            Icon(
-              isSelected
-                  ? Icons.check_circle
-                  : Icons.circle_outlined,
-              color:
-              isSelected ? primaryColor : Colors.grey,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold)),
+                    Text(desc,
+                        style:
+                        const TextStyle(fontSize: 12)),
+                  ]),
             ),
           ],
         ),
       ),
     );
   }
-
-  // ================= COMMON =================
 
   Widget _section(String title, Widget child) {
     return Container(
@@ -287,8 +225,7 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style:
-              const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              style: const TextStyle(fontWeight: FontWeight.bold)),
           const Divider(),
           child,
         ],
@@ -306,20 +243,10 @@ class _TutorEditProfileScreen3State extends State<TutorEditProfileScreen3> {
         ),
         const SizedBox(width: 8),
         ElevatedButton(
-          onPressed: _savePreferences,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5CA7FF),
-          ),
-          child: _isSaving
-              ? const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.white,
-            ),
-          )
-              : const Text('Guardar'),
+              backgroundColor: const Color(0xFF5CA7FF)),
+          onPressed: _goToScreen4,
+          child: const Text('Continuar',),
         ),
       ],
     );
