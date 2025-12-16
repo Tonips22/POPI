@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:popi/screens/tutor_edit_profile_screen_3.dart';
 import '../models/user_model.dart';
 import '../services/app_service.dart';
 
@@ -59,7 +60,7 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
   String _colorToHex(Color c) =>
       '0x${c.value.toRadixString(16).padLeft(8, '0')}';
 
-  Future<void> _saveChanges() async {
+  Future<void> _goToScreen3() async {
     final updatedStudent = widget.student.copyWith(
       name: _nameController.text.trim(),
       avatarIndex: _avatarIndex,
@@ -72,11 +73,20 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
       ),
     );
 
-    // Guardar usuario completo en Firestore
-    await _appService.saveUser(updatedStudent);
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TutorEditProfileScreen3(
+          student: updatedStudent,
+        ),
+      ),
+    );
 
-    if (mounted) Navigator.pop(context, true);
+    if (saved == true && mounted) {
+      Navigator.pop(context, true); // 🔥 vuelve a Screen1 / Home
+    }
   }
+
 
   double _fontSizeToSlider(String fontSize) {
     switch (fontSize) {
@@ -223,10 +233,10 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
                 ),
                 const SizedBox(width: 6),
                 ElevatedButton(
-                  onPressed: _saveChanges,
+                  onPressed: _goToScreen3,
                   style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5CA7FF)),
-                  child: const Text('Guardar',
+                  child: const Text('Continuar',
                       style: TextStyle(color: Colors.white)),
                 ),
               ],
