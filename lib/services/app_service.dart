@@ -106,6 +106,28 @@ class AppService {
     }
   }
 
+  /// Alterna el valor de preferences.canCustomize para un usuario
+  Future<bool> toggleCanCustomize({
+    required String userId,
+    required bool currentValue,
+  }) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'preferences.canCustomize': !currentValue,
+      });
+
+      print(
+        '✅ canCustomize actualizado para $userId → ${!currentValue}',
+      );
+
+      return true;
+    } catch (e) {
+      print('❌ Error al alternar canCustomize: $e');
+      return false;
+    }
+  }
+
+
   /// Obtiene los estudiantes asignados a un tutor específico
   Future<List<UserModel>> getStudentsByTutor(String tutorId) async {
     try {

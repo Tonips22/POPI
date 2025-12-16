@@ -173,22 +173,22 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             GestureDetector(
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                final updated = await Navigator.push<bool>(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        TutorEditProfileScreen(
-                                          studentName: student.name,
-                                          avatarPath: avatarPath,
-                                          studentId: student.id,
-                                        ),
+                                    builder: (_) => TutorEditProfileScreen(
+                                      studentId: student.id,
+                                    ),
                                   ),
                                 );
+                                if (updated == true) {
+                                  await _loadAssignedStudents(); // 👈 recarga inmediata si se modifica algo
+                                }
                               },
-                              child: _buildGreyButton(
-                                  "Configurar perfil"),
+                              child: _buildGreyButton("Configurar perfil"),
                             ),
+
                             const SizedBox(width: 12),
                             GestureDetector(
                               onTap: () {
@@ -209,11 +209,44 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                             const SizedBox(width: 12),
                             // BOTÓN PERMITIR/BLOQUEAR
                             GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _allowedMap[student.id] = !allowed;
-                                });
+                              onTap: () async {
+                                try {
+                                  // 1️⃣ Actualizar en base de datos
+                                  await _service.toggleCanCustomize(
+                                    userId: student.id,
+                                    currentValue: allowed,
+                                  );
+
+                                  // 2️⃣ Actualizar estado local
+                                  setState(() {
+                                    _allowedMap[student.id] = !allowed;
+                                  });
+
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          !allowed
+                                              ? 'Personalización permitida para ${student.name}'
+                                              : 'Personalización bloqueada para ${student.name}',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error al actualizar permisos: $e'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
                               },
+
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),

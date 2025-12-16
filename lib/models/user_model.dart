@@ -49,6 +49,26 @@ class UserModel {
       preferences: UserPreferences.fromMap(map['preferences'] ?? {}),
     );
   }
+
+  /// Crea una copia del UserModel con campos opcionalmente modificados
+  UserModel copyWith({
+    String? name,
+    int? avatarIndex,
+    UserPreferences? preferences,
+    String? role,
+    String? password,
+    String? tutorId,
+  }) {
+    return UserModel(
+      id: id, // el id nunca cambia
+      name: name ?? this.name,
+      role: role ?? this.role,
+      avatarIndex: avatarIndex ?? this.avatarIndex,
+      password: password ?? this.password,
+      tutorId: tutorId ?? this.tutorId,
+      preferences: preferences ?? this.preferences,
+    );
+  }
 }
 
 /// Preferencias visuales del usuario (SOLO LO BÁSICO)

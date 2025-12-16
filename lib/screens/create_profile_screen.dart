@@ -13,7 +13,7 @@ class CreateProfileScreen extends StatefulWidget {
 
 class _CreateProfileScreenState extends State<CreateProfileScreen> {
   static const _blueAppBar = Color(0xFF5CA7FF);
-  
+
   final TextEditingController _nameController = TextEditingController();
   final AppService _appService = AppService();
 
@@ -153,7 +153,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Avatar seleccionado (círculo grande)
                     Center(
                       child: Column(
