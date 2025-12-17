@@ -6,14 +6,17 @@ import 'package:popi/screens/tutor_edit_game_profile_ordenar.dart';
 // import '../widgets/preference_provider.dart';
 
 class TutorChooseGameScreen extends StatelessWidget {
+  final String studentId;      // ✅ NUEVO
   final String studentName;
   final String avatarPath;
 
   const TutorChooseGameScreen({
     super.key,
+    required this.studentId,   // ✅ NUEVO
     required this.studentName,
     required this.avatarPath,
   });
+
 
   @override
   Widget build(BuildContext context) {
@@ -91,11 +94,13 @@ class TutorChooseGameScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => TutorEditGameProfileTocar(
+                                    studentId: studentId,   // ✅ NUEVO
                                     studentName: studentName,
                                     avatarPath: avatarPath,
                                   ),
                                 ),
                               );
+
                             },
                           ),
 
@@ -109,11 +114,13 @@ class TutorChooseGameScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => TutorEditGameProfileOrdenar(
+                                    studentId: studentId,   // ✅ NUEVO
                                     studentName: studentName,
                                     avatarPath: avatarPath,
                                   ),
                                 ),
                               );
+
                             },
                           ),
 
@@ -127,11 +134,13 @@ class TutorChooseGameScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => TutorEditGameProfileReparte(
+                                    studentId: studentId,   // ✅ NUEVO
                                     studentName: studentName,
                                     avatarPath: avatarPath,
                                   ),
                                 ),
                               );
+
                               },
                           ),
 
@@ -145,11 +154,13 @@ class TutorChooseGameScreen extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => TutorEditGameProfileDejar(
+                                    studentId: studentId,   // ✅ NUEVO
                                     studentName: studentName,
                                     avatarPath: avatarPath,
                                   ),
                                 ),
                               );
+
                             },
                           ),
                         ],

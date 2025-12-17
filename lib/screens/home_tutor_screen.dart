@@ -320,13 +320,14 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) =>
-                                        TutorChooseGameScreen(
-                                          studentName: student.name,
-                                          avatarPath: avatarPath,
-                                        ),
+                                    builder: (_) => TutorChooseGameScreen(
+                                      studentId: student.id,
+                                      studentName: student.name,
+                                      avatarPath: avatarPath,
+                                    ),
                                   ),
                                 );
+
                               },
                               child: _buildGreyButton(
                                   "Configurar perfil de juegos"),

@@ -82,6 +82,7 @@ class UserPreferences {
   final bool canCustomize;
   final String? voiceText; // 'none', 'double', 'long' or null (default)
   final String? reactionType; // tipo de reacción seleccionada
+  final int addGameRounds;
   final int touchGameRounds;
   final int sortGameRounds;
   final int shareGameRounds;
@@ -119,6 +120,7 @@ class UserPreferences {
     this.touchGameRounds = 5,
     this.sortGameRounds = 5,
     this.shareGameRounds = 5,
+    this.addGameRounds = 5,
     this.subtractGameRounds = 5,
     this.touchGameColor = '0xFF2196F3',
     this.sortGameColor = '0xFF4CAF50',
@@ -354,6 +356,7 @@ class UserPreferences {
           ? this.reactionType
           : reactionType as String?,
       touchGameRounds: touchGameRounds ?? this.touchGameRounds,
+      addGameRounds: addGameRounds ?? this.addGameRounds,
       sortGameRounds: sortGameRounds ?? this.sortGameRounds,
       shareGameRounds: shareGameRounds ?? this.shareGameRounds,
       subtractGameRounds: subtractGameRounds ?? this.subtractGameRounds,

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:popi/screens/home_tutor_screen.dart';
-import 'ordenar_difficulty_screen.dart'; // Usamos la misma pantalla de dificultad
+import 'ordenar_difficulty_screen.dart';
+import '../services/app_service.dart';
 
 class TutorEditGameProfileReparte extends StatefulWidget {
+  final String studentId;
   final String studentName;
   final String avatarPath;
 
   const TutorEditGameProfileReparte({
     super.key,
+    required this.studentId,
     required this.studentName,
     required this.avatarPath,
   });
@@ -19,14 +23,48 @@ class TutorEditGameProfileReparte extends StatefulWidget {
 
 class _TutorEditGameProfileReparteState
     extends State<TutorEditGameProfileReparte> {
-  double repeticiones = 3;
-  bool rondasInfinitas = false;
+  final AppService _appService = AppService();
 
-  String? objectImagePath;
-  String? containerImagePath;
+  double repeticiones = 3; // valor del slider (1–12)
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  // 📥 Cargar preferencias desde Firestore
+  Future<void> _loadPreferences() async {
+    final user = await _appService.getUserById(widget.studentId);
+    if (user == null) return;
+
+    final rounds = user.preferences?.shareGameRounds ?? 3;
+
+    setState(() {
+      repeticiones = rounds.clamp(1, 12).toDouble(); // slider seguro
+      _loading = false;
+    });
+  }
+
+  // 💾 Guardar en Firestore
+  Future<void> _saveShareGameRounds() async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.studentId)
+        .update({
+      'preferences.shareGameRounds': repeticiones.round(),
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF71B1FF),
@@ -49,7 +87,7 @@ class _TutorEditGameProfileReparteState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔷 Caja superior con avatar + nombre + texto
+            // 🔷 CABECERA
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -80,9 +118,7 @@ class _TutorEditGameProfileReparteState
                     ),
                     child: const Text(
                       "Configurar perfil de juegos",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -94,10 +130,7 @@ class _TutorEditGameProfileReparteState
             const Center(
               child: Text(
                 "Reparte los números",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
             ),
 
@@ -105,17 +138,14 @@ class _TutorEditGameProfileReparteState
 
             const Center(
               child: Text(
-                "Cantidad de repeticiones",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                ),
+                "Cantidad de rondas",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
               ),
             ),
 
             const SizedBox(height: 10),
 
-            // 🔢 Slider
+            // 🔢 SLIDER
             Slider(
               value: repeticiones,
               min: 1,
@@ -129,98 +159,43 @@ class _TutorEditGameProfileReparteState
               },
             ),
 
-            const SizedBox(height: 10),
-
-            // ✔️ Rondas infinitas
-            Row(
-              children: [
-                Checkbox(
-                  value: rondasInfinitas,
-                  onChanged: (value) {
-                    setState(() {
-                      rondasInfinitas = value!;
-                    });
-                  },
-                ),
-                const Text(
-                  "Rondas infinitas",
-                  style: TextStyle(fontSize: 18),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // 📸 Botones de subir imágenes personalizadas
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      objectImagePath = 'assets/images/objeto_custom.png';
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Imagen de objeto subida"),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.image),
-                  label: const Text("Subir imagen objeto"),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      containerImagePath = 'assets/images/contenedor_custom.png';
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Imagen de contenedor subida"),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.image),
-                  label: const Text("Subir imagen contenedor"),
-                ),
-              ],
-            ),
-
             const Spacer(),
 
-            // 🔘 Botones inferiores
+            // 🔘 BOTONES
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue),
-                  onPressed: () {
-                    // Guardar cambios y volver al home del tutor
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TutorHomeScreen(),
-                      ),
-                    );
+                  style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  onPressed: () async {
+                    await _saveShareGameRounds();
+
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const TutorHomeScreen()),
+                            (route) => false,
+                      );
+                    }
                   },
                   child: const Text(
                     "Guardar",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
+
                 const SizedBox(width: 20),
+
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent),
                   onPressed: () {
-                    // Ajustar dificultad
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const OrdenarDifficultyScreen(),
+                        builder: (_) => const OrdenarDifficultyScreen(),
                       ),
                     );
                   },

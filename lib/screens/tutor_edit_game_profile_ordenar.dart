@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:popi/screens/home_tutor_screen.dart';
-import 'ordenar_difficulty_screen.dart'; // Importamos la pantalla de dificultad
+import 'ordenar_difficulty_screen.dart';
+import '../services/app_service.dart';
 
 class TutorEditGameProfileOrdenar extends StatefulWidget {
+  final String studentId;
   final String studentName;
   final String avatarPath;
 
   const TutorEditGameProfileOrdenar({
     super.key,
+    required this.studentId,
     required this.studentName,
     required this.avatarPath,
   });
@@ -19,11 +23,50 @@ class TutorEditGameProfileOrdenar extends StatefulWidget {
 
 class _TutorEditGameProfileOrdenarState
     extends State<TutorEditGameProfileOrdenar> {
-  double repeticiones = 3;
-  bool rondasInfinitas = false;
+  final AppService _appService = AppService();
+
+  double repeticiones = 3; // valor del slider (1–12)
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  // 📥 Cargar preferencias desde Firestore
+  Future<void> _loadPreferences() async {
+    final user = await _appService.getUserById(widget.studentId);
+    if (user == null) return;
+
+    final rounds = user.preferences?.sortGameRounds ?? 3;
+
+    setState(() {
+      repeticiones = rounds.clamp(1, 12).toDouble(); // slider seguro
+      _loading = false;
+    });
+  }
+
+  // 💾 Guardar en Firestore
+  Future<void> _saveSortGameRounds() async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.studentId)
+        .update({
+      'preferences.sortGameRounds': repeticiones.round(),
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF71B1FF),
@@ -46,7 +89,7 @@ class _TutorEditGameProfileOrdenarState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔷 Caja superior con avatar + nombre + texto
+            // 🔷 CABECERA
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -77,35 +120,34 @@ class _TutorEditGameProfileOrdenarState
                     ),
                     child: const Text(
                       "Configurar perfil de juegos",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 20),
+
             const Center(
               child: Text(
                 "Ordena los números",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 10),
+
+            const SizedBox(height: 20),
+
             const Center(
               child: Text(
-                "Cantidad de repeticiones",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                ),
+                "Cantidad de rondas",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
               ),
             ),
+
             const SizedBox(height: 10),
+
+            // 🔢 SLIDER
             Slider(
               value: repeticiones,
               min: 1,
@@ -118,54 +160,44 @@ class _TutorEditGameProfileOrdenarState
                 });
               },
             ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Checkbox(
-                  value: rondasInfinitas,
-                  onChanged: (value) {
-                    setState(() {
-                      rondasInfinitas = value!;
-                    });
-                  },
-                ),
-                const Text(
-                  "Rondas infinitas",
-                  style: TextStyle(fontSize: 18),
-                ),
-              ],
-            ),
+
             const Spacer(),
+
+            // 🔘 BOTONES
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue),
-                  onPressed: () {
-                    // Navegar a la pantalla de ajustar dificultad
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TutorHomeScreen(),
-                      ),
-                    );
+                  style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  onPressed: () async {
+                    await _saveSortGameRounds();
+
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const TutorHomeScreen()),
+                            (route) => false,
+                      );
+                    }
                   },
                   child: const Text(
                     "Guardar",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
+
                 const SizedBox(width: 20),
+
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent),
                   onPressed: () {
-                    // Navegar a la pantalla de ajustar dificultad
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const OrdenarDifficultyScreen(),
+                        builder: (_) => const OrdenarDifficultyScreen(),
                       ),
                     );
                   },
@@ -176,6 +208,7 @@ class _TutorEditGameProfileOrdenarState
                 ),
               ],
             ),
+
             const SizedBox(height: 20),
           ],
         ),

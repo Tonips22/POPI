@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_tutor_screen.dart';
 import 'difficulty_screen.dart';
+import '../services/app_service.dart';
 
 class TutorEditGameProfileTocar extends StatefulWidget {
+  final String studentId;
   final String studentName;
   final String avatarPath;
 
   const TutorEditGameProfileTocar({
     super.key,
+    required this.studentId,
     required this.studentName,
     required this.avatarPath,
   });
@@ -17,12 +21,50 @@ class TutorEditGameProfileTocar extends StatefulWidget {
       _TutorEditGameProfileTocarState();
 }
 
-class _TutorEditGameProfileTocarState extends State<TutorEditGameProfileTocar> {
-  double repeticiones = 3;
-  bool rondasInfinitas = false;
+class _TutorEditGameProfileTocarState
+    extends State<TutorEditGameProfileTocar> {
+  final AppService _appService = AppService();
+
+  double repeticiones = 3; // valor del slider (1–12)
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    final user = await _appService.getUserById(widget.studentId);
+    if (user == null) return;
+
+    final rounds = user.preferences?.touchGameRounds ?? 3;
+
+    setState(() {
+      repeticiones = rounds.clamp(1, 12).toDouble(); // slider seguro
+      _loading = false;
+    });
+  }
+
+  Future<void> _saveTouchGameRounds() async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.studentId)
+        .update({
+      'preferences.touchGameRounds': repeticiones.round(),
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF71B1FF),
@@ -40,13 +82,12 @@ class _TutorEditGameProfileTocarState extends State<TutorEditGameProfileTocar> {
         ),
         centerTitle: true,
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔷 Caja superior con avatar + nombre + texto
+            // 🔷 CABECERA
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -77,9 +118,7 @@ class _TutorEditGameProfileTocarState extends State<TutorEditGameProfileTocar> {
                     ),
                     child: const Text(
                       "Configurar perfil de juegos",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -91,28 +130,22 @@ class _TutorEditGameProfileTocarState extends State<TutorEditGameProfileTocar> {
             const Center(
               child: Text(
                 "Toca el número que suena",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
 
             const Center(
               child: Text(
-                "Cantidad de repeticiones",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                ),
+                "Cantidad de rondas",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
               ),
             ),
 
             const SizedBox(height: 10),
 
-            // 🔢 Slider
+            // 🔢 SLIDER
             Slider(
               value: repeticiones,
               min: 1,
@@ -126,53 +159,33 @@ class _TutorEditGameProfileTocarState extends State<TutorEditGameProfileTocar> {
               },
             ),
 
-            const SizedBox(height: 10),
-
-            // ✔️ Rondas infinitas
-            Row(
-              children: [
-                Checkbox(
-                  value: rondasInfinitas,
-                  onChanged: (value) {
-                    setState(() {
-                      rondasInfinitas = value!;
-                    });
-                  },
-                ),
-                const Text(
-                  "Rondas infinitas",
-                  style: TextStyle(fontSize: 18),
-                ),
-              ],
-            ),
-
             const Spacer(),
 
-            // 🔘 Botones inferiores
+            // 🔘 BOTONES
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // ✔️ GUARDAR → Vuelve al listado de estudiantes
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue),
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const TutorHomeScreen()),
-                          (route) => false,
-                    );
+                  style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  onPressed: () async {
+                    await _saveTouchGameRounds();
+
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const TutorHomeScreen()),
+                            (route) => false,
+                      );
+                    }
                   },
                   child: const Text(
                     "Guardar",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
-
                 const SizedBox(width: 20),
-
-                // ✔️ AJUSTAR DIFICULTAD → Va a DifficultyScreen
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent),
@@ -180,8 +193,7 @@ class _TutorEditGameProfileTocarState extends State<TutorEditGameProfileTocar> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DifficultyScreen(
-                        ),
+                        builder: (_) => DifficultyScreen(),
                       ),
                     );
                   },

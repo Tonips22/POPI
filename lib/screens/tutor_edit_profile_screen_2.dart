@@ -19,16 +19,12 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
   late TextEditingController _nameController;
   late int _avatarIndex;
 
-  // Colores
   late Color primaryColor;
   late Color secondaryColor;
   late Color backgroundColor;
 
-  // Tipografía
   String selectedFontFamily = 'default';
   String fontSizeValue = 'default';
-
-  final List<String> fonts = ['default', 'ComicNeue', 'OpenDyslexic'];
 
   @override
   void initState() {
@@ -76,17 +72,14 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
     final saved = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) => TutorEditProfileScreen3(
-          student: updatedStudent,
-        ),
+        builder: (_) => TutorEditProfileScreen3(student: updatedStudent),
       ),
     );
 
     if (saved == true && mounted) {
-      Navigator.pop(context, true); // 🔥 vuelve a Screen1 / Home
+      Navigator.pop(context, true);
     }
   }
-
 
   double _fontSizeToSlider(String fontSize) {
     switch (fontSize) {
@@ -116,24 +109,22 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
   double _getFontSizePreview(String fontSize) {
     switch (fontSize) {
       case 'extra_small':
-        return 12.0;
+        return 10;
       case 'small':
-        return 16.0;
+        return 14;
       case 'default':
-        return 20.0;
+        return 18;
       case 'large':
-        return 24.0;
+        return 22;
       case 'extra_large':
-        return 32.0;
+        return 26;
       default:
-        return 20.0;
+        return 18;
     }
   }
 
   String _getFontFamilyName(String fontFamily) {
     switch (fontFamily) {
-      case 'default':
-        return 'Roboto';
       case 'friendly':
         return 'ComicNeue';
       case 'easy-reading':
@@ -151,7 +142,7 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
         title: const Text(
           "Editar Alumno",
           style: TextStyle(
-              fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+              fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -159,13 +150,13 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(6),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
-            // Cabecera alumno
+            // CABECERA
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 color: const Color(0xFFAAD2FF),
                 borderRadius: BorderRadius.circular(6),
@@ -173,25 +164,24 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
               child: Row(
                 children: [
                   CircleAvatar(
+                    radius: 14,
                     backgroundImage:
                     AssetImage('assets/images/avatar$_avatarIndex.png'),
-                    radius: 14,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _nameController.text.toUpperCase(),
                       style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
+                          fontSize: 13, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
 
-            // COLORES
             _buildSectionContainer(
               title: 'Colores',
               child: Column(
@@ -206,22 +196,20 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
               ),
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
 
-            // TIPOGRAFÍA
             _buildSectionContainer(
               title: 'Tipografía',
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildFontTypeSelector(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   _buildFontSizeSelector(),
                 ],
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 12),
 
             // BOTONES
             Row(
@@ -229,15 +217,18 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancelar'),
+                  child: const Text('Cancelar', style: TextStyle(fontSize: 12)),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: _goToScreen3,
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5CA7FF)),
+                    backgroundColor: const Color(0xFF5CA7FF),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
                   child: const Text('Continuar',
-                      style: TextStyle(color: Colors.white)),
+                      style: TextStyle(fontSize: 12)),
                 ),
               ],
             ),
@@ -249,28 +240,31 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
 
   Widget _buildColorSelector(
       String label, Color color, Function(Color) onSelected) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label,
-            style:
-            const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-        GestureDetector(
-          onTap: () async {
-            final c = await _pickColor(context, color);
-            if (c != null) onSelected(c);
-          },
-          child: Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: color,
-              border: Border.all(color: Colors.black),
-              borderRadius: BorderRadius.circular(4),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style:
+              const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          GestureDetector(
+            onTap: () async {
+              final c = await _pickColor(context, color);
+              if (c != null) onSelected(c);
+            },
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                color: color,
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -281,9 +275,7 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
       Colors.red,
       Colors.orange,
       Colors.purple,
-      Colors.pink,
       Colors.teal,
-      Colors.yellow,
     ];
 
     return showDialog<Color>(
@@ -292,12 +284,13 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
         title: const Text('Selecciona un color'),
         content: Wrap(
           spacing: 6,
+          runSpacing: 6,
           children: colors.map((c) {
             return GestureDetector(
               onTap: () => Navigator.pop(context, c),
               child: Container(
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
                   color: c,
                   border: Border.all(color: Colors.black),
@@ -313,17 +306,18 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
 
   Widget _buildSectionContainer({required String title, required Widget child}) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-          color: const Color(0xFF5CA7FF),
-          borderRadius: BorderRadius.circular(4)),
+        color: const Color(0xFF5CA7FF),
+        borderRadius: BorderRadius.circular(6),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
               style:
               const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          const Divider(color: Colors.black, thickness: 1),
+          const Divider(thickness: 1),
           child,
         ],
       ),
@@ -335,25 +329,25 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
       children: [
         Expanded(
           child: _FontTypeButton(
-            label: 'Predeterminada',
+            label: 'Predet.',
             fontFamily: 'Roboto',
             isSelected: selectedFontFamily == 'default',
             onTap: () => setState(() => selectedFontFamily = 'default'),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 6),
         Expanded(
           child: _FontTypeButton(
-            label: 'Amigable',
+            label: 'Amig.',
             fontFamily: 'ComicNeue',
             isSelected: selectedFontFamily == 'friendly',
             onTap: () => setState(() => selectedFontFamily = 'friendly'),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 6),
         Expanded(
           child: _FontTypeButton(
-            label: 'Lectura Fácil',
+            label: 'Fácil',
             fontFamily: 'OpenDyslexic',
             isSelected: selectedFontFamily == 'easy-reading',
             onTap: () => setState(() => selectedFontFamily = 'easy-reading'),
@@ -371,25 +365,19 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Tamaño de letra',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 16),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
         Slider(
           value: _fontSizeToSlider(fontSizeValue),
-          min: 0.0,
-          max: 1.0,
+          min: 0,
+          max: 1,
           divisions: 4,
-          onChanged: (value) {
-            setState(() {
-              fontSizeValue = _sliderToFontSize(value);
-            });
-          },
+          onChanged: (v) => setState(() => fontSizeValue = _sliderToFontSize(v)),
         ),
-        const SizedBox(height: 16),
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             'Texto de ejemplo',
@@ -422,19 +410,20 @@ class _FontTypeButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: isSelected ? Colors.blue : Colors.grey.shade300,
-              width: isSelected ? 3 : 1.5),
+            color: isSelected ? Colors.blue : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 12,
               fontFamily: fontFamily,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
