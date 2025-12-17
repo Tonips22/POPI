@@ -118,6 +118,7 @@ class EqualSubtractionBoard extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onRoundUpdate,
+    this.onInvalidAction,
     required this.primaryColor,
     required this.secondaryColor,
     this.shape = 'circle',
@@ -130,6 +131,7 @@ class EqualSubtractionBoard extends StatefulWidget {
   /// - isCorrect = true  -> todas las jarras iguales al objetivo (nivel completado)
   /// - isCorrect = false -> todavía no están igualadas
   final void Function(bool isCorrect, String equation) onRoundUpdate;
+  final VoidCallback? onInvalidAction;
   final Color primaryColor;
   final Color secondaryColor;
   final String shape;
@@ -359,8 +361,10 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
         final target = controller.target;
 
         // No permitir bajar de la cantidad objetivo
-        if (currentCount <= target) return;
-
+        if (currentCount <= target) {
+          widget.onInvalidAction?.call();
+          return;
+        }
         setState(() {
           controller.removeBallFromJar(jarIndex, id);
         });
@@ -387,7 +391,10 @@ class _EqualSubtractionBoardState extends State<EqualSubtractionBoard> {
             final target = controller.target;
 
             // No permitir bajar de la cantidad objetivo
-            if (currentCount <= target) return;
+            if (currentCount <= target){
+              widget.onInvalidAction?.call();
+              return;
+            }
 
             setState(() {
               controller.removeBallFromJar(jarIndex, id);
@@ -431,6 +438,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
   GameSessionTracker? _sessionTracker;
 
   bool _showCheckIcon = false;
+  bool _showErrorIcon = false;
 
   int _attempts = 0;     // nº de acciones (taps) en la ronda
   int _successes = 0;    // nº de rondas completadas
@@ -474,6 +482,21 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
     tracker.start();
   }
 
+  void _handleInvalidMove() {
+    _sessionTracker?.recordFail(); // Registra el error en la base de datos
+    setState(() {
+      _showErrorIcon = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _showErrorIcon = false;
+        });
+      }
+    });
+  }
+
   void _restartRound() {
     setState(() {
       _controller.nextRound();
@@ -486,41 +509,26 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
 
   void _handleRoundUpdate(bool isCorrect, String equation) {
     _attempts++;
-    final elapsed = DateTime.now().difference(_roundStart);
-
     if (isCorrect) {
+      _sessionTracker?.recordHit();
       setState(() {
         _successes++;
         _showCheckIcon = true;
       });
-      _sessionTracker?.recordHit();
 
-      // Registro de progreso
-      debugPrint(
-        'Restas - acierto $_successes, intentos en la ronda: $_attempts, '
-            'tiempo: ${elapsed.inSeconds}s',
-      );
+      Future.delayed(const Duration(milliseconds: 800), () async {
+        setState(() {
+          _showCheckIcon = false;
+          _roundIndex++;
+          if (_successes < _targetRounds) {
+            _controller.nextRound();
+          }
+        });
 
-      final maxRounds = _targetRounds;
-      final bool hasCompletedSession =
-          maxRounds > 0 && _successes >= maxRounds;
-
-      Future.delayed(const Duration(milliseconds: 2000), () async {
-        if (!mounted) return;
-        if (hasCompletedSession) {
-          setState(() {
-            _showCheckIcon = false;
-          });
+        if (_successes >= _targetRounds) {
           await _showVictoryScreen();
-        } else {
-          _restartRound();
         }
       });
-    } else {
-      // Sin pista visual, solo registro interno
-      debugPrint(
-        'Restas - intento $_attempts, tiempo actual: ${elapsed.inSeconds}s',
-      );
     }
   }
 
@@ -666,6 +674,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                         key: ValueKey(_roundIndex),
                         controller: _controller,
                         onRoundUpdate: _handleRoundUpdate,
+                        onInvalidAction: _handleInvalidMove,
                         primaryColor: userColor,
                         secondaryColor: secondaryColor,
                         shape: userShape,
@@ -681,6 +690,12 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
 
           if (_showCheckIcon)
             CheckIconOverlay(color: secondaryColor),
+
+          if (_showErrorIcon)
+            CheckIconOverlay(
+              color: Colors.red,
+              icon: Icons.cancel,
+            ),
         ],
         ),
       ),

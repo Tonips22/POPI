@@ -170,6 +170,7 @@ class EqualShareBoard extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onRoundEnd,
+    this.onInvalidMove,
     required this.primaryColor,
     required this.secondaryColor,
     this.shape = 'circle',
@@ -179,6 +180,7 @@ class EqualShareBoard extends StatefulWidget {
 
   final EqualShareController controller;
   final void Function(bool isCorrect, String equation) onRoundEnd;
+  final VoidCallback? onInvalidMove;
   final Color primaryColor;
   final Color secondaryColor;
   final String shape;
@@ -291,7 +293,10 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
               final value = controller.getBallValue(_selectedBallId!);
               final currentSum = controller.sumForJar(index);
               // si nos pasamos del objetivo, NO hacemos nada
-              if (currentSum + value > target) return;
+              if (currentSum + value > target){
+                widget.onInvalidMove?.call(); // Avisa del error
+                return;
+              }
 
               setState(() {
                 controller.moveObjectToContainer(_selectedBallId!, index);
@@ -306,13 +311,21 @@ class _EqualShareBoardState extends State<EqualShareBoard> {
               if (objectId == null) return false;
               final value = controller.getBallValue(objectId);
               final currentSum = controller.sumForJar(index);
-              return currentSum + value <= target;
+
+              // Si la bola NO cabe:
+              if (currentSum + value > target) {
+                widget.onInvalidMove?.call();
+                return false; // rechazamos la bola
+              }
+
+              return true; // Si cabe, permitimos que siga hacia onAccept
             },
             onAccept: (objectId) {
               // por seguridad, volvemos a comprobar
               final value = controller.getBallValue(objectId);
               final currentSum = controller.sumForJar(index);
               if (currentSum + value > target) {
+                widget.onInvalidMove?.call();
                 return; // no aceptamos si se pasa
               }
               setState(() {
@@ -542,46 +555,52 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
     final elapsed = DateTime.now().difference(_roundStart);
 
     if (isCorrect) {
+      _sessionTracker?.recordHit();
       setState(() {
         _hits++;
         _showCheckIcon = true;
       });
-      _sessionTracker?.recordHit();
-      final maxRounds = _targetRounds;
-      final bool hasCompletedSession =
-          maxRounds > 0 && _hits >= maxRounds;
 
-      // Aquí registrarías acierto + tiempo
-      debugPrint('Acierto $_hits, tiempo: ${elapsed.inSeconds}s');
+      Future.delayed(const Duration(milliseconds: 800), () async {
+        setState(() {
+          _showCheckIcon = false;
+          _roundIndex++;
+          if (_hits < _targetRounds) {
+            _controller.nextRound();
+            _roundStart = DateTime.now();
+          }
+        });
 
-      Future.delayed(const Duration(milliseconds: 2000), () async {
-        if (!mounted) return;
-        if (hasCompletedSession) {
-          setState(() {
-            _showCheckIcon = false;
-          });
+        if (_hits >= _targetRounds) {
           await _showVictoryScreen();
-        } else {
-          _restartRound();
         }
       });
     } else {
+      _sessionTracker?.recordFail();
       setState(() {
         _errors++;
         _showErrorIcon = true;
       });
-      _sessionTracker?.recordFail();
 
-      // Aquí registrarías el error + tiempo
-      debugPrint('Error $_errors, tiempo hasta el fallo: ${elapsed.inSeconds}s');
-
-      Future.delayed(const Duration(milliseconds: 2000), () {
-        if (!mounted) return;
+      Future.delayed(const Duration(milliseconds: 800), () {
         setState(() {
           _showErrorIcon = false;
         });
       });
     }
+  }
+
+  void _handleImmediateError() {
+    _sessionTracker?.recordFail(); // Registra el error en la base de datos al instante
+    setState(() {
+      _errors++;
+      _showErrorIcon = true;
+    });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        _showErrorIcon = false;
+      });
+    });
   }
 
   Future<void> _finishSession() async {
@@ -710,6 +729,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
                         key: ValueKey(_roundIndex),
                         controller: _controller,
                         onRoundEnd: _handleRoundEnd,
+                        onInvalidMove: _handleImmediateError,
                         primaryColor: userColor,
                         secondaryColor: secondaryColor,
                         shape: userShape,
