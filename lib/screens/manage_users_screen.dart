@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'create_users_screen.dart';
 import 'desactivate_users_screen.dart';
 import 'delete_users_screen.dart';
@@ -15,6 +17,22 @@ class ManageUsersScreen extends StatelessWidget {
   static const _btnDisable = Color(0xFFBDBDBD);
   static const _btnEnable  = Color(0xFFFFEB3B);
   static const _btnCreate  = Color(0xFF2E7D32);
+
+  static const String _collectionName = 'users';
+
+  // 🔤 Traducción de roles
+  String translateRole(String role) {
+    switch (role) {
+      case 'student':
+        return 'Estudiante';
+      case 'tutor':
+        return 'Tutor';
+      case 'admin':
+        return 'Administrador';
+      default:
+        return role;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,27 +90,17 @@ class ManageUsersScreen extends StatelessWidget {
           final btnRadius = clamp(20, 14, 20);
           final btnGap    = clamp(w * 0.012, 6, 12);
 
-          // Anchos de columnas
           final totalWidth = w - pagePad * 2;
           final colAvatarW = avatar;
           final colNameW   = totalWidth * 0.28;
           final colRoleW   = totalWidth * 0.22;
           final colTutorW  = totalWidth * 0.22;
-          final colActionsW= totalWidth - (colAvatarW + colNameW + colRoleW + colTutorW + colGap * 4);
+          final colActionsW= totalWidth -
+              (colAvatarW + colNameW + colRoleW + colTutorW + colGap * 4);
 
-          // Botones
           final delBtnW    = clamp(base * 0.18, 86, 110);
           final secBtnW    = clamp(base * 0.20, 92, 124);
 
-          final users = <_User>[
-            _User(color: const Color(0xFF9ED7E6), emoji: '👤', name: 'Mario',  role: 'Estudiante', tutor: 'Laura',   active: true),
-            _User(color: const Color(0xFFF7E07D), emoji: '🐻', name: 'Jesús',  role: 'Estudiante', tutor: 'Laura',   active: false),
-            _User(color: const Color(0xFFF6B7A4), emoji: '🦊', name: 'Laura',  role: 'Profesora',  tutor: '—',       active: true),
-            _User(color: const Color(0xFFB6E2C8), emoji: '🦒', name: 'Rosa',   role: 'Estudiante', tutor: 'Pedro',   active: true),
-            _User(color: const Color(0xFFCFCBEA), emoji: '🐘', name: 'Pedro',  role: 'Profesor',   tutor: '—',       active: true),
-          ];
-
-          // Cabecera
           Widget headerBar() {
             return Container(
               height: rowH,
@@ -100,11 +108,7 @@ class ManageUsersScreen extends StatelessWidget {
               color: _theadBg,
               child: Row(
                 children: [
-                  Container(
-                    width: colAvatarW + (colGap * 0.6),
-                    color: Colors.white,
-                  ),
-                  SizedBox(width: colGap * 0.4),
+                  SizedBox(width: colAvatarW + colGap),
                   SizedBox(
                     width: colNameW,
                     child: Center(
@@ -170,9 +174,9 @@ class ManageUsersScreen extends StatelessWidget {
               ),
             );
 
-            if (onTap == null) return pill;
-
-            return Material(
+            return onTap == null
+                ? pill
+                : Material(
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(btnRadius),
@@ -182,12 +186,20 @@ class ManageUsersScreen extends StatelessWidget {
             );
           }
 
-          // Fila
-          Widget rowItem(_User u) {
+          Widget rowItem({
+            required String docId,
+            required String name,
+            required String role,
+            required dynamic tutorId,
+            required int avatarIndex,
+          }) {
+            const active = true;
+
             return SizedBox(
               height: rowH,
               child: Row(
                 children: [
+                  // Avatar
                   SizedBox(
                     width: colAvatarW,
                     child: Center(
@@ -195,111 +207,122 @@ class ManageUsersScreen extends StatelessWidget {
                         width: avatar,
                         height: avatar,
                         decoration: BoxDecoration(
-                          color: u.color,
+                          color: const Color(0xFFD3E3FF),
                           borderRadius: BorderRadius.circular(avatarR.toDouble()),
                         ),
-                        alignment: Alignment.center,
-                        child: Text(u.emoji, style: TextStyle(fontSize: avatar * 0.58)),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.asset(
+                          'assets/images/avatar$avatarIndex.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.person),
+                        ),
                       ),
                     ),
                   ),
+
                   SizedBox(width: colGap),
+
+                  // Nombre
                   SizedBox(
                     width: colNameW,
                     child: Center(
-                      child: Text(u.name,
+                      child: Text(
+                        name,
                         style: TextStyle(fontSize: cellFont),
-                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
+
                   SizedBox(width: colGap),
+
+                  // Rol traducido
                   SizedBox(
                     width: colRoleW,
                     child: Center(
-                      child: Text(u.role,
+                      child: Text(
+                        translateRole(role),
                         style: TextStyle(fontSize: cellFont),
-                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
+
                   SizedBox(width: colGap),
+
+                  // Tutor (nombre real)
                   SizedBox(
                     width: colTutorW,
                     child: Center(
-                      child: Text(u.tutor,
-                        style: TextStyle(fontSize: cellFont),
-                        textAlign: TextAlign.center,
+                      child: tutorId == null || tutorId.toString().isEmpty
+                          ? const Text('-')
+                          : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                        stream: FirebaseFirestore.instance
+                            .collection(_collectionName)
+                            .where('id', isEqualTo: tutorId)
+                            .where('role', isEqualTo: 'tutor')
+                            .limit(1)
+                            .snapshots(),
+                        builder: (context, snap) {
+                          if (!snap.hasData || snap.data!.docs.isEmpty) {
+                            return const Text('-');
+                          }
+                          final tutorData = snap.data!.docs.first.data();
+                          return Text(
+                            tutorData['name'] ?? '-',
+                            style: TextStyle(fontSize: cellFont),
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        },
                       ),
                     ),
                   ),
+
                   SizedBox(width: colGap),
-                  // Acciones autoajustables (sin overflow) + navegación
+
+                  // Acciones
                   SizedBox(
                     width: colActionsW,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          actionPill(
-                            label: 'Eliminar',
-                            bg: _btnDelete,
-                            fg: Colors.white,
-                            width: delBtnW,
-                            onTap: () {
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  opaque: false,
-                                  barrierColor: Colors.black38,
-                                  pageBuilder: (_, __, ___) => DeleteUsersScreen(
-                                    userName: u.name,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-
-                          SizedBox(width: btnGap),
-                          u.active
-                              ? actionPill(
-                            label: 'Desactivar',
-                            bg: _btnDisable,
-                            fg: Colors.white,
-                            width: secBtnW,
-                            onTap: () {
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  opaque: false,
-                                  barrierColor: Colors.black38,
-                                  pageBuilder: (_, __, ___) => DesactivateUsersScreen(
-                                    userName: u.name,
-                                    isActive: true,
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                              : actionPill(
-                            label: 'Activar',
-                            bg: _btnEnable,
-                            fg: Colors.black87,
-                            width: secBtnW,
-                            onTap: () {
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  opaque: false,
-                                  barrierColor: Colors.black38,
-                                  pageBuilder: (_, __, ___) => DesactivateUsersScreen(
-                                    userName: u.name,
-                                    isActive: false,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        actionPill(
+                          label: 'Eliminar',
+                          bg: _btnDelete,
+                          fg: Colors.white,
+                          width: delBtnW,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              PageRouteBuilder(
+                                opaque: false,
+                                barrierColor: Colors.black38,
+                                pageBuilder: (_, __, ___) =>
+                                    DeleteUsersScreen(userName: name),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(width: btnGap),
+                        actionPill(
+                          label: 'Desactivar',
+                          bg: _btnDisable,
+                          fg: Colors.white,
+                          width: secBtnW,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              PageRouteBuilder(
+                                opaque: false,
+                                barrierColor: Colors.black38,
+                                pageBuilder: (_, __, ___) =>
+                                    DesactivateUsersScreen(
+                                      userName: name,
+                                      isActive: active,
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -312,7 +335,6 @@ class ManageUsersScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Píldora "Gestionar usuarios"
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: pillPadH, vertical: pillPadV),
                   decoration: BoxDecoration(
@@ -328,36 +350,55 @@ class ManageUsersScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: pagePad * 0.8),
-                headerBar(),
-                ...users.map(rowItem),
+
                 SizedBox(height: pagePad * 0.8),
 
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _btnCreate,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const CrearUsuarioScreen()),
+                headerBar(),
+
+                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: FirebaseFirestore.instance
+                      .collection(_collectionName)
+                      .orderBy('created_at', descending: true)
+                      .snapshots(),
+                  builder: (context, snap) {
+                    if (!snap.hasData) {
+                      return const Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Center(child: CircularProgressIndicator()),
                       );
-                    },
-                    child: const Text('Crear usuario'),
-                  ),
+                    }
+
+                    return Column(
+                      children: snap.data!.docs.map((d) {
+                        final data = d.data();
+                        return rowItem(
+                          docId: d.id,
+                          name: data['name'] ?? '(sin nombre)',
+                          role: data['role'] ?? '',
+                          tutorId: data['tutorId'],
+                          avatarIndex: data['avatarIndex'] ?? 0,
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
-                SizedBox(height: pagePad * 0.4),
+
+                SizedBox(height: pagePad * 0.8),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _btnCreate,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CrearUsuarioScreen()),
+                    );
+                  },
+                  child: const Text('Crear usuario'),
+                ),
               ],
             ),
           );
@@ -365,22 +406,4 @@ class ManageUsersScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _User {
-  final Color color;
-  final String emoji;
-  final String name;
-  final String role;
-  final String tutor;
-  final bool active;
-
-  const _User({
-    required this.color,
-    required this.emoji,
-    required this.name,
-    required this.role,
-    required this.tutor,
-    required this.active,
-  });
 }

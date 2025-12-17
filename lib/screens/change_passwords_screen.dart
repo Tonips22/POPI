@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../services/user_service.dart';
 
 class ChangePasswordsScreen extends StatefulWidget {
@@ -7,14 +6,12 @@ class ChangePasswordsScreen extends StatefulWidget {
     super.key,
     required this.userId,
     required this.userName,
-    required this.avatarColor,
-    required this.emoji,
+    required this.avatarIndex, // <-- NUEVO
   });
 
   final String userId;
   final String userName;
-  final Color avatarColor;
-  final String emoji;
+  final int avatarIndex;
 
   @override
   State<ChangePasswordsScreen> createState() => _ChangePasswordsScreenState();
@@ -26,10 +23,8 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
   static const _blueBox    = Color(0xFF77A9F4);
   static const _tileBg     = Color(0xFFD9D9D9);
 
-  // La contraseña son 4 animalitos (guardamos índices)
   final List<int> _pwd = [];
 
-  // Catálogo de animalitos (emoji + color de fondo del botón)
   final List<_Animal> _animals = const [
     _Animal('🦁', Color(0xFFFFF3CD)),
     _Animal('🧸', Color(0xFFF5E6FF)),
@@ -46,10 +41,15 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
     setState(() => _pwd.add(index));
   }
 
-
   void _backspace() {
     if (_pwd.isEmpty) return;
     setState(() => _pwd.removeLast());
+  }
+
+  String get _avatarPath {
+    // Seguridad: si en BD viene raro, lo acotamos 0..5
+    final idx = widget.avatarIndex.clamp(0, 11);
+    return 'assets/images/avatar$idx.png';
   }
 
   @override
@@ -88,7 +88,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
           double clamp(double v, double min, double max) =>
               v < min ? min : (v > max ? max : v);
 
-          // Márgenes y tipografías
           final pagePad   = clamp(w * 0.08, 24, 60);
 
           final pillPadH  = clamp(w * 0.03, 14, 22);
@@ -108,7 +107,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
           final boxR      = clamp(14, 12, 16);
           final boxPadX   = clamp(base * 0.03, 16, 22);
 
-          // Grid animalitos
           final gridW     = clamp(w * 0.80, 520, 820);
           final gridPad   = clamp(base * 0.02, 12, 18);
           final cellSize  = clamp(base * 0.13, 72, 92);
@@ -116,10 +114,8 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
           final cellGap   = clamp(base * 0.016, 10, 16);
           final emojiSize = clamp(cellSize * 0.52, 28, 40);
 
-          // Ancho del bloque central
           final contentW  = clamp(w * 0.80, 540, 860);
 
-          // Widget: avatar + nombre
           Widget userHeader() {
             return Column(
               children: [
@@ -127,7 +123,7 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                   width: avatar,
                   height: avatar,
                   decoration: BoxDecoration(
-                    color: widget.avatarColor,
+                    color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(avatarR.toDouble()),
                     boxShadow: const [
                       BoxShadow(
@@ -136,9 +132,11 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                         blurRadius: 2,
                       ),
                     ],
+                    image: DecorationImage(
+                      image: AssetImage(_avatarPath),
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  alignment: Alignment.center,
-                  child: Text(widget.emoji, style: TextStyle(fontSize: avatar * 0.55)),
                 ),
                 SizedBox(height: clamp(base * 0.018, 8, 14)),
                 Text(
@@ -154,10 +152,8 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
           }
 
           Widget passwordBox() {
-            // tamaños ya calculados arriba en tu build: boxH, slotSize, slotR, slotGap, boxR, boxPadX
             final delGap   = clamp(base * 0.012, 6, 10);
             final delSize  = slotSize * 0.92;
-            // ancho exacto: 4 slots + 3 gaps + gap pequeño + botón borrar + paddings
             final innerW   = (slotSize * 4) + (slotGap * 3) + delGap + delSize + (boxPadX * 2);
 
             return SizedBox(
@@ -175,7 +171,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 4 casillas
                     for (int i = 0; i < 4; i++) ...[
                       _PasswordSlot(
                         size: slotSize,
@@ -187,7 +182,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                       if (i < 3) SizedBox(width: slotGap),
                     ],
                     SizedBox(width: delGap),
-                    // Botón borrar (pegado al último slot)
                     Material(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(slotR.toDouble()),
@@ -216,7 +210,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Etiqueta
                 SizedBox(
                   width: clamp(contentW * 0.30, 160, 240),
                   child: Text(
@@ -231,7 +224,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                   ),
                 ),
                 const SizedBox(width: 18),
-                // Cajetín
                 passwordBox(),
               ],
             );
@@ -270,13 +262,11 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
             );
           }
 
-
           return SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: pagePad, vertical: pagePad * 0.8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Píldora de título
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: pillPadH, vertical: pillPadV),
                   decoration: BoxDecoration(
@@ -294,22 +284,13 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                 ),
 
                 SizedBox(height: clamp(base * 0.04, 18, 28)),
-
-                // Avatar + nombre centrados
                 Center(child: userHeader()),
-
                 SizedBox(height: clamp(base * 0.035, 16, 24)),
 
-                // Fila etiqueta + cajetín
-                Center(
-                  child: SizedBox(width: contentW, child: passwordRow()),
-                ),
-
+                Center(child: SizedBox(width: contentW, child: passwordRow())),
                 SizedBox(height: clamp(base * 0.03, 14, 22)),
 
-                // Grid animalitos
                 animalsGrid(),
-
                 SizedBox(height: clamp(base * 0.04, 18, 28)),
 
                 if (_pwd.length == 4)
@@ -372,7 +353,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
               ],
             ),
           );
-
         },
       ),
     );
@@ -416,14 +396,10 @@ class _PasswordSlot extends StatelessWidget {
       alignment: Alignment.center,
       child: filled == null
           ? const SizedBox.shrink()
-          : Text(
-        filled!.emoji,
-        style: TextStyle(fontSize: size * 0.58),
-      ),
+          : Text(filled!.emoji, style: TextStyle(fontSize: size * 0.58)),
     );
   }
 }
-
 
 class _AnimalButton extends StatelessWidget {
   const _AnimalButton({

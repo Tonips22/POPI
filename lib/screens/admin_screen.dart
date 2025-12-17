@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'manage_users_screen.dart';
 import 'reset_passwords_screen.dart';
 import 'registro_usuarios.dart';
+import 'vinculate_users_screen.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
@@ -118,7 +119,7 @@ class AdminScreen extends StatelessWidget {
                     },
                   ),
                   _AdminCard(
-                    icon: Icons.group_outlined,
+                    icon: Icons.settings_outlined,
                     label: 'Vincular usuarios',
                     circleSize: circleSize,
                     iconSize: iconSize,
@@ -126,6 +127,14 @@ class AdminScreen extends StatelessWidget {
                     borderRadius: borderR,
                     innerPadding: innerPad,
                     gapY: gapY,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const VinculateUsersScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _AdminCard(
                     icon: Icons.folder_open_outlined,

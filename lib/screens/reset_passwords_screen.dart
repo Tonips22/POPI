@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'change_passwords_screen.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
+import 'change_text_passwords_screen.dart';
 
 class ResetPasswordsScreen extends StatefulWidget {
   const ResetPasswordsScreen({super.key});
@@ -14,6 +15,11 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
   final UserService _userService = UserService();
   List<UserModel> _users = [];
   bool _isLoading = true;
+
+  static const _blueAppBar = Color(0xFF77A9F4);
+  static const _bluePill   = Color(0xFF77A9F4);
+  static const _theadBg    = Color(0xFFD9D9D9);
+  static const _btnGrey    = Color(0xFFBDBDBD);
 
   @override
   void initState() {
@@ -30,15 +36,34 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      // ignore: avoid_print
       print('Error cargando usuarios: $e');
       setState(() => _isLoading = false);
     }
   }
 
-  static const _blueAppBar = Color(0xFF77A9F4);
-  static const _bluePill   = Color(0xFF77A9F4);
-  static const _theadBg    = Color(0xFFD9D9D9);
-  static const _btnGrey    = Color(0xFFBDBDBD);
+  // ================== HELPERS ==================
+
+  String _roleEs(String role) {
+    switch (role.toLowerCase()) {
+      case 'student':
+        return 'Estudiante';
+      case 'tutor':
+        return 'Tutor';
+      case 'admin':
+        return 'Administrador';
+      default:
+        return role;
+    }
+  }
+
+  String _avatarPathFromIndex(dynamic avatarIndex) {
+    final idx = (avatarIndex is int) ? avatarIndex : int.tryParse('$avatarIndex') ?? 0;
+    final safe = idx.clamp(0, 11);
+    return 'assets/images/avatar$safe.png';
+  }
+
+  // =================================================
 
   @override
   Widget build(BuildContext context) {
@@ -85,32 +110,20 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
 
           final rowH      = clamp(base * 0.095, 44, 64);
           final avatar    = clamp(rowH * 0.74, 30, 52);
-          final avatarR   = clamp(12, 8, 16);
-
           final headFont  = clamp(base * 0.025, 13, 17);
           final cellFont  = clamp(base * 0.026, 14, 18);
 
           final colGap    = clamp(w * 0.02, 12, 24);
           final btnH      = clamp(rowH * 0.62, 26, 40);
-          final btnFont   = clamp(base * 0.022, 12, 15);
           final btnRadius = clamp(20, 14, 20);
           final changeBtnW= clamp(base * 0.20, 92, 124);
 
-          // Anchos de columnas: avatar | nombre | rol | cambiar
+          // Anchos: avatar | nombre | rol | cambiar
           final totalWidth = w - pagePad * 2;
           final colAvatarW = avatar;
           final colNameW   = totalWidth * 0.36;
           final colRoleW   = totalWidth * 0.30;
           final colChangeW = totalWidth - (colAvatarW + colNameW + colRoleW + colGap * 3);
-
-          // Datos del boceto
-          // final users = <_User>[
-          //   _User(color: const Color(0xFF9ED7E6), emoji: '👤', name: 'Mario',  role: 'Estudiante'),
-          //   _User(color: const Color(0xFFF7E07D), emoji: '🐻', name: 'Jesús',  role: 'Estudiante'),
-          //   _User(color: const Color(0xFFF6B7A4), emoji: '🦊', name: 'Laura',  role: 'Profesora'),
-          //   _User(color: const Color(0xFFB6E2C8), emoji: '🦒', name: 'Rosa',   role: 'Estudiante'),
-          //   _User(color: const Color(0xFFCFCBEA), emoji: '🐘', name: 'Pedro',  role: 'Profesor'),
-          // ];
 
           // Cabecera
           Widget headerBar() {
@@ -171,7 +184,7 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
             );
           }
 
-          // Botón "Cambiar" gris (pill)
+          // Botón pill
           Widget changePill({VoidCallback? onTap}) {
             final pill = Container(
               height: btnH,
@@ -191,10 +204,8 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
               ),
             );
 
-            // Si no hay acción, lo devolvemos como widget estático
             if (onTap == null) return pill;
 
-            // Si hay acción, lo envolvemos en un InkWell para hacerlo clicable
             return Material(
               color: Colors.transparent,
               child: InkWell(
@@ -205,37 +216,24 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
             );
           }
 
-
           // Fila
           Widget rowItem(UserModel u, int index) {
-            final colors = [
-              const Color(0xFF9ED7E6),
-              const Color(0xFFF7E07D),
-              const Color(0xFFF6B7A4),
-              const Color(0xFFB6E2C8),
-              const Color(0xFFCFCBEA),
-            ];
-            final avatarColor = colors[index % colors.length];
-            final emojis = ['👤', '🐻', '🦊', '🦒', '🐘'];
-            final emoji = emojis[index % emojis.length];
+            final avatarPath = _avatarPathFromIndex(u.avatarIndex);
+            final roleLower = u.role.toLowerCase();
+            final roleEs = _roleEs(u.role);
 
             return SizedBox(
               height: rowH,
               child: Row(
                 children: [
-                  // Avatar
+                  // Avatar REAL
                   SizedBox(
                     width: colAvatarW,
                     child: Center(
-                      child: Container(
-                        width: avatar,
-                        height: avatar,
-                        decoration: BoxDecoration(
-                          color: avatarColor,
-                          borderRadius: BorderRadius.circular(avatarR.toDouble()),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(emoji, style: TextStyle(fontSize: avatar * 0.58)),
+                      child: CircleAvatar(
+                        radius: avatar / 2,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: AssetImage(avatarPath),
                       ),
                     ),
                   ),
@@ -256,12 +254,12 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
 
                   SizedBox(width: colGap),
 
-                  // Rol
+                  // Rol traducido
                   SizedBox(
                     width: colRoleW,
                     child: Center(
                       child: Text(
-                        u.role,
+                        roleEs,
                         style: TextStyle(fontSize: cellFont, color: Colors.black87),
                         textAlign: TextAlign.center,
                       ),
@@ -270,28 +268,41 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
 
                   SizedBox(width: colGap),
 
-                  // Cambiar contraseña
+                  // Cambiar contraseña (según rol)
                   SizedBox(
                     width: colChangeW,
                     child: Center(
                       child: changePill(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChangePasswordsScreen(
-                                userId: u.id,
-                                userName: u.name,
-                                avatarColor: avatarColor,
-                                emoji: emoji,
+                          if (roleLower == 'student') {
+                            // Estudiante -> animalitos
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChangePasswordsScreen(
+                                  userId: u.id,
+                                  userName: u.name,
+                                  avatarIndex: u.avatarIndex, // <-- asegúrate de que exista en UserModel
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          } else {
+                            // Tutor/Admin -> contraseña escrita
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChangePasswordsScreen(
+                                  userId: u.id,
+                                  userName: u.name,
+                                  avatarIndex: u.avatarIndex, // <-- asegúrate de que exista en UserModel
+                                ),
+                              ),
+                            );
+                          }
                         },
                       ),
                     ),
                   ),
-
                 ],
               ),
             );
@@ -302,7 +313,7 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Píldora de título
+                // Título pill
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: pillPadH, vertical: pillPadV),
                   decoration: BoxDecoration(
@@ -323,8 +334,7 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
 
                 headerBar(),
 
-                // Filas
-                // Filas
+                // Lista
                 if (_isLoading)
                   const Expanded(child: Center(child: CircularProgressIndicator()))
                 else if (_users.isEmpty)
@@ -333,9 +343,7 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
                   Expanded(
                     child: ListView.builder(
                       itemCount: _users.length,
-                      itemBuilder: (context, index) {
-                        return rowItem(_users[index], index);
-                      },
+                      itemBuilder: (context, index) => rowItem(_users[index], index),
                     ),
                   ),
               ],
@@ -346,17 +354,3 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
     );
   }
 }
-
-// class _User {
-//   final Color color;
-//   final String emoji;
-//   final String name;
-//   final String role;
-//
-//   const _User({
-//     required this.color,
-//     required this.emoji,
-//     required this.name,
-//     required this.role,
-//   });
-// }
