@@ -6,6 +6,12 @@ import 'tutor_edit_profile_screen.dart';
 import 'tutor_edit_game_profile_screen.dart';
 import 'create_profile_screen.dart';
 
+// --- TUS IMPORTACIONES (AÑADIDAS) ---
+import 'package:printing/printing.dart';
+import '../services/student_report_service.dart';
+import '../services/pdf_report_service.dart';
+// ------------------------------------
+
 class TutorHomeScreen extends StatefulWidget {
   const TutorHomeScreen({super.key});
 
@@ -27,6 +33,114 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
     super.initState();
     _loadAssignedStudents();
   }
+
+  // ======================================================
+  //     TUS FUNCIONES DE DESCARGA (AÑADIDAS AQUÍ)
+  // ======================================================
+
+  Future<void> _choosePeriodAndDownload(UserModel student) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.today),
+              title: const Text('Hoy'),
+              onTap: () => Navigator.pop(ctx, 'today'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_view_week),
+              title: const Text('Últimos 7 días'),
+              onTap: () => Navigator.pop(ctx, '7'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_month),
+              title: const Text('Mes en curso'),
+              onTap: () => Navigator.pop(ctx, 'month'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.date_range),
+              title: const Text('Personalizado…'),
+              onTap: () => Navigator.pop(ctx, 'custom'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (choice == null) return;
+
+    DateTime start;
+    DateTime end = DateTime.now();
+
+    if (choice == 'today') {
+      final now = DateTime.now();
+      start = DateTime(now.year, now.month, now.day);
+      end = start.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
+    } else if (choice == '7') {
+      start = end.subtract(const Duration(days: 7));
+    } else if (choice == 'month') {
+      start = DateTime(end.year, end.month, 1);
+    } else {
+      final range = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime(2020),
+        lastDate: DateTime.now(),
+      );
+      if (range == null) return;
+      start = range.start;
+      end = range.end.add(const Duration(hours: 23, minutes: 59, seconds: 59));
+    }
+
+    await _downloadReportForStudent(student, start: start, end: end);
+  }
+
+  Future<void> _downloadReportForStudent(
+      UserModel student, {
+        required DateTime start,
+        required DateTime end,
+      }) async {
+    try {
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      final reportData = await StudentReportService().build(
+        student: student,
+        start: start,
+        end: end,
+      );
+
+      final bytes = await PdfReportService().buildPdf(reportData);
+
+      if (mounted) Navigator.pop(context);
+
+      await Printing.sharePdf(
+        bytes: bytes,
+        filename: 'informe_${student.name}.pdf',
+      );
+    } catch (e) {
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al generar informe: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // ======================================================
 
   Future<void> _loadAssignedStudents() async {
     setState(() => _isLoading = true);
@@ -172,6 +286,17 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+
+                            // --- TU BOTÓN DE DESCARGA (AÑADIDO) ---
+                            Tooltip(
+                              message: 'Descargar informe',
+                              child: IconButton(
+                                icon: const Icon(Icons.download, color: Colors.black),
+                                onPressed: () => _choosePeriodAndDownload(student),
+                              ),
+                            ),
+                            // -------------------------------------
+
                             GestureDetector(
                               onTap: () async {
                                 final updated = await Navigator.push<bool>(
@@ -183,7 +308,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                   ),
                                 );
                                 if (updated == true) {
-                                  await _loadAssignedStudents(); // 👈 recarga inmediata si se modifica algo
+                                  await _loadAssignedStudents();
                                 }
                               },
                               child: _buildGreyButton("Configurar perfil"),
@@ -209,44 +334,11 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                             const SizedBox(width: 12),
                             // BOTÓN PERMITIR/BLOQUEAR
                             GestureDetector(
-                              onTap: () async {
-                                try {
-                                  // 1️⃣ Actualizar en base de datos
-                                  await _service.toggleCanCustomize(
-                                    userId: student.id,
-                                    currentValue: allowed,
-                                  );
-
-                                  // 2️⃣ Actualizar estado local
-                                  setState(() {
-                                    _allowedMap[student.id] = !allowed;
-                                  });
-
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          !allowed
-                                              ? 'Personalización permitida para ${student.name}'
-                                              : 'Personalización bloqueada para ${student.name}',
-                                        ),
-                                        backgroundColor: Colors.green,
-                                        duration: const Duration(seconds: 2),
-                                      ),
-                                    );
-                                  }
-                                } catch (e) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error al actualizar permisos: $e'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                }
+                              onTap: () {
+                                setState(() {
+                                  _allowedMap[student.id] = !allowed;
+                                });
                               },
-
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
@@ -368,7 +460,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                   );
 
                   if (created == true) {
-                    await _loadAssignedStudents(); // 👈 recarga inmediata
+                    await _loadAssignedStudents();
                   }
                 },
 
