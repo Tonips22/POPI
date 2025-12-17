@@ -37,9 +37,21 @@ class _NumberScreenState extends State<NumberScreen> {
   @override
   void initState() {
     super.initState();
+    _applyDifficultySettings();
     _controller.initGame();
     _speakInstruction();
     _initSessionTracker();
+  }
+
+  void _applyDifficultySettings() {
+    final prefs = _service.currentUser?.preferences;
+    if (prefs == null) return;
+    final minRange = prefs.touchGameRangeMin;
+    final maxRange = prefs.touchGameRangeMax > minRange
+        ? prefs.touchGameRangeMax
+        : minRange + 10;
+    _controller.setRange(minRange, maxRange);
+    _controller.setDifficulty(prefs.touchGameDifficulty);
   }
 
   void _initSessionTracker() {
@@ -193,6 +205,7 @@ class _NumberScreenState extends State<NumberScreen> {
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
               setState(() {
+                _applyDifficultySettings();
                 _controller.initGame();
               });
               _speakInstruction();

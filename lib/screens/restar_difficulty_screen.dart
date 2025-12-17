@@ -11,6 +11,8 @@ class RestarDifficultyScreen extends StatefulWidget {
 }
 
 class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
+  final AppService _service = AppService();
+  bool _isSaving = false;
   // sliders locales, inicializados con los valores actuales del controlador
   late double _jarsSlider;
   late double _minBallsSlider;
@@ -36,8 +38,51 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
     _jarsSlider = _jarsSlider.clamp(_minJars.toDouble(), _maxJars.toDouble());
     _minBallsSlider = _minBallsSlider.clamp(
         _minBallsGlobal.toDouble(), _maxBallsGlobal.toDouble());
-    _maxBallsSlider = _maxBallsSlider.clamp(
-        _minBallsSlider, _maxBallsGlobal.toDouble());
+    _maxBallsSlider =
+        _maxBallsSlider.clamp(_minBallsSlider, _maxBallsGlobal.toDouble());
+    _loadPreferences();
+  }
+
+  void _loadPreferences() {
+    final prefs = _service.currentUser?.preferences;
+    if (prefs == null) return;
+    _jarsSlider =
+        prefs.subtractGameJarsCount.clamp(_minJars, _maxJars).toDouble();
+    _minBallsSlider = prefs.subtractGameMinBalls
+        .clamp(_minBallsGlobal, _maxBallsGlobal)
+        .toDouble();
+    _maxBallsSlider = prefs.subtractGameMaxBalls
+        .clamp(_minBallsGlobal, _maxBallsGlobal)
+        .toDouble();
+    if (_maxBallsSlider < _minBallsSlider) {
+      _maxBallsSlider = _minBallsSlider;
+    }
+    EqualSubtractionController.containersCountSetting = _jarsSlider.round();
+    EqualSubtractionController.minInitialBallsSetting =
+        _minBallsSlider.round();
+    EqualSubtractionController.maxInitialBallsSetting =
+        _maxBallsSlider.round();
+  }
+
+  Future<void> _saveSettings() async {
+    final user = _service.currentUser;
+    if (user == null || _isSaving) return;
+    if (mounted) {
+      setState(() => _isSaving = true);
+    }
+    final updated = user.preferences.copyWith(
+      subtractGameJarsCount: _jarsSlider.round(),
+      subtractGameMinBalls: _minBallsSlider.round(),
+      subtractGameMaxBalls: _maxBallsSlider.round(),
+    );
+    final success =
+        await _service.updatePreferences(user.id, updated);
+    if (success) {
+      _service.updateCurrentUserPreferences(updated);
+    }
+    if (mounted) {
+      setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -53,30 +98,40 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
     final titleFontSize = appService.fontSizeWithFallback();
     final titleFontFamily = appService.fontFamilyWithFallback();
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
+    return WillPopScope(
+      onWillPop: () async {
+        await _saveSettings();
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, size: 32),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () async {
+            await _saveSettings();
+            if (mounted) {
+              Navigator.pop(context);
+            }
+          },
         ),
-        title: Text(
-          'Dificultad',
-          style: TextStyle(
-            fontSize: titleFontSize * 1.35,
-            fontWeight: FontWeight.bold,
-            fontFamily: titleFontFamily,
+          title: Text(
+            'Dificultad',
+            style: TextStyle(
+              fontSize: titleFontSize * 1.35,
+              fontWeight: FontWeight.bold,
+              fontFamily: titleFontFamily,
+            ),
           ),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // subtítulo
             Text(
               'Resta para igualar',
@@ -250,6 +305,7 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

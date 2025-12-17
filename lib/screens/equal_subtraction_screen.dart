@@ -444,9 +444,24 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
   @override
   void initState() {
     super.initState();
+    _applyDifficultySettings();
     _controller.initGame();
     _roundStart = DateTime.now();
     _initSessionTracker();
+  }
+
+  void _applyDifficultySettings() {
+    final prefs = _service.currentUser?.preferences;
+    if (prefs == null) return;
+    EqualSubtractionController.containersCountSetting =
+        prefs.subtractGameJarsCount.clamp(2, 6);
+    EqualSubtractionController.minInitialBallsSetting =
+        prefs.subtractGameMinBalls.clamp(1, 20);
+    final maxBalls = prefs.subtractGameMaxBalls.clamp(5, 20);
+    EqualSubtractionController.maxInitialBallsSetting =
+        maxBalls >= EqualSubtractionController.minInitialBallsSetting
+            ? maxBalls
+            : EqualSubtractionController.minInitialBallsSetting;
   }
 
   void _initSessionTracker() {
@@ -593,6 +608,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                 ),
               );
               setState(() {
+                _applyDifficultySettings();
                 _controller.initGame();
                 _showCheckIcon = false;
                 _roundStart = DateTime.now();

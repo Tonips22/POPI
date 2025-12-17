@@ -11,6 +11,8 @@ class SumarDifficultyScreen extends StatefulWidget {
 }
 
 class _SumarDifficultyScreenState extends State<SumarDifficultyScreen> {
+  final AppService _service = AppService();
+  bool _isSaving = false;
   // Slider de número de bolas
   late double _ballsSliderValue;
 
@@ -24,12 +26,46 @@ class _SumarDifficultyScreenState extends State<SumarDifficultyScreen> {
 
     // Cargamos valores actuales desde EqualShareController (estáticos)
     _ballsSliderValue = EqualShareController.ballsCount.toDouble();
-
     for (int i = 0; i < _maxValueOptions.length; i++) {
       if (_maxValueOptions[i] == EqualShareController.maxBallValue) {
         _selectedMaxIndex = i;
         break;
       }
+    }
+    _loadPreferences();
+  }
+
+  void _loadPreferences() {
+    final prefs = _service.currentUser?.preferences;
+    if (prefs == null) return;
+    _ballsSliderValue = prefs.shareGameBallsCount.toDouble();
+    int idx = _maxValueOptions.indexOf(prefs.shareGameMaxValue);
+    if (idx == -1) {
+      _maxValueOptions.insert(0, prefs.shareGameMaxValue);
+      idx = 0;
+    }
+    _selectedMaxIndex = idx;
+    EqualShareController.setBallsCount(_ballsSliderValue.round());
+    EqualShareController.setBallValueMax(_maxValueOptions[_selectedMaxIndex]);
+  }
+
+  Future<void> _saveSettings() async {
+    final user = _service.currentUser;
+    if (user == null || _isSaving) return;
+    if (mounted) {
+      setState(() => _isSaving = true);
+    }
+    final updated = user.preferences.copyWith(
+      shareGameBallsCount: _ballsSliderValue.round(),
+      shareGameMaxValue: _maxValueOptions[_selectedMaxIndex],
+    );
+    final success =
+        await _service.updatePreferences(user.id, updated);
+    if (success) {
+      _service.updateCurrentUserPreferences(updated);
+    }
+    if (mounted) {
+      setState(() => _isSaving = false);
     }
   }
 
@@ -49,34 +85,44 @@ class _SumarDifficultyScreenState extends State<SumarDifficultyScreen> {
     const double minBalls = 2;
     const double maxBalls = 10;
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
+    return WillPopScope(
+      onWillPop: () async {
+        await _saveSettings();
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
 
-      // === APPBAR ===
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 32),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Dificultad',
-          style: TextStyle(
-            fontSize: titleFontSize * 1.35,
-            fontWeight: FontWeight.bold,
-            fontFamily: titleFontFamily,
+        // === APPBAR ===
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, size: 32),
+            onPressed: () async {
+              await _saveSettings();
+              if (mounted) {
+                Navigator.pop(context);
+              }
+            },
           ),
+          title: Text(
+            'Dificultad',
+            style: TextStyle(
+              fontSize: titleFontSize * 1.35,
+              fontWeight: FontWeight.bold,
+              fontFamily: titleFontFamily,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
 
-      // === CONTENIDO ===
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        // === CONTENIDO ===
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Subtítulo
             Text(
               'Reparte las bolas en las jarras',
@@ -213,7 +259,7 @@ class _SumarDifficultyScreenState extends State<SumarDifficultyScreen> {
                         label,
                         style: TextStyle(
                           fontWeight:
-                          selected ? FontWeight.bold : FontWeight.w500,
+                              selected ? FontWeight.bold : FontWeight.w500,
                           fontSize: 18,
                           fontFamily: 'Roboto',
                         ),
@@ -226,6 +272,7 @@ class _SumarDifficultyScreenState extends State<SumarDifficultyScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

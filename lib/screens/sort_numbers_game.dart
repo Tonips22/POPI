@@ -50,9 +50,21 @@ class _SortNumbersGameState extends State<SortNumbersGame>
       vsync: this,
     );
 
+    _applyDifficultySettings();
     _controller.initGame();
     _startRound();
     _initSessionTracker();
+  }
+
+  void _applyDifficultySettings() {
+    final prefs = _service.currentUser?.preferences;
+    if (prefs == null) return;
+    final minRange = prefs.sortGameRangeMin;
+    final maxRange = prefs.sortGameRangeMax > minRange
+        ? prefs.sortGameRangeMax
+        : minRange + 10;
+    _controller.setRange(minRange, maxRange);
+    _controller.setDifficulty(prefs.sortGameDifficulty);
   }
 
   void _initSessionTracker() {
@@ -217,6 +229,7 @@ class _SortNumbersGameState extends State<SortNumbersGame>
                   ),
                 );
 
+                _applyDifficultySettings();
                 _controller.initGame();
                 _startRound();
               },

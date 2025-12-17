@@ -33,6 +33,15 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.white;
+    final preferences = currentUser?.preferences;
+    final touchGameColor =
+        _colorFromHex(preferences?.touchGameColor, Colors.blue);
+    final sortGameColor =
+        _colorFromHex(preferences?.sortGameColor, Colors.green);
+    final shareGameColor =
+        _colorFromHex(preferences?.shareGameColor, Colors.orange);
+    final subtractGameColor =
+        _colorFromHex(preferences?.subtractGameColor, Colors.purple);
     final titleFontSize = appService.fontSizeWithFallback();
     final titleFontFamily = appService.fontFamilyWithFallback();
     final screenHeight = MediaQuery.of(context).size.height;
@@ -170,30 +179,30 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
                 children: [
                   _buildGameButton(
                     context,
-                    imagePath: 'images/games/touch_game.png',
+                    icon: Icons.touch_app,
                     label: 'Toca el número',
-                    color: Colors.blue,
+                    color: touchGameColor,
                     onTap: () => _handleNumberGameTap(context, appService),
                   ),
                   _buildGameButton(
                     context,
-                    imagePath: 'images/games/sort_name.png',
+                    icon: Icons.sort,
                     label: 'Ordena los números',
-                    color: Colors.green,
+                    color: sortGameColor,
                     onTap: () => _handleSortGameTap(context, appService),
                   ),
                   _buildGameButton(
                     context,
-                    imagePath: 'images/games/sum_game.png',
+                    icon: Icons.share,
                     label: 'Reparte los números',
-                    color: Colors.orange,
+                    color: shareGameColor,
                     onTap: () => _handleEqualShareGameTap(context, appService),
                   ),
                   _buildGameButton(
                     context,
-                    imagePath: 'images/games/rest_game.png',
+                    icon: Icons.balance,
                     label: 'Deja el mismo número',
-                    color: Colors.purple,
+                    color: subtractGameColor,
                     onTap: () => _handleEqualSubtractionGameTap(context, appService),
                   ),
                 ],
@@ -207,7 +216,7 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
 
   Widget _buildGameButton(
       BuildContext context, {
-        required String imagePath,
+        required IconData icon,
         required String label,
         required Color color,
         VoidCallback? onTap,
@@ -217,8 +226,9 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
     final titleFontFamily = appService.fontFamilyWithFallback();
     final baseFontSize = appService.fontSizeWithFallback();
     final size = MediaQuery.of(context).size;
-    final buttonPadding = size.width * 0.01;
-    final imageSize = size.width * 0.12;
+    final buttonPadding = size.width * 0.015;
+    final iconSize = size.width * 0.055;
+    final iconPadding = size.width * 0.02;
     
     return Material(
       color: color,
@@ -233,28 +243,17 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Imagen del juego redondeada sin fondo blanco
-              ClipOval(
-                child: Image.asset(
-                  imagePath,
-                  width: imageSize,
-                  height: imageSize,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: imageSize,
-                      height: imageSize,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.gamepad,
-                        size: imageSize * 0.6,
-                        color: color,
-                      ),
-                    );
-                  },
+              Material(
+                color: Colors.white,
+                shape: const CircleBorder(),
+                elevation: 6,
+                child: Padding(
+                  padding: EdgeInsets.all(iconPadding),
+                  child: Icon(
+                    icon,
+                    size: iconSize,
+                    color: color,
+                  ),
                 ),
               ),
               SizedBox(height: size.height * 0.008),
@@ -358,5 +357,12 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
         ),
       );
     }
+  }
+
+  Color _colorFromHex(String? value, Color fallback) {
+    if (value == null) return fallback;
+    final parsed = int.tryParse(value);
+    if (parsed == null) return fallback;
+    return Color(parsed);
   }
 }

@@ -86,6 +86,21 @@ class UserPreferences {
   final int sortGameRounds;
   final int shareGameRounds;
   final int subtractGameRounds;
+  final String touchGameColor;
+  final String sortGameColor;
+  final String shareGameColor;
+  final String subtractGameColor;
+  final int touchGameDifficulty;
+  final int touchGameRangeMin;
+  final int touchGameRangeMax;
+  final int sortGameDifficulty;
+  final int sortGameRangeMin;
+  final int sortGameRangeMax;
+  final int shareGameBallsCount;
+  final int shareGameMaxValue;
+  final int subtractGameJarsCount;
+  final int subtractGameMinBalls;
+  final int subtractGameMaxBalls;
   final bool showTutorialJuego1;
   final bool showTutorialJuego2;
   final bool showTutorialJuego3;
@@ -105,6 +120,21 @@ class UserPreferences {
     this.sortGameRounds = 5,
     this.shareGameRounds = 5,
     this.subtractGameRounds = 5,
+    this.touchGameColor = '0xFF2196F3',
+    this.sortGameColor = '0xFF4CAF50',
+    this.shareGameColor = '0xFFFF9800',
+    this.subtractGameColor = '0xFF9C27B0',
+    this.touchGameDifficulty = 3,
+    this.touchGameRangeMin = 0,
+    this.touchGameRangeMax = 10,
+    this.sortGameDifficulty = 4,
+    this.sortGameRangeMin = 0,
+    this.sortGameRangeMax = 10,
+    this.shareGameBallsCount = 4,
+    this.shareGameMaxValue = 10,
+    this.subtractGameJarsCount = 3,
+    this.subtractGameMinBalls = 3,
+    this.subtractGameMaxBalls = 20,
     this.showTutorialJuego1 = true,
     this.showTutorialJuego2 = true,
     this.showTutorialJuego3 = true,
@@ -126,6 +156,21 @@ class UserPreferences {
       'sortGameRounds': sortGameRounds,
       'shareGameRounds': shareGameRounds,
       'subtractGameRounds': subtractGameRounds,
+      'touchGameColor': touchGameColor,
+      'sortGameColor': sortGameColor,
+      'shareGameColor': shareGameColor,
+      'subtractGameColor': subtractGameColor,
+      'touchGameDifficulty': touchGameDifficulty,
+      'touchGameRangeMin': touchGameRangeMin,
+      'touchGameRangeMax': touchGameRangeMax,
+      'sortGameDifficulty': sortGameDifficulty,
+      'sortGameRangeMin': sortGameRangeMin,
+      'sortGameRangeMax': sortGameRangeMax,
+      'shareGameBallsCount': shareGameBallsCount,
+      'shareGameMaxValue': shareGameMaxValue,
+      'subtractGameJarsCount': subtractGameJarsCount,
+      'subtractGameMinBalls': subtractGameMinBalls,
+      'subtractGameMaxBalls': subtractGameMaxBalls,
       'showTutorialJuego1': showTutorialJuego1,
       'showTutorialJuego2': showTutorialJuego2,
       'showTutorialJuego3': showTutorialJuego3,
@@ -200,6 +245,27 @@ class UserPreferences {
       sortGameRounds: _parseRounds(map['sortGameRounds']),
       shareGameRounds: _parseRounds(map['shareGameRounds']),
       subtractGameRounds: _parseRounds(map['subtractGameRounds']),
+      touchGameColor: _parseColor(map['touchGameColor'], '0xFF2196F3'),
+      sortGameColor: _parseColor(map['sortGameColor'], '0xFF4CAF50'),
+      shareGameColor: _parseColor(map['shareGameColor'], '0xFFFF9800'),
+      subtractGameColor: _parseColor(map['subtractGameColor'], '0xFF9C27B0'),
+      touchGameDifficulty:
+          _parseInt(map['touchGameDifficulty'], 3).clamp(1, 12),
+      touchGameRangeMin: _parseInt(map['touchGameRangeMin'], 0),
+      touchGameRangeMax: _parseInt(map['touchGameRangeMax'], 10),
+      sortGameDifficulty:
+          _parseInt(map['sortGameDifficulty'], 4).clamp(1, 12),
+      sortGameRangeMin: _parseInt(map['sortGameRangeMin'], 0),
+      sortGameRangeMax: _parseInt(map['sortGameRangeMax'], 10),
+      shareGameBallsCount:
+          _parseInt(map['shareGameBallsCount'], 4).clamp(2, 10),
+      shareGameMaxValue: _parseInt(map['shareGameMaxValue'], 10).clamp(5, 100),
+      subtractGameJarsCount:
+          _parseInt(map['subtractGameJarsCount'], 3).clamp(2, 6),
+      subtractGameMinBalls:
+          _parseInt(map['subtractGameMinBalls'], 3).clamp(1, 20),
+      subtractGameMaxBalls:
+          _parseInt(map['subtractGameMaxBalls'], 20).clamp(5, 20),
       showTutorialJuego1:
           map['showTutorialJuego1'] is bool ? map['showTutorialJuego1'] as bool : true,
       showTutorialJuego2:
@@ -223,6 +289,23 @@ class UserPreferences {
     return fallback;
   }
 
+  static String _parseColor(dynamic value, String fallback) {
+    if (value == null) return fallback;
+    if (value is String && value.isNotEmpty) return value;
+    if (value is int) {
+      final hex = value.toRadixString(16).padLeft(8, '0').toUpperCase();
+      return '0x$hex';
+    }
+    return fallback;
+  }
+
+  static int _parseInt(dynamic value, int fallback) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? fallback;
+    return fallback;
+  }
+
   /// Crea una copia modificando algunos campos
   UserPreferences copyWith({
     String? primaryColor,
@@ -238,6 +321,21 @@ class UserPreferences {
     int? sortGameRounds,
     int? shareGameRounds,
     int? subtractGameRounds,
+    String? touchGameColor,
+    String? sortGameColor,
+    String? shareGameColor,
+    String? subtractGameColor,
+    int? touchGameDifficulty,
+    int? touchGameRangeMin,
+    int? touchGameRangeMax,
+    int? sortGameDifficulty,
+    int? sortGameRangeMin,
+    int? sortGameRangeMax,
+    int? shareGameBallsCount,
+    int? shareGameMaxValue,
+    int? subtractGameJarsCount,
+    int? subtractGameMinBalls,
+    int? subtractGameMaxBalls,
     bool? showTutorialJuego1,
     bool? showTutorialJuego2,
     bool? showTutorialJuego3,
@@ -259,6 +357,24 @@ class UserPreferences {
       sortGameRounds: sortGameRounds ?? this.sortGameRounds,
       shareGameRounds: shareGameRounds ?? this.shareGameRounds,
       subtractGameRounds: subtractGameRounds ?? this.subtractGameRounds,
+      touchGameColor: touchGameColor ?? this.touchGameColor,
+      sortGameColor: sortGameColor ?? this.sortGameColor,
+      shareGameColor: shareGameColor ?? this.shareGameColor,
+      subtractGameColor: subtractGameColor ?? this.subtractGameColor,
+      touchGameDifficulty: touchGameDifficulty ?? this.touchGameDifficulty,
+      touchGameRangeMin: touchGameRangeMin ?? this.touchGameRangeMin,
+      touchGameRangeMax: touchGameRangeMax ?? this.touchGameRangeMax,
+      sortGameDifficulty: sortGameDifficulty ?? this.sortGameDifficulty,
+      sortGameRangeMin: sortGameRangeMin ?? this.sortGameRangeMin,
+      sortGameRangeMax: sortGameRangeMax ?? this.sortGameRangeMax,
+      shareGameBallsCount: shareGameBallsCount ?? this.shareGameBallsCount,
+      shareGameMaxValue: shareGameMaxValue ?? this.shareGameMaxValue,
+      subtractGameJarsCount:
+          subtractGameJarsCount ?? this.subtractGameJarsCount,
+      subtractGameMinBalls:
+          subtractGameMinBalls ?? this.subtractGameMinBalls,
+      subtractGameMaxBalls:
+          subtractGameMaxBalls ?? this.subtractGameMaxBalls,
       showTutorialJuego1: showTutorialJuego1 ?? this.showTutorialJuego1,
       showTutorialJuego2: showTutorialJuego2 ?? this.showTutorialJuego2,
       showTutorialJuego3: showTutorialJuego3 ?? this.showTutorialJuego3,

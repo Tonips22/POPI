@@ -505,9 +505,17 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
   @override
   void initState() {
     super.initState();
+    _applyDifficultySettings();
     _controller.initGame();
     _roundStart = DateTime.now();
     _initSessionTracker();
+  }
+
+  void _applyDifficultySettings() {
+    final prefs = _service.currentUser?.preferences;
+    if (prefs == null) return;
+    EqualShareController.setBallsCount(prefs.shareGameBallsCount);
+    EqualShareController.setBallValueMax(prefs.shareGameMaxValue);
   }
 
   void _initSessionTracker() {
@@ -660,6 +668,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
                 ),
               );
               setState(() {
+                _applyDifficultySettings();
                 _controller.initGame();
                 _showCheckIcon = false;
                 _showErrorIcon = false;

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../models/user_model.dart';
 import '../services/app_service.dart';
+import '../utils/color_constants.dart';
+import '../widgets/color_picker_dialog.dart';
 
 class GamePreferencesScreen extends StatefulWidget {
   const GamePreferencesScreen({super.key});
@@ -17,6 +19,10 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
   late int _sortRounds;
   late int _shareRounds;
   late int _subtractRounds;
+  late Color _touchColor;
+  late Color _sortColor;
+  late Color _shareColor;
+  late Color _subtractColor;
 
   bool _isSaving = false;
 
@@ -28,6 +34,11 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
     _sortRounds = prefs.sortGameRounds;
     _shareRounds = prefs.shareGameRounds;
     _subtractRounds = prefs.subtractGameRounds;
+    _touchColor = _colorFromHex(prefs.touchGameColor, const Color(0xFF2196F3));
+    _sortColor = _colorFromHex(prefs.sortGameColor, const Color(0xFF4CAF50));
+    _shareColor = _colorFromHex(prefs.shareGameColor, const Color(0xFFFF9800));
+    _subtractColor =
+        _colorFromHex(prefs.subtractGameColor, const Color(0xFF9C27B0));
   }
 
   @override
@@ -62,7 +73,7 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
         padding: const EdgeInsets.all(24),
         children: [
           Text(
-            'Elige cuántas rondas debe completar cada juego antes de mostrar la pantalla de victoria.',
+            'Elige cuántas rondas debe completar cada juego y asigna un color personalizado para que aparezca en el selector.',
             style: TextStyle(
               fontSize: titleFontSize * 0.75,
               fontFamily: titleFontFamily,
@@ -74,6 +85,12 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
             title: 'Toca el número que suena',
             description: 'Veces que se debe acertar el número que habla la app.',
             value: _touchRounds,
+            color: _touchColor,
+            onColorTap: () => _selectColor(
+              'Toca el número que suena',
+              _touchColor,
+              (color) => _touchColor = color,
+            ),
             onChanged: (value) => setState(() => _touchRounds = value),
           ),
           _RoundsCard(
@@ -81,6 +98,12 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
             title: 'Ordena la secuencia',
             description: 'Número de secuencias completas antes de terminar.',
             value: _sortRounds,
+            color: _sortColor,
+            onColorTap: () => _selectColor(
+              'Ordena la secuencia',
+              _sortColor,
+              (color) => _sortColor = color,
+            ),
             onChanged: (value) => setState(() => _sortRounds = value),
           ),
           _RoundsCard(
@@ -88,6 +111,12 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
             title: 'Reparte los números',
             description: 'Rondas correctas en el juego de reparto.',
             value: _shareRounds,
+            color: _shareColor,
+            onColorTap: () => _selectColor(
+              'Reparte los números',
+              _shareColor,
+              (color) => _shareColor = color,
+            ),
             onChanged: (value) => setState(() => _shareRounds = value),
           ),
           _RoundsCard(
@@ -95,6 +124,12 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
             title: 'Deja el mismo número',
             description: 'Rondas ganadas en el juego de resta igualitaria.',
             value: _subtractRounds,
+            color: _subtractColor,
+            onColorTap: () => _selectColor(
+              'Deja el mismo número',
+              _subtractColor,
+              (color) => _subtractColor = color,
+            ),
             onChanged: (value) => setState(() => _subtractRounds = value),
           ),
           const SizedBox(height: 32),
@@ -129,6 +164,36 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
     );
   }
 
+  Future<void> _selectColor(
+    String title,
+    Color initialColor,
+    ValueChanged<Color> onSelected,
+  ) async {
+    final newColor = await showDialog<Color>(
+      context: context,
+      builder: (_) => ColorPickerDialog(
+        initialColor: initialColor,
+        colors: AppColors.availableColors,
+        title: 'Color para $title',
+      ),
+    );
+    if (newColor != null) {
+      setState(() => onSelected(newColor));
+    }
+  }
+
+  Color _colorFromHex(String? value, Color fallback) {
+    if (value == null) return fallback;
+    final parsed = int.tryParse(value);
+    if (parsed == null) return fallback;
+    return Color(parsed);
+  }
+
+  String _colorToHex(Color color) {
+    final hex = color.value.toRadixString(16).padLeft(8, '0').toUpperCase();
+    return '0x$hex';
+  }
+
   Future<void> _savePreferences() async {
     final currentUser = _service.currentUser;
     if (currentUser == null) return;
@@ -139,6 +204,10 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
       sortGameRounds: _sortRounds,
       shareGameRounds: _shareRounds,
       subtractGameRounds: _subtractRounds,
+      touchGameColor: _colorToHex(_touchColor),
+      sortGameColor: _colorToHex(_sortColor),
+      shareGameColor: _colorToHex(_shareColor),
+      subtractGameColor: _colorToHex(_subtractColor),
     );
 
     final success =
@@ -176,6 +245,8 @@ class _RoundsCard extends StatelessWidget {
     required this.description,
     required this.value,
     required this.onChanged,
+    required this.color,
+    required this.onColorTap,
   });
 
   final IconData icon;
@@ -183,6 +254,8 @@ class _RoundsCard extends StatelessWidget {
   final String description;
   final int value;
   final ValueChanged<int> onChanged;
+  final Color color;
+  final VoidCallback onColorTap;
 
   static const int _minRounds = 1;
   static const int _maxRounds = 10;
@@ -268,9 +341,52 @@ class _RoundsCard extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+            Text(
+              'Color del botón en el selector',
+              style: TextStyle(
+                fontSize: fontSize * 0.7,
+                fontFamily: fontFamily,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.black12, width: 2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _hexLabel(color),
+                    style: TextStyle(
+                      fontSize: fontSize * 0.65,
+                      fontFamily: fontFamily,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: onColorTap,
+                  icon: const Icon(Icons.palette),
+                  label: const Text('Cambiar color'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  String _hexLabel(Color color) {
+    final hex = color.value.toRadixString(16).padLeft(8, '0').toUpperCase();
+    return '#${hex.substring(2)}';
   }
 }
