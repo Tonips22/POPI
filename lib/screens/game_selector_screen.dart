@@ -107,7 +107,8 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
               ),
             ),
           ),
-          if (currentUser != null)
+          if (currentUser != null &&
+              currentUser.preferences.canCustomize)
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(

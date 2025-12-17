@@ -232,7 +232,7 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
                         role: 'student',
                         avatarIndex: widget.avatarIndex,
                         tutorId: widget.tutorId,
-                        preferences: UserPreferences(),
+                        preferences: UserPreferences(canCustomize: true),
                       );
 
                       final userId =

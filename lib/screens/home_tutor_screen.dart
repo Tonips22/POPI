@@ -27,6 +27,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
 
   // Estado de permitir/bloquear para cada estudiante
   final Map<String, bool> _allowedMap = {};
+  final Map<String, bool> _updatingMap = {};
 
   @override
   void initState() {
@@ -145,19 +146,81 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
   Future<void> _loadAssignedStudents() async {
     setState(() => _isLoading = true);
 
-    if (_service.currentUser == null) return;
+    if (_service.currentUser == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
 
     final tutorId = _service.currentUser!.id;
     final students = await _service.getStudentsByTutor(tutorId);
 
+    if (!mounted) return;
+
     setState(() {
       _students = students;
-      // Inicializamos todos permitidos
+      _allowedMap
+        ..clear();
       for (var s in students) {
-        _allowedMap[s.id] = true;
+        _allowedMap[s.id] = s.preferences.canCustomize;
       }
       _isLoading = false;
     });
+  }
+
+  Future<void> _togglePersonalization(UserModel student) async {
+    final currentAllowed =
+        _allowedMap[student.id] ?? student.preferences.canCustomize;
+
+    setState(() {
+      _updatingMap[student.id] = true;
+    });
+
+    final success = await _service.toggleCanCustomize(
+      userId: student.id,
+      currentValue: currentAllowed,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _updatingMap.remove(student.id);
+    });
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo actualizar la personalización. Intenta de nuevo.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final newValue = !currentAllowed;
+
+    setState(() {
+      _allowedMap[student.id] = newValue;
+      final studentIndex =
+          _students.indexWhere((element) => element.id == student.id);
+      if (studentIndex != -1) {
+        final oldStudent = _students[studentIndex];
+        final updatedPrefs =
+            oldStudent.preferences.copyWith(canCustomize: newValue);
+        _students[studentIndex] =
+            oldStudent.copyWith(preferences: updatedPrefs);
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          newValue
+              ? 'Personalización permitida para ${student.name}.'
+              : 'Personalización bloqueada para ${student.name}.',
+        ),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -261,7 +324,9 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                 final student = _students[index];
                 final avatarPath =
                     'assets/images/avatar${student.avatarIndex}.png';
-                final allowed = _allowedMap[student.id] ?? true;
+                final allowed = _allowedMap[student.id] ??
+                    student.preferences.canCustomize;
+                final isUpdating = _updatingMap.containsKey(student.id);
 
                 return Container(
                   margin: const EdgeInsets.symmetric(vertical: 8),
@@ -335,25 +400,47 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                             const SizedBox(width: 12),
                             // BOTÓN PERMITIR/BLOQUEAR
                             GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _allowedMap[student.id] = !allowed;
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color:
-                                  allowed ? Colors.red : Colors.green,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  allowed ? "Bloquear personalización" : "Permitir personalización",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                              onTap: isUpdating
+                                  ? null
+                                  : () => _togglePersonalization(student),
+                              child: Opacity(
+                                opacity: isUpdating ? 0.6 : 1,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        allowed ? Colors.red : Colors.green,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (isUpdating) ...[
+                                        const SizedBox(
+                                          width: 12,
+                                          height: 12,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                      Text(
+                                        allowed
+                                            ? "Bloquear personalización"
+                                            : "Permitir personalización",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
