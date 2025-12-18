@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart' hide Text;
 import '../widgets/voice_text.dart';
 import '../services/app_service.dart';
+import '../models/user_model.dart';
 import 'equal_subtraction_screen.dart';
 
 class RestarDifficultyScreen extends StatefulWidget {
-  const RestarDifficultyScreen({super.key});
+  final String? userId;
+
+  const RestarDifficultyScreen({
+    super.key,
+    this.userId,
+  });
 
   @override
-  State<RestarDifficultyScreen> createState() => _RestarDifficultyScreenState();
+  State<RestarDifficultyScreen> createState() =>
+      _RestarDifficultyScreenState();
 }
 
 class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
   final AppService _service = AppService();
+
+  UserModel? _loadedUser;
   bool _isSaving = false;
-  // sliders locales, inicializados con los valores actuales del controlador
+
+  // sliders locales
   late double _jarsSlider;
   late double _minBallsSlider;
   late double _maxBallsSlider;
@@ -27,6 +37,7 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
   @override
   void initState() {
     super.initState();
+
     _jarsSlider =
         EqualSubtractionController.containersCountSetting.toDouble();
     _minBallsSlider =
@@ -34,18 +45,23 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
     _maxBallsSlider =
         EqualSubtractionController.maxInitialBallsSetting.toDouble();
 
-    // Clamp por si acaso
-    _jarsSlider = _jarsSlider.clamp(_minJars.toDouble(), _maxJars.toDouble());
-    _minBallsSlider = _minBallsSlider.clamp(
-        _minBallsGlobal.toDouble(), _maxBallsGlobal.toDouble());
-    _maxBallsSlider =
-        _maxBallsSlider.clamp(_minBallsSlider, _maxBallsGlobal.toDouble());
-    _loadPreferences();
+    _loadUserAndPreferences();
   }
 
-  void _loadPreferences() {
-    final prefs = _service.currentUser?.preferences;
-    if (prefs == null) return;
+  // =====================================================
+  // CARGA DE USUARIO Y PREFERENCIAS
+  // =====================================================
+  Future<void> _loadUserAndPreferences() async {
+    if (widget.userId != null) {
+      _loadedUser = await _service.getUserById(widget.userId!);
+    } else {
+      _loadedUser = _service.currentUser;
+    }
+
+    if (_loadedUser == null) return;
+
+    final prefs = _loadedUser!.preferences;
+
     _jarsSlider =
         prefs.subtractGameJarsCount.clamp(_minJars, _maxJars).toDouble();
     _minBallsSlider = prefs.subtractGameMinBalls
@@ -54,47 +70,70 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
     _maxBallsSlider = prefs.subtractGameMaxBalls
         .clamp(_minBallsGlobal, _maxBallsGlobal)
         .toDouble();
+
     if (_maxBallsSlider < _minBallsSlider) {
       _maxBallsSlider = _minBallsSlider;
     }
-    EqualSubtractionController.containersCountSetting = _jarsSlider.round();
+
+    EqualSubtractionController.containersCountSetting =
+        _jarsSlider.round();
     EqualSubtractionController.minInitialBallsSetting =
         _minBallsSlider.round();
     EqualSubtractionController.maxInitialBallsSetting =
         _maxBallsSlider.round();
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
+  // =====================================================
+  // GUARDADO DE PREFERENCIAS
+  // =====================================================
   Future<void> _saveSettings() async {
-    final user = _service.currentUser;
-    if (user == null || _isSaving) return;
+    if (_loadedUser == null || _isSaving) return;
+
     if (mounted) {
       setState(() => _isSaving = true);
     }
-    final updated = user.preferences.copyWith(
+
+    final updatedPreferences = _loadedUser!.preferences.copyWith(
       subtractGameJarsCount: _jarsSlider.round(),
       subtractGameMinBalls: _minBallsSlider.round(),
       subtractGameMaxBalls: _maxBallsSlider.round(),
     );
-    final success =
-        await _service.updatePreferences(user.id, updated);
-    if (success) {
-      _service.updateCurrentUserPreferences(updated);
+
+    final success = await _service.updatePreferences(
+      _loadedUser!.id,
+      updatedPreferences,
+    );
+
+    // ⚠️ Solo actualizar currentUser si es el propio usuario
+    if (success && widget.userId == null) {
+      _service.updateCurrentUserPreferences(updatedPreferences);
     }
+
     if (mounted) {
       setState(() => _isSaving = false);
     }
   }
 
+  // =====================================================
+  // UI
+  // =====================================================
   @override
   Widget build(BuildContext context) {
     final appService = AppService();
     final currentUser = appService.currentUser;
+
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
+
     final primaryColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue;
+
     final titleFontSize = appService.fontSizeWithFallback();
     final titleFontFamily = appService.fontFamilyWithFallback();
 
@@ -105,16 +144,16 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 32),
-          onPressed: () async {
-            await _saveSettings();
-            if (mounted) {
-              Navigator.pop(context);
-            }
-          },
-        ),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, size: 32),
+            onPressed: () async {
+              await _saveSettings();
+              if (mounted) {
+                Navigator.pop(context);
+              }
+            },
+          ),
           title: Text(
             'Dificultad',
             style: TextStyle(
@@ -132,180 +171,136 @@ class _RestarDifficultyScreenState extends State<RestarDifficultyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            // subtítulo
-            Text(
-              'Resta para igualar',
-              style: TextStyle(
-                fontSize: titleFontSize * 1.2,
-                fontWeight: FontWeight.w600,
-                fontFamily: titleFontFamily,
+              Text(
+                'Resta para igualar',
+                style: TextStyle(
+                  fontSize: titleFontSize * 1.2,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: titleFontFamily,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Ajusta el número de jarras y las bolas iniciales por jarra.',
-              style: TextStyle(
-                fontSize: titleFontSize,
-                fontFamily: titleFontFamily,
-                color: Colors.grey[700],
+              const SizedBox(height: 8),
+              Text(
+                'Ajusta el número de jarras y las bolas iniciales por jarra.',
+                style: TextStyle(
+                  fontSize: titleFontSize,
+                  fontFamily: titleFontFamily,
+                  color: Colors.grey[700],
+                ),
               ),
-            ),
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            // === CARD: NÚMERO DE JARRAS ===
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              // === NÚMERO DE JARRAS ===
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Número de jarras',
+                        style: TextStyle(
+                          fontSize: titleFontSize * 1.05,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: titleFontFamily,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: primaryColor,
+                          inactiveTrackColor: Colors.grey[300],
+                          thumbColor: primaryColor,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 16,
+                          ),
+                          overlayShape:
+                          const RoundSliderOverlayShape(
+                            overlayRadius: 28,
+                          ),
+                          trackHeight: 8,
+                        ),
+                        child: Slider(
+                          value: _jarsSlider,
+                          min: _minJars.toDouble(),
+                          max: _maxJars.toDouble(),
+                          divisions: _maxJars - _minJars,
+                          label: _jarsSlider.round().toString(),
+                          onChanged: (v) {
+                            setState(() {
+                              _jarsSlider = v;
+                              EqualSubtractionController
+                                  .containersCountSetting =
+                                  v.round();
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Número de jarras',
-                      style: TextStyle(
-                        fontSize: titleFontSize * 1.05,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: titleFontFamily,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: primaryColor,
-                        inactiveTrackColor: Colors.grey[300],
-                        thumbColor: primaryColor,
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 16,
+
+              const SizedBox(height: 32),
+
+              // === RANGO DE BOLAS ===
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bolas iniciales por jarra',
+                        style: TextStyle(
+                          fontSize: titleFontSize * 1.05,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: titleFontFamily,
                         ),
-                        overlayShape: const RoundSliderOverlayShape(
-                          overlayRadius: 28,
-                        ),
-                        trackHeight: 8,
                       ),
-                      child: Slider(
-                        value: _jarsSlider,
-                        min: _minJars.toDouble(),
-                        max: _maxJars.toDouble(),
-                        divisions: _maxJars - _minJars,
-                        label: _jarsSlider.round().toString(),
-                        onChanged: (v) {
+                      const SizedBox(height: 16),
+                      RangeSlider(
+                        values: RangeValues(
+                            _minBallsSlider, _maxBallsSlider),
+                        min: _minBallsGlobal.toDouble(),
+                        max: _maxBallsGlobal.toDouble(),
+                        divisions:
+                        _maxBallsGlobal - _minBallsGlobal,
+                        labels: RangeLabels(
+                          _minBallsSlider.round().toString(),
+                          _maxBallsSlider.round().toString(),
+                        ),
+                        activeColor: primaryColor,
+                        inactiveColor: Colors.grey[300],
+                        onChanged: (values) {
                           setState(() {
-                            _jarsSlider = v;
+                            _minBallsSlider = values.start;
+                            _maxBallsSlider = values.end;
                             EqualSubtractionController
-                                .containersCountSetting = v.round();
+                                .minInitialBallsSetting =
+                                _minBallsSlider.round();
+                            EqualSubtractionController
+                                .maxInitialBallsSetting =
+                                _maxBallsSlider.round();
                           });
                         },
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: List.generate(
-                        _maxJars - _minJars + 1,
-                            (index) {
-                          final value = _minJars + index;
-                          return Text(
-                            '$value',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Roboto',
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // === CARD: RANGO BOLAS INICIALES ===
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bolas iniciales por jarra',
-                      style: TextStyle(
-                        fontSize: titleFontSize * 1.05,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: titleFontFamily,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Elige el mínimo y máximo de bolas con las que puede empezar cada jarra.',
-                      style: TextStyle(
-                        fontSize: titleFontSize * 0.9,
-                        fontFamily: titleFontFamily,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    RangeSlider(
-                      values: RangeValues(_minBallsSlider, _maxBallsSlider),
-                      min: _minBallsGlobal.toDouble(),
-                      max: _maxBallsGlobal.toDouble(),
-                      divisions: _maxBallsGlobal - _minBallsGlobal,
-                      labels: RangeLabels(
-                        _minBallsSlider.round().toString(),
-                        _maxBallsSlider.round().toString(),
-                      ),
-                      activeColor: primaryColor,
-                      inactiveColor: Colors.grey[300],
-                      onChanged: (values) {
-                        setState(() {
-                          _minBallsSlider = values.start;
-                          _maxBallsSlider = values.end;
-                          EqualSubtractionController.minInitialBallsSetting =
-                              _minBallsSlider.round();
-                          EqualSubtractionController.maxInitialBallsSetting =
-                              _maxBallsSlider.round();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Mínimo: ${_minBallsSlider.round()}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                        Text(
-                          'Máximo: ${_maxBallsSlider.round()}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 }

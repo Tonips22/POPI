@@ -68,7 +68,6 @@ class TutorChooseGameScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Icon(Icons.more_vert, color: Colors.black),
                 ],
               ),
             ),

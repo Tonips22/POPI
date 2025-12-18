@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:popi/screens/home_tutor_screen.dart';
+import 'package:popi/screens/sumar_difficulty_screen.dart';
 import 'ordenar_difficulty_screen.dart';
 import '../services/app_service.dart';
 
@@ -78,7 +79,7 @@ class _TutorEditGameProfileReparteState
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context,true),
         ),
         centerTitle: true,
       ),
@@ -190,7 +191,7 @@ class _TutorEditGameProfileReparteState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const OrdenarDifficultyScreen(),
+                        builder: (_) => SumarDifficultyScreen(userId: widget.studentId),
                       ),
                     );
                   },

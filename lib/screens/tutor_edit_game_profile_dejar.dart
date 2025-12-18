@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:popi/screens/home_tutor_screen.dart';
+import 'package:popi/screens/restar_difficulty_screen.dart';
 import 'ordenar_difficulty_screen.dart';
 import '../services/app_service.dart';
 
@@ -83,7 +84,7 @@ class _TutorEditGameProfileDejarState
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context,true),
         ),
         centerTitle: true,
       ),
@@ -198,7 +199,7 @@ class _TutorEditGameProfileDejarState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const OrdenarDifficultyScreen(),
+                        builder: (_) => RestarDifficultyScreen(userId: widget.studentId),
                       ),
                     );
                   },

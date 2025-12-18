@@ -92,7 +92,7 @@ class _TutorEditGameProfileTocarState
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context,true),
         ),
         centerTitle: true,
       ),
@@ -198,18 +198,22 @@ class _TutorEditGameProfileTocarState
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent),
-                  onPressed: () async {
-                    await _saveSortGameRounds();
+                  onPressed: () {
                     if (context.mounted) {
-                      Navigator.pop(context, true); // vuelve a TutorChooseGameScreen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DifficultyScreen(userId: widget.studentId,),
+                        ),
+                      );
                     }
                   },
-
                   child: const Text(
                     "Ajustar dificultad",
                     style: TextStyle(color: Colors.black),
                   ),
                 ),
+
               ],
             ),
 

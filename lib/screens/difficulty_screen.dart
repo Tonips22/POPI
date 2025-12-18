@@ -2,10 +2,15 @@ import 'package:flutter/material.dart' hide Text;
 import '../widgets/voice_text.dart';
 import '../logic/game_controller.dart';
 import '../services/app_service.dart';
-// import '../widgets/preference_provider.dart';
+import '../models/user_model.dart';
 
 class DifficultyScreen extends StatefulWidget {
-  const DifficultyScreen({super.key});
+  final String? userId;
+
+  const DifficultyScreen({
+    super.key,
+    this.userId,
+  });
 
   @override
   State<DifficultyScreen> createState() => _DifficultyScreenState();
@@ -14,6 +19,9 @@ class DifficultyScreen extends StatefulWidget {
 class _DifficultyScreenState extends State<DifficultyScreen> {
   final GameController _controller = GameController();
   final AppService _service = AppService();
+
+  UserModel? _loadedUser;
+
   late double _sliderValue;
   int _selectedRangeIndex = 0;
   bool _isSaving = false;
@@ -34,78 +42,110 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
   void initState() {
     super.initState();
     _sliderValue = _controller.difficulty.toDouble();
-    _loadPreferences();
+    _loadUserAndPreferences();
   }
 
-  void _loadPreferences() {
-    final prefs = _service.currentUser?.preferences;
-    if (prefs != null) {
-      _sliderValue = prefs.touchGameDifficulty.toDouble();
-      final index = _ranges.indexWhere(
-        (range) =>
-            range['min'] == prefs.touchGameRangeMin &&
-            range['max'] == prefs.touchGameRangeMax,
-      );
-      if (index != -1) {
-        _selectedRangeIndex = index;
-      }
-    } else {
-      for (int i = 0; i < _ranges.length; i++) {
-        if (_ranges[i]['min'] == _controller.minRange &&
-            _ranges[i]['max'] == _controller.maxRange) {
-          _selectedRangeIndex = i;
-        }
-      }
+  // =====================================================
+  // CARGA DE USUARIO Y PREFERENCIAS
+  // =====================================================
+  Future<void> _loadUserAndPreferences() async {
+    // 👉 Si se pasa userId, cargamos ese usuario
+    if (widget.userId != null) {
+      _loadedUser = await _service.getUserById(widget.userId!);
     }
+    // 👉 Si no, usamos el usuario en sesión
+    else {
+      _loadedUser = _service.currentUser;
+    }
+
+    if (_loadedUser == null) return;
+
+    final prefs = _loadedUser!.preferences;
+
+    _sliderValue = prefs.touchGameDifficulty.toDouble();
+
+    final index = _ranges.indexWhere(
+          (range) =>
+      range['min'] == prefs.touchGameRangeMin &&
+          range['max'] == prefs.touchGameRangeMax,
+    );
+
+    if (index != -1) {
+      _selectedRangeIndex = index;
+    }
+
     _sliderValue =
         _sliderValue.clamp(1, _currentMaxDifficulty).toDouble();
+
     _applyValuesToController();
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
+  // =====================================================
+  // APLICAR VALORES AL CONTROLLER
+  // =====================================================
   void _applyValuesToController() {
     final range = _currentRange;
     _controller.setRange(range['min']!, range['max']!);
     _controller.setDifficulty(_sliderValue.round());
   }
 
+  // =====================================================
+  // GUARDADO DE PREFERENCIAS
+  // =====================================================
   Future<void> _saveSettings() async {
-    final user = _service.currentUser;
-    if (user == null || _isSaving) return;
+    if (_loadedUser == null || _isSaving) return;
+
     if (mounted) {
       setState(() => _isSaving = true);
     }
+
     final range = _currentRange;
-    final updated = user.preferences.copyWith(
+
+    final updatedPreferences = _loadedUser!.preferences.copyWith(
       touchGameDifficulty: _sliderValue.round(),
       touchGameRangeMin: range['min'],
       touchGameRangeMax: range['max'],
     );
-    final success =
-        await _service.updatePreferences(user.id, updated);
-    if (success) {
-      _service.updateCurrentUserPreferences(updated);
+
+    final success = await _service.updatePreferences(
+      _loadedUser!.id,
+      updatedPreferences,
+    );
+
+    // ⚠️ SOLO actualizar currentUser si NO estamos editando a otro usuario
+    if (success && widget.userId == null) {
+      _service.updateCurrentUserPreferences(updatedPreferences);
     }
+
     if (mounted) {
       setState(() => _isSaving = false);
     }
   }
 
+  // =====================================================
+  // UI
+  // =====================================================
   @override
   Widget build(BuildContext context) {
-    // final prefs = PreferenceProvider.of(context);
     final appService = AppService();
     final currentUser = appService.currentUser;
+
     final backgroundColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.backgroundColor))
         : Colors.grey[100]!;
+
     final primaryColor = currentUser != null
         ? Color(int.parse(currentUser.preferences.primaryColor))
         : Colors.blue;
+
     final titleFontSize = appService.fontSizeWithFallback();
     final titleFontFamily = appService.fontFamilyWithFallback();
-    
-    // Calculamos el máximo permitido del slider según el rango seleccionado
-    double maxValue = _currentMaxDifficulty;
+
+    final double maxValue = _currentMaxDifficulty;
 
     return WillPopScope(
       onWillPop: () async {
@@ -114,8 +154,8 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
-        
-        // === BARRA SUPERIOR ===
+
+        // === APP BAR ===
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, size: 32),
@@ -138,8 +178,8 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
           foregroundColor: Colors.black,
           elevation: 0,
         ),
-        
-        // === CONTENIDO DE LA PANTALLA ===
+
+        // === CONTENIDO ===
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -164,79 +204,77 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
               ),
               const SizedBox(height: 40),
 
-            // === SECCIÓN: SLIDER DE DIFICULTAD ===
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  children: [
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        activeTrackColor: primaryColor,
-                        inactiveTrackColor: Colors.grey[300],
-                        thumbColor: primaryColor,
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 16,
+              // === SLIDER DE DIFICULTAD ===
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    children: [
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: primaryColor,
+                          inactiveTrackColor: Colors.grey[300],
+                          thumbColor: primaryColor,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 16,
+                          ),
+                          overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 28,
+                          ),
+                          trackHeight: 8,
                         ),
-                        overlayShape: const RoundSliderOverlayShape(
-                          overlayRadius: 28,
+                        child: Slider(
+                          value: _sliderValue.clamp(1, maxValue),
+                          min: 1,
+                          max: maxValue,
+                          divisions: (maxValue - 1).toInt(),
+                          label: _sliderValue.round().toString(),
+                          onChanged: (value) {
+                            setState(() {
+                              _sliderValue = value;
+                              _controller.setDifficulty(value.toInt());
+                            });
+                          },
                         ),
-                        trackHeight: 8,
                       ),
-                      child: Slider(
-                        value: _sliderValue.clamp(1, maxValue),
-                        min: 1,
-                        max: maxValue,
-                        divisions: (maxValue - 1).toInt(),
-                        label: _sliderValue.round().toString(),
-                        onChanged: (value) {
-                          setState(() {
-                            _sliderValue = value;
-                            _controller.setDifficulty(value.toInt());
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
-                    // Números más grandes debajo
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: List.generate(
-                        maxValue.toInt(),
-                        (index) => Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Roboto',
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: List.generate(
+                          maxValue.toInt(),
+                              (index) => Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'Roboto',
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            
-            const SizedBox(height: 40),
 
-            // === SECCIÓN: RANGO DE NÚMEROS ===
-            Text(
-              'Rango de números',
-              style: TextStyle(
-                fontSize: 18.0 * 1.1,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
+              const SizedBox(height: 40),
+
+              // === RANGO DE NÚMEROS ===
+              Text(
+                'Rango de números',
+                style: const TextStyle(
+                  fontSize: 19.8,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Roboto',
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Botones de rango en grid
+              const SizedBox(height: 20),
+
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -245,9 +283,10 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.0,
                 children: List.generate(_ranges.length, (index) {
-                  bool selected = _selectedRangeIndex == index;
-                  String label =
+                  final selected = _selectedRangeIndex == index;
+                  final label =
                       '${_ranges[index]['min']}-${_ranges[index]['max']}';
+
                   return GestureDetector(
                     onTap: () {
                       setState(() {
@@ -263,7 +302,8 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: selected ? primaryColor : Colors.grey.shade300,
+                          color:
+                          selected ? primaryColor : Colors.grey.shade300,
                           width: selected ? 3 : 1.5,
                         ),
                       ),
@@ -271,8 +311,9 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
                         child: Text(
                           label,
                           style: TextStyle(
-                            fontWeight:
-                                selected ? FontWeight.bold : FontWeight.w500,
+                            fontWeight: selected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                             fontSize: 18,
                             fontFamily: 'Roboto',
                           ),

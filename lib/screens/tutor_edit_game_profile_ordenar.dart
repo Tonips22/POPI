@@ -80,7 +80,7 @@ class _TutorEditGameProfileOrdenarState
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context,true),
         ),
         centerTitle: true,
       ),
@@ -192,7 +192,7 @@ class _TutorEditGameProfileOrdenarState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const OrdenarDifficultyScreen(),
+                        builder: (_) => OrdenarDifficultyScreen(userId: widget.studentId),
                       ),
                     );
                   },
