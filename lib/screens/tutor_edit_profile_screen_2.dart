@@ -166,7 +166,7 @@ class _TutorEditProfileScreen2State extends State<TutorEditProfileScreen2> {
                   CircleAvatar(
                     radius: 14,
                     backgroundImage:
-                    AssetImage('assets/images/avatar$_avatarIndex.png'),
+                    AssetImage('assets/images/avatar$_avatarIndex.jpg'),
                   ),
                   const SizedBox(width: 8),
                   Expanded(

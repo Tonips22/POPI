@@ -98,7 +98,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                         ),
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/images/${_avatarNames[index]}.png',
+                            'assets/images/${_avatarNames[index]}.jpg',
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -167,7 +167,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
               CircleAvatar(
                 radius: 24,
                 backgroundImage: AssetImage(
-                  'assets/images/${_avatarNames[_selectedAvatarIndex]}.png',
+                  'assets/images/${_avatarNames[_selectedAvatarIndex]}.jpg',
                 ),
               ),
               const SizedBox(width: 12),
@@ -216,7 +216,7 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                 ),
                 child: ClipOval(
                   child: Image.asset(
-                    'assets/images/${_avatarNames[_selectedAvatarIndex]}.png',
+                    'assets/images/${_avatarNames[_selectedAvatarIndex]}.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../services/user_service.dart';
 import 'create_users_screen.dart';
 
 class ManageUsersScreen extends StatelessWidget {
@@ -17,6 +18,7 @@ class ManageUsersScreen extends StatelessWidget {
   static const _btnCreate = Color(0xFF2E7D32);
 
   static const String _collectionName = 'users';
+  static final UserService _userService = UserService();
 
   // 🔤 Traducción de roles
   String translateRole(String role) {
@@ -30,6 +32,29 @@ class ManageUsersScreen extends StatelessWidget {
       default:
         return role;
     }
+  }
+  
+  bool _resolveIsActive(Map<String, dynamic> data) {
+    final dynamic direct = data['isActive'];
+    if (direct is bool) return direct;
+    if (direct != null) {
+      final normalized = direct.toString().toLowerCase();
+      if (normalized == 'true' || normalized == 'yes' || normalized == '1') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == 'no' || normalized == '0') {
+        return false;
+      }
+    }
+
+    final dynamic legacy = data['activated'];
+    if (legacy != null) {
+      final normalized = legacy.toString().toLowerCase();
+      if (normalized == 'yes') return true;
+      if (normalized == 'no') return false;
+    }
+
+    return true;
   }
 
   Future<bool> _confirmDialog({
@@ -235,9 +260,9 @@ class ManageUsersScreen extends StatelessWidget {
             required String role,
             required dynamic tutorId,
             required int avatarIndex,
-            required String activated,
+            required bool isActive,
           }) {
-            final isActive = activated.toLowerCase() == 'yes';
+            final bool isStudentRole = role.toLowerCase() == 'student';
             final secondLabel = isActive ? 'Desactivar' : 'Activar';
             final secondBg = isActive ? _btnDisable : _btnEnable;
             final secondFg = isActive ? Colors.white : Colors.black87;
@@ -250,21 +275,25 @@ class ManageUsersScreen extends StatelessWidget {
                   SizedBox(
                     width: colAvatarW,
                     child: Center(
-                      child: Container(
-                        width: avatar,
-                        height: avatar,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD3E3FF),
-                          borderRadius: BorderRadius.circular(avatarR.toDouble()),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Image.asset(
-                          'assets/images/avatar$avatarIndex.png',
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.person),
-                        ),
-                      ),
+                      child: isStudentRole
+                          ? Container(
+                              width: avatar,
+                              height: avatar,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD3E3FF),
+                                borderRadius: BorderRadius.circular(avatarR.toDouble()),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Image.asset(
+                                'assets/images/avatar$avatarIndex.jpg',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                              ),
+                            )
+                          : SizedBox(
+                              width: avatar,
+                              height: avatar,
+                            ),
                     ),
                   ),
 
@@ -276,7 +305,11 @@ class ManageUsersScreen extends StatelessWidget {
                     child: Center(
                       child: Text(
                         name,
-                        style: TextStyle(fontSize: cellFont),
+                        style: TextStyle(
+                          fontSize: cellFont,
+                          color: isActive ? Colors.black : Colors.black45,
+                          fontStyle: isActive ? FontStyle.normal : FontStyle.italic,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -290,7 +323,10 @@ class ManageUsersScreen extends StatelessWidget {
                     child: Center(
                       child: Text(
                         translateRole(role),
-                        style: TextStyle(fontSize: cellFont),
+                        style: TextStyle(
+                          fontSize: cellFont,
+                          color: isActive ? Colors.black : Colors.black45,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -394,12 +430,8 @@ class ManageUsersScreen extends StatelessWidget {
                               if (!ok) return;
 
                               try {
-                                await FirebaseFirestore.instance
-                                    .collection(_collectionName)
-                                    .doc(docId)
-                                    .update({
-                                  'activated': isActive ? 'no' : 'yes',
-                                });
+                                await _userService.setUserActiveStatus(
+                                    docId, !isActive);
 
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -506,6 +538,7 @@ class ManageUsersScreen extends StatelessWidget {
                     return Column(
                       children: docs.map((d) {
                         final data = d.data();
+                        final isActive = _resolveIsActive(data);
                         return rowItem(
                           docId: d.id,
                           name: data['name'] ?? '(sin nombre)',
@@ -514,7 +547,7 @@ class ManageUsersScreen extends StatelessWidget {
                           avatarIndex: (data['avatarIndex'] ?? 0) is int
                               ? data['avatarIndex'] ?? 0
                               : int.tryParse('${data['avatarIndex']}') ?? 0,
-                          activated: (data['activated'] ?? 'yes').toString(),
+                          isActive: isActive,
                         );
                       }).toList(),
                     );

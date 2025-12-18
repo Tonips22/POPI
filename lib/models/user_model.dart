@@ -7,6 +7,7 @@ class UserModel {
   final String? password; // Password de 4 dígitos (opcional)
   final String? tutorId;
   final UserPreferences preferences;
+  final bool isActive;
 
   UserModel({
     required this.id,
@@ -16,6 +17,7 @@ class UserModel {
     this.password,
     this.tutorId,
     required this.preferences,
+    this.isActive = true,
   });
 
   /// Convierte el usuario a un mapa para Firestore
@@ -27,6 +29,8 @@ class UserModel {
       'password': password,
       'tutorId': tutorId,
       'preferences': preferences.toMap(),
+      'isActive': isActive,
+      'activated': isActive ? 'yes' : 'no', // compatibilidad legacy
     };
   }
 
@@ -39,6 +43,29 @@ class UserModel {
       tutorId = rawTutorId.toString(); //
     }
 
+    bool isActive = true;
+    final dynamic rawIsActive = map['isActive'];
+    if (rawIsActive is bool) {
+      isActive = rawIsActive;
+    } else if (rawIsActive != null) {
+      final value = rawIsActive.toString().toLowerCase();
+      if (value == 'true' || value == 'yes' || value == '1') {
+        isActive = true;
+      } else if (value == 'false' || value == 'no' || value == '0') {
+        isActive = false;
+      }
+    } else {
+      final dynamic legacy = map['activated'];
+      if (legacy != null) {
+        final value = legacy.toString().toLowerCase();
+        if (value == 'yes') {
+          isActive = true;
+        } else if (value == 'no') {
+          isActive = false;
+        }
+      }
+    }
+
     return UserModel(
       id: docId,
       name: map['name'] ?? '',
@@ -47,6 +74,7 @@ class UserModel {
       password: map['password'],
       tutorId: tutorId,
       preferences: UserPreferences.fromMap(map['preferences'] ?? {}),
+      isActive: isActive,
     );
   }
 
@@ -58,6 +86,7 @@ class UserModel {
     String? role,
     String? password,
     String? tutorId,
+    bool? isActive,
   }) {
     return UserModel(
       id: id, // el id nunca cambia
@@ -67,6 +96,7 @@ class UserModel {
       password: password ?? this.password,
       tutorId: tutorId ?? this.tutorId,
       preferences: preferences ?? this.preferences,
+      isActive: isActive ?? this.isActive,
     );
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'change_passwords_screen.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
-import 'change_text_passwords_screen.dart';
 
 class ResetPasswordsScreen extends StatefulWidget {
   const ResetPasswordsScreen({super.key});
@@ -60,7 +59,7 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
   String _avatarPathFromIndex(dynamic avatarIndex) {
     final idx = (avatarIndex is int) ? avatarIndex : int.tryParse('$avatarIndex') ?? 0;
     final safe = idx.clamp(0, 11);
-    return 'assets/images/avatar$safe.png';
+    return 'assets/images/avatar$safe.jpg';
   }
 
   // =================================================
@@ -221,6 +220,7 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
             final avatarPath = _avatarPathFromIndex(u.avatarIndex);
             final roleLower = u.role.toLowerCase();
             final roleEs = _roleEs(u.role);
+            final bool isStudent = roleLower == 'student';
 
             return SizedBox(
               height: rowH,
@@ -230,11 +230,16 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
                   SizedBox(
                     width: colAvatarW,
                     child: Center(
-                      child: CircleAvatar(
-                        radius: avatar / 2,
-                        backgroundColor: Colors.grey[200],
-                        backgroundImage: AssetImage(avatarPath),
-                      ),
+                      child: isStudent
+                          ? CircleAvatar(
+                              radius: avatar / 2,
+                              backgroundColor: Colors.grey[200],
+                              backgroundImage: AssetImage(avatarPath),
+                            )
+                          : SizedBox(
+                              width: avatar,
+                              height: avatar,
+                            ),
                     ),
                   ),
 
@@ -283,6 +288,7 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
                                   userId: u.id,
                                   userName: u.name,
                                   avatarIndex: u.avatarIndex, // <-- asegúrate de que exista en UserModel
+                                  role: u.role,
                                 ),
                               ),
                             );
@@ -295,6 +301,7 @@ class _ResetPasswordsScreenState extends State<ResetPasswordsScreen> {
                                   userId: u.id,
                                   userName: u.name,
                                   avatarIndex: u.avatarIndex, // <-- asegúrate de que exista en UserModel
+                                  role: u.role,
                                 ),
                               ),
                             );

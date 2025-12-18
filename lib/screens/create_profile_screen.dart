@@ -75,7 +75,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                         ),
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/images/$avatarName.png',
+                            'assets/images/$avatarName.jpg',
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -177,7 +177,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                               ),
                               child: ClipOval(
                                 child: Image.asset(
-                                  'assets/images/${_avatarNames[_selectedAvatarIndex]}.png',
+                                  'assets/images/${_avatarNames[_selectedAvatarIndex]}.jpg',
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return const Icon(

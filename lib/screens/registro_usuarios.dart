@@ -19,7 +19,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
   static const _bluePill = Color(0xFF77A9F4);
   static const _theadBg = Color(0xFFD9D9D9);
 
-  // Avatares disponibles: avatar0.png ... avatar5.png
+  // Avatares disponibles: avatar0.jpg ... avatar5.jpg
   static const int _maxAvatarIndex = 11;
 
   @override
@@ -72,7 +72,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
     if (idx < 0) idx = 0;
     if (idx > _maxAvatarIndex) idx = _maxAvatarIndex;
 
-    return 'assets/images/avatar$idx.png';
+    return 'assets/images/avatar$idx.jpg';
   }
 
   @override
@@ -192,6 +192,7 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
             final avatarPath = _avatarAssetFromIndex(data['avatarIndex']);
 
             final roleEs = _translateRole(user.role);
+            final bool isStudent = user.role.toLowerCase() == 'student';
 
             return SizedBox(
               height: rowH,
@@ -200,27 +201,30 @@ class _RegistroUsuariosScreenState extends State<RegistroUsuariosScreen> {
                   SizedBox(
                     width: colAvatarW,
                     child: Center(
-                      child: Container(
-                        width: avatar,
-                        height: avatar,
-                        decoration: BoxDecoration(
-                          borderRadius:
-                          BorderRadius.circular(avatarR.toDouble()),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Image.asset(
-                          avatarPath,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) {
-                            // fallback si falta el asset
-                            return Container(
-                              color: Colors.grey.shade300,
-                              alignment: Alignment.center,
-                              child: const Icon(Icons.person, color: Colors.black54),
-                            );
-                          },
-                        ),
-                      ),
+                      child: isStudent
+                          ? Container(
+                              width: avatar,
+                              height: avatar,
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.circular(avatarR.toDouble()),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Image.asset(
+                                avatarPath,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey.shade300,
+                                    alignment: Alignment.center,
+                                  );
+                                },
+                              ),
+                            )
+                          : SizedBox(
+                              width: avatar,
+                              height: avatar,
+                            ),
                     ),
                   ),
                   SizedBox(width: colGap),

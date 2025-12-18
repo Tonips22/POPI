@@ -64,6 +64,7 @@ class UserService {
           name: name ?? 'Demo User',
           role: role ?? 'student',
           avatarIndex: 0,
+          isActive: true,
           preferences: UserPreferences(),
         );
         await docRef.set(profile.toMap());
@@ -229,12 +230,17 @@ class UserService {
   }
 
   /// Obtiene todos los usuarios de la colección
-  Future<List<UserModel>> getAllUsers() async {
+  ///
+  /// [includeInactive] determina si se devuelven también los usuarios marcados
+  /// como inactivos. Por defecto solo se incluyen usuarios activos.
+  Future<List<UserModel>> getAllUsers({bool includeInactive = false}) async {
     try {
       final querySnapshot = await _fs.collection(_collection).get();
-      return querySnapshot.docs
+      final users = querySnapshot.docs
           .map((doc) => UserModel.fromMap(doc.data(), doc.id))
           .toList();
+      if (includeInactive) return users;
+      return users.where((user) => user.isActive).toList();
     } on FirebaseException catch (e) {
       print('❌ FirebaseException en getAllUsers: [${e.code}] ${e.message}');
       if (e.code == 'unavailable') {
@@ -244,6 +250,42 @@ class UserService {
       rethrow;
     } catch (e) {
       print('❌ Error genérico en getAllUsers: $e');
+      rethrow;
+    }
+  }
+
+  /// Actualiza el estado activo/inactivo del usuario
+  Future<void> setUserActiveStatus(String userId, bool isActive) async {
+    try {
+      final docRef = _fs.collection(_collection).doc(userId);
+      await docRef.update({
+        'isActive': isActive,
+        'activated': isActive ? 'yes' : 'no',
+      });
+      print('✅ Usuario $userId actualizado → isActive=$isActive');
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en setUserActiveStatus: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') return;
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en setUserActiveStatus: $e');
+      rethrow;
+    }
+  }
+
+  /// Quita la asignación de tutor del usuario indicado
+  Future<void> clearTutor(String userId) async {
+    try {
+      await _fs.collection(_collection).doc(userId).update({
+        'tutorId': null,
+      });
+      print('✅ tutorId eliminado para usuario: $userId');
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en clearTutor: [${e.code}] ${e.message}');
+      if (e.code == 'unavailable') return;
+      rethrow;
+    } catch (e) {
+      print('❌ Error genérico en clearTutor: $e');
       rethrow;
     }
   }

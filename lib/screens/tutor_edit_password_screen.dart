@@ -103,7 +103,7 @@ class _TutorEditPasswordScreenState extends State<TutorEditPasswordScreen> {
             ),
             child: ClipOval(
               child: Image.asset(
-                'assets/images/avatar${widget.student.avatarIndex}.png',
+                'assets/images/avatar${widget.student.avatarIndex}.jpg',
                 fit: BoxFit.cover,
               ),
             ),

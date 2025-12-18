@@ -7,11 +7,13 @@ class ChangePasswordsScreen extends StatefulWidget {
     required this.userId,
     required this.userName,
     required this.avatarIndex, // <-- NUEVO
+    required this.role,
   });
 
   final String userId;
   final String userName;
   final int avatarIndex;
+  final String role;
 
   @override
   State<ChangePasswordsScreen> createState() => _ChangePasswordsScreenState();
@@ -24,6 +26,8 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
   static const _tileBg     = Color(0xFFD9D9D9);
 
   final List<int> _pwd = [];
+  final TextEditingController _plainPwdCtrl = TextEditingController();
+  bool _savingPlain = false;
 
   final List<_Animal> _animals = const [
     _Animal('🦁', Color(0xFFFFF3CD)),
@@ -49,7 +53,54 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
   String get _avatarPath {
     // Seguridad: si en BD viene raro, lo acotamos 0..5
     final idx = widget.avatarIndex.clamp(0, 11);
-    return 'assets/images/avatar$idx.png';
+    return 'assets/images/avatar$idx.jpg';
+  }
+
+  bool get _isStudent => widget.role.toLowerCase() == 'student';
+
+  @override
+  void dispose() {
+    _plainPwdCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _savePlainPassword() async {
+    final pwd = _plainPwdCtrl.text.trim();
+    if (pwd.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Introduce una contraseña'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _savingPlain = true);
+    try {
+      await UserService().updatePassword(widget.userId, pwd);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Contraseña actualizada'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _savingPlain = false);
+      }
+    }
   }
 
   @override
@@ -119,25 +170,26 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
           Widget userHeader() {
             return Column(
               children: [
-                Container(
-                  width: avatar,
-                  height: avatar,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(avatarR.toDouble()),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black26,
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
+                if (_isStudent)
+                  Container(
+                    width: avatar,
+                    height: avatar,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(avatarR.toDouble()),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
+                      image: DecorationImage(
+                        image: AssetImage(_avatarPath),
+                        fit: BoxFit.cover,
                       ),
-                    ],
-                    image: DecorationImage(
-                      image: AssetImage(_avatarPath),
-                      fit: BoxFit.cover,
                     ),
                   ),
-                ),
                 SizedBox(height: clamp(base * 0.018, 8, 14)),
                 Text(
                   widget.userName,
@@ -258,6 +310,98 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                     );
                   }),
                 ),
+              ),
+            );
+          }
+
+          if (!_isStudent) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: pagePad, vertical: pagePad * 0.8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: pillPadH, vertical: pillPadV),
+                    decoration: BoxDecoration(
+                      color: _bluePill,
+                      borderRadius: BorderRadius.circular(pillRadius),
+                    ),
+                    child: Text(
+                      'Restablecer contraseñas',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700,
+                        fontSize: pillFont,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: clamp(base * 0.04, 18, 28)),
+                  Center(child: userHeader()),
+                  SizedBox(height: clamp(base * 0.035, 16, 24)),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: clamp(contentW * 0.8, 320, 460),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Nueva contraseña',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _plainPwdCtrl,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              hintText: 'Introduce la nueva contraseña',
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2E7D32),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onPressed: _savingPlain ? null : _savePlainPassword,
+                              child: _savingPlain
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Guardar contraseña',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           }

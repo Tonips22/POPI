@@ -23,6 +23,7 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
   static const _tileBg = Color(0xFFD9D9D9);
 
   final List<int> _password = [];
+  bool _createWithoutPassword = false;
 
   final List<_Animal> _animals = const [
     _Animal('🦁', Color(0xFFFFF3CD)), // 0
@@ -45,9 +46,20 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
     setState(() => _password.removeLast());
   }
 
+  bool get _canSubmit => _createWithoutPassword || _password.isNotEmpty;
+
   /// Convierte [0,1,2,3] → "0123"
   String _passwordToNumbers() {
     return _password.join('');
+  }
+  
+  void _toggleCreateWithoutPassword(bool value) {
+    setState(() {
+      _createWithoutPassword = value;
+      if (value) {
+        _password.clear();
+      }
+    });
   }
 
   @override
@@ -69,7 +81,7 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
             ),
             child: ClipOval(
               child: Image.asset(
-                'assets/images/avatar${widget.avatarIndex}.png',
+                'assets/images/avatar${widget.avatarIndex}.jpg',
                 fit: BoxFit.cover,
               ),
             ),
@@ -88,7 +100,7 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
     }
 
     Widget passwordSlots() {
-      return Row(
+      final row = Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           for (int i = 0; i < 4; i++) ...[
@@ -129,10 +141,14 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
           ),
         ],
       );
+      return Opacity(
+        opacity: _createWithoutPassword ? 0.4 : 1,
+        child: row,
+      );
     }
 
     Widget animalsGrid() {
-      return Center(
+      final grid = Center(
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -152,7 +168,7 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               return InkWell(
-                onTap: _password.length < 4
+                onTap: (!_createWithoutPassword && _password.length < 4)
                     ? () => _addAnimal(index)
                     : null,
                 borderRadius: BorderRadius.circular(8),
@@ -171,6 +187,13 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
               );
             },
           ),
+        ),
+      );
+      return IgnorePointer(
+        ignoring: _createWithoutPassword,
+        child: Opacity(
+          opacity: _createWithoutPassword ? 0.35 : 1,
+          child: grid,
         ),
       );
     }
@@ -202,11 +225,30 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
             passwordSlots(),
             const SizedBox(height: 20),
             const Text(
-              'Selecciona de 1 a 4 emojis en orden',
+              'Selecciona de 1 a 4 emojis en orden (opcional).',
               style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'También puedes crear el alumno sin contraseña y configurarla más tarde desde Tutor o Admin.',
+              style: TextStyle(color: Colors.black54, fontSize: 14),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
             animalsGrid(),
+            const SizedBox(height: 10),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                'Crear sin contraseña',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: const Text(
+                'La contraseña se podrá asignar después desde los ajustes del tutor o administrador.',
+              ),
+              value: _createWithoutPassword,
+              onChanged: _toggleCreateWithoutPassword,
+            ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -221,46 +263,54 @@ class _CreateProfileScreen2State extends State<CreateProfileScreen2> {
                     backgroundColor: const Color(0xFF2E7D32),
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: _password.isNotEmpty
+                  onPressed: _canSubmit
                       ? () async {
-                    final password = _passwordToNumbers();
+                          final String? password =
+                              _createWithoutPassword ? null : _passwordToNumbers();
 
-                    try {
-                      final student = UserModel(
-                        id: '',
-                        name: widget.studentName,
-                        role: 'student',
-                        avatarIndex: widget.avatarIndex,
-                        tutorId: widget.tutorId,
-                        preferences: UserPreferences(canCustomize: true),
-                      );
+                          try {
+                            final student = UserModel(
+                              id: '',
+                              name: widget.studentName,
+                              role: 'student',
+                              avatarIndex: widget.avatarIndex,
+                              tutorId: widget.tutorId,
+                              preferences: UserPreferences(canCustomize: true),
+                            );
 
-                      final userId =
-                      await UserService().createUser(student);
-                      await UserService()
-                          .updatePassword(userId, password);
+                            final userId =
+                                await UserService().createUser(student);
 
-                      if (!context.mounted) return;
+                            if (password != null && password.isNotEmpty) {
+                              await UserService()
+                                  .updatePassword(userId, password);
+                            }
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Alumno creado correctamente'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
+                            if (!context.mounted) return;
 
-                      // Avisamos al TutorHomeScreen
-                      Navigator.pop(context, true);
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error al crear alumno: $e'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
+                            final message = password == null
+                                ? 'Alumno creado sin contraseña. Puedes configurarla más tarde.'
+                                : 'Alumno creado correctamente';
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(message),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+
+                            // Avisamos al TutorHomeScreen
+                            Navigator.pop(context, true);
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error al crear alumno: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
                       : null,
                   child: const Text(
                     'Crear usuario',

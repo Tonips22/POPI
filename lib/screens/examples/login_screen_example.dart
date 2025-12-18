@@ -211,7 +211,7 @@ class _LoginScreenExampleState extends State<LoginScreenExample> {
                                                     ),
                                                     child: ClipOval(
                                                       child: Image.asset(
-                                                        'assets/images/avatar${(student.avatarIndex % 6) + 0}.png',
+                                                        'assets/images/avatar${(student.avatarIndex % 6) + 0}.jpg',
                                                         width: avatarSize,
                                                         height: avatarSize,
                                                         fit: BoxFit.cover,

@@ -323,7 +323,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
               itemBuilder: (context, index) {
                 final student = _students[index];
                 final avatarPath =
-                    'assets/images/avatar${student.avatarIndex}.png';
+                    'assets/images/avatar${student.avatarIndex}.jpg';
                 final allowed = _allowedMap[student.id] ??
                     student.preferences.canCustomize;
                 final isUpdating = _updatingMap.containsKey(student.id);
@@ -348,11 +348,11 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 12,
+                          runSpacing: 8,
                           children: [
-
-                            // --- TU BOTÓN DE DESCARGA (AÑADIDO) ---
                             Tooltip(
                               message: 'Descargar informe',
                               child: IconButton(
@@ -360,8 +360,6 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                 onPressed: () => _choosePeriodAndDownload(student),
                               ),
                             ),
-                            // -------------------------------------
-
                             GestureDetector(
                               onTap: () async {
                                 final updated = await Navigator.push<bool>(
@@ -378,8 +376,6 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                               },
                               child: _buildGreyButton("Configurar perfil"),
                             ),
-
-                            const SizedBox(width: 12),
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
@@ -392,13 +388,10 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                     ),
                                   ),
                                 );
-
                               },
                               child: _buildGreyButton(
                                   "Configurar perfil de juegos"),
                             ),
-                            const SizedBox(width: 12),
-                            // BOTÓN PERMITIR/BLOQUEAR
                             GestureDetector(
                               onTap: isUpdating
                                   ? null
@@ -415,6 +408,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       if (isUpdating) ...[
                                         const SizedBox(
@@ -452,10 +446,10 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   builder: (ctx) => AlertDialog(
-                                    title: const Text('Eliminar alumno'),
+                                    title: const Text('Desvincular alumno'),
                                     content: Text(
-                                      '¿Seguro que quieres eliminar a "${student.name}"?\n'
-                                          'Esta acción no se puede deshacer.',
+                                      '¿Seguro que quieres desvincular a "${student.name}"?\n'
+                                          'Dejará de estar asignado a tu perfil, pero seguirá existiendo en la plataforma.',
                                     ),
                                     actions: [
                                       TextButton(
@@ -465,7 +459,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                       TextButton(
                                         onPressed: () => Navigator.pop(ctx, true),
                                         style: TextButton.styleFrom(foregroundColor: Colors.red),
-                                        child: const Text('Eliminar'),
+                                        child: const Text('Desvincular'),
                                       ),
                                     ],
                                   ),
@@ -474,7 +468,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                 if (confirm != true) return;
 
                                 try {
-                                  await _userService.deleteUser(student.id);
+                                  await _userService.clearTutor(student.id);
 
                                   // Recargar lista
                                   await _loadAssignedStudents();
@@ -482,7 +476,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Alumno "${student.name}" eliminado'),
+                                        content: Text('Alumno "${student.name}" desvinculado'),
                                         backgroundColor: Colors.green,
                                       ),
                                     );
@@ -491,7 +485,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Error al eliminar alumno: $e'),
+                                        content: Text('Error al desvincular alumno: $e'),
                                         backgroundColor: Colors.red,
                                       ),
                                     );
@@ -505,7 +499,7 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: const Text(
-                                  "Eliminar alumno",
+                                  "Desvincular alumno",
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,

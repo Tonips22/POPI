@@ -101,8 +101,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 ],
               ),
               child: ClipOval(
-                child: Image.asset(
-                  'assets/images/avatar${(widget.user.avatarIndex % 6) + 0}.png',
+                  child: Image.asset(
+                    'assets/images/avatar${(widget.user.avatarIndex % 6) + 0}.jpg',
                   width: avatar,
                   height: avatar,
                   fit: BoxFit.cover,

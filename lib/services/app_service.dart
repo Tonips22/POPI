@@ -67,12 +67,13 @@ class AppService {
     try {
       QuerySnapshot snapshot = await _firestore
           .collection('users')
+          .where('role', isEqualTo: 'student')
           .get();
 
       List<UserModel> students = snapshot.docs
           .map((doc) =>
               UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
-          .where((user) => user.role.toLowerCase() == 'student')
+          .where((user) => user.role.toLowerCase() == 'student' && user.isActive)
           .toList();
 
       return students;
@@ -98,7 +99,12 @@ class AppService {
       }
 
       final doc = snapshot.docs.first;
-      return UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      final user = UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+      if (!user.isActive) {
+        print('⚠ Usuario "${user.name}" está inactivo');
+        return null;
+      }
+      return user;
 
     } catch (e) {
       print('❌ Error en validateTutorCredentials: $e');
@@ -133,13 +139,14 @@ class AppService {
     try {
       QuerySnapshot snapshot = await _firestore
           .collection('users')
-          .where('role', isEqualTo: 'student')
-          .where('tutorId', isEqualTo: tutorId)
-          .get();
+      .where('role', isEqualTo: 'student')
+      .where('tutorId', isEqualTo: tutorId)
+      .get();
 
       List<UserModel> assignedStudents = snapshot.docs
           .map((doc) =>
           UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .where((user) => user.isActive)
           .toList();
 
       print('📘 Estudiantes cargados para tutor $tutorId: ${assignedStudents.length}');
@@ -235,6 +242,7 @@ class AppService {
         password: _currentUser!.password,
         tutorId: _currentUser!.tutorId,
         preferences: newPreferences,
+        isActive: _currentUser!.isActive,
       );
       userChangeNotifier.value++;
       print('✅ Preferencias actualizadas en memoria');
