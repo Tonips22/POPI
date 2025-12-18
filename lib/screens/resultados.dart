@@ -37,7 +37,18 @@ class _DailyNetPoint {
 }
 
 class ResultadosScreen extends StatefulWidget {
-  const ResultadosScreen({super.key});
+  const ResultadosScreen({
+    super.key,
+    this.userId,
+    this.studentName,
+  });
+
+  /// ID del usuario cuyos resultados se quieren consultar.
+  /// Si es `null`, se usa el usuario logueado (caso estudiante).
+  final String? userId;
+
+  /// Nombre del estudiante (solo usado en modo tutor para contextualizar).
+  final String? studentName;
 
   @override
   State<ResultadosScreen> createState() => _ResultadosScreenState();
@@ -56,11 +67,21 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
     _loadResultados();
   }
 
+  bool get _isTutorView => widget.userId != null;
+
+  int? _resolveTargetUserId() {
+    if (widget.userId != null) {
+      return int.tryParse(widget.userId!);
+    }
+    final id = _appService.numericUserId;
+    return id > 0 ? id : null;
+  }
+
   Future<void> _loadResultados() async {
     setState(() => _isLoading = true);
     try {
-      final userId = _appService.numericUserId;
-      if (userId <= 0) {
+      final userId = _resolveTargetUserId();
+      if (userId == null || userId <= 0) {
         setState(() {
           _sesiones = [];
           _missingUser = true;
@@ -96,9 +117,11 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
             onPressed: () => Navigator.maybePop(context),
           ),
           centerTitle: true,
-          title: const Text(
-            'RESULTADOS',
-            style: TextStyle(
+          title: Text(
+            widget.studentName == null
+                ? 'RESULTADOS'
+                : 'RESULTADOS · ${widget.studentName}',
+            style: const TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.5,
@@ -112,7 +135,10 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const HistorialResultadosScreen(),
+                    builder: (_) => HistorialResultadosScreen(
+                      userId: widget.userId,
+                      studentName: widget.studentName,
+                    ),
                   ),
                 );
               },
@@ -129,9 +155,12 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_missingUser) {
+      final missingMsg = _isTutorView
+          ? 'No se pudieron cargar los resultados del alumno seleccionado.'
+          : 'Inicia sesión para ver tus resultados.';
       return _buildMessage(
         icon: Icons.lock_outline,
-        message: 'Inicia sesión para ver tus resultados.',
+        message: missingMsg,
         actionLabel: 'Reintentar',
         onPressed: _loadResultados,
       );
@@ -575,7 +604,7 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
       fitInsideHorizontally: true,
       fitInsideVertically: true,
       getTooltipItems: (touchedSpots) {
-        return touchedSpots.map(builder).whereType<LineTooltipItem>().toList();
+        return touchedSpots.map(builder).toList();
       },
     );
   }

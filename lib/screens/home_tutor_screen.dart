@@ -5,6 +5,7 @@ import '../services/user_service.dart';
 import 'tutor_edit_profile_screen.dart';
 import 'tutor_edit_game_profile_screen.dart';
 import 'create_profile_screen.dart';
+import 'resultados.dart';
 
 // --- TUS IMPORTACIONES (AÑADIDAS) ---
 import 'package:printing/printing.dart';
@@ -359,6 +360,20 @@ class _TutorHomeScreenState extends State<TutorHomeScreen> {
                                 icon: const Icon(Icons.download, color: Colors.black),
                                 onPressed: () => _choosePeriodAndDownload(student),
                               ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ResultadosScreen(
+                                      userId: student.id,
+                                      studentName: student.name,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: _buildGreyButton("Ver resultados"),
                             ),
                             GestureDetector(
                               onTap: () async {

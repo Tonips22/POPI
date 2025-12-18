@@ -30,7 +30,6 @@ class UserModel {
       'tutorId': tutorId,
       'preferences': preferences.toMap(),
       'isActive': isActive,
-      'activated': isActive ? 'yes' : 'no', // compatibilidad legacy
     };
   }
 

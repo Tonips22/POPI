@@ -30,7 +30,17 @@ class UserService {
       final newIdInt = maxId + 1;
       final newIdStr = newIdInt.toString();
 
-      final Map<String, dynamic> userData = user.toMap();
+      final bool isStudent = user.role.toLowerCase() == 'student';
+
+      final Map<String, dynamic> userData = isStudent
+          ? user.toMap()
+          : {
+              'name': user.name,
+              'role': user.role,
+              'password': user.password,
+              'isActive': user.isActive,
+              'createdAt': FieldValue.serverTimestamp(),
+            };
       userData['id'] = newIdStr;
 
       await _fs.collection(_collection).doc(newIdStr).set(userData);
@@ -260,7 +270,6 @@ class UserService {
       final docRef = _fs.collection(_collection).doc(userId);
       await docRef.update({
         'isActive': isActive,
-        'activated': isActive ? 'yes' : 'no',
       });
       print('✅ Usuario $userId actualizado → isActive=$isActive');
     } on FirebaseException catch (e) {

@@ -5,7 +5,14 @@ import '../models/sesion_juego.dart';
 import '../services/app_service.dart';
 
 class HistorialResultadosScreen extends StatefulWidget {
-  const HistorialResultadosScreen({super.key});
+  const HistorialResultadosScreen({
+    super.key,
+    this.userId,
+    this.studentName,
+  });
+
+  final String? userId;
+  final String? studentName;
 
   @override
   State<HistorialResultadosScreen> createState() => _HistorialResultadosScreenState();
@@ -39,11 +46,21 @@ class _HistorialResultadosScreenState extends State<HistorialResultadosScreen> {
     _loadResultados();
   }
 
+  bool get _isTutorView => widget.userId != null;
+
+  int? _resolveTargetUserId() {
+    if (widget.userId != null) {
+      return int.tryParse(widget.userId!);
+    }
+    final id = _appService.numericUserId;
+    return id > 0 ? id : null;
+  }
+
   Future<void> _loadResultados() async {
     setState(() => _isLoading = true);
     try {
-      final userId = _appService.numericUserId;
-      if (userId <= 0) {
+      final userId = _resolveTargetUserId();
+      if (userId == null || userId <= 0) {
         setState(() {
           _sesiones = [];
           _missingUser = true;
@@ -77,9 +94,11 @@ class _HistorialResultadosScreenState extends State<HistorialResultadosScreen> {
           onPressed: () => Navigator.maybePop(context),
         ),
         centerTitle: true,
-        title: const Text(
-          'HISTORIAL',
-          style: TextStyle(
+        title: Text(
+          widget.studentName == null
+              ? 'HISTORIAL'
+              : 'HISTORIAL · ${widget.studentName}',
+          style: const TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.5,
@@ -96,9 +115,12 @@ class _HistorialResultadosScreenState extends State<HistorialResultadosScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_missingUser) {
+      final missingMsg = _isTutorView
+          ? 'No se pudieron cargar los resultados del alumno seleccionado.'
+          : 'Inicia sesión para ver tus resultados.';
       return _buildMessage(
         icon: Icons.lock_outline,
-        message: 'Inicia sesión para ver tus resultados.',
+        message: missingMsg,
       );
     }
     if (_sesiones.isEmpty) {

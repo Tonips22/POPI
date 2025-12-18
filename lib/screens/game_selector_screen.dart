@@ -8,7 +8,7 @@ import 'customization_screen.dart';
 import '../utils/accessible_routes.dart';
 import '../services/app_service.dart';
 import 'login_screen.dart';
-import 'resultados.dart';
+import 'resultados_simple.dart';
 import 'tutorial_juego_1.dart';
 import 'tutorial_juego_2.dart';
 import 'tutorial_juego_3.dart';
@@ -78,7 +78,7 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => const ResultadosScreen(),
+                  builder: (_) => const ResultadosSimpleScreen(),
                 ),
               );
             },
