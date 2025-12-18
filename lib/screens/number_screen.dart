@@ -8,6 +8,8 @@ import '../widgets/check_icon_overlay.dart';
 import '../widgets/reaction_overlay.dart';
 import '../services/app_service.dart';
 import '../services/game_session_tracker.dart';
+import '../services/reaction_message_service.dart';
+import '../services/reaction_sound_player.dart';
 import 'game_selector_screen.dart';
 import 'game_victory_screen.dart';
 
@@ -22,12 +24,16 @@ class _NumberScreenState extends State<NumberScreen> {
   final GameController _controller = GameController();
   final FlutterTts _flutterTts = FlutterTts();
   final AppService _service = AppService();
+  final ReactionSoundPlayer _reactionSoundPlayer = ReactionSoundPlayer();
+  final ReactionMessageService _reactionMessageService =
+      ReactionMessageService();
   bool _showCheckIcon = false;
   bool _showErrorIcon = false;
   GameSessionTracker? _sessionTracker;
   int _hits = 0;
   int _fails = 0;
   bool _showReactionEffect = false;
+  String? _reactionType;
 
   int get _targetRounds {
     final prefs = _service.currentUser?.preferences;
@@ -66,16 +72,20 @@ class _NumberScreenState extends State<NumberScreen> {
 
   void _handleAnswer(bool isCorrect) {
     if (isCorrect) {
+      _playReactionSound();
+      _reactionMessageService.speakSuccess();
       _hits++;
       final int maxRounds = _targetRounds;
       final bool hasCompletedSession =
           maxRounds > 0 && _hits >= maxRounds;
       _sessionTracker?.recordHit();
-      final bool showReaction =
-          _service.currentUser?.preferences.reactionType == 'confetti';
+      final String? reactionType =
+          _service.currentUser?.preferences.reactionType;
+      final bool showReaction = reactionType != null;
       setState(() {
         _showCheckIcon = true;
         _showReactionEffect = showReaction;
+        _reactionType = reactionType;
       });
 
       final successDelay =
@@ -84,6 +94,7 @@ class _NumberScreenState extends State<NumberScreen> {
         setState(() {
           _showCheckIcon = false;
           _showReactionEffect = false;
+          _reactionType = null;
           if (!hasCompletedSession) {
             _controller.nextRound();
           }
@@ -97,8 +108,11 @@ class _NumberScreenState extends State<NumberScreen> {
     } else {
       _fails++;
       _sessionTracker?.recordFail();
+      _reactionMessageService.speakFail();
       setState(() {
         _showErrorIcon = true;
+        _showReactionEffect = false;
+        _reactionType = null;
       });
 
       Future.delayed(const Duration(milliseconds: 800), () {
@@ -107,6 +121,12 @@ class _NumberScreenState extends State<NumberScreen> {
         });
       });
     }
+  }
+
+  void _playReactionSound() {
+    final String? soundId = _service.currentUser?.preferences.reactionSound;
+    if (soundId == null || soundId.isEmpty || soundId == 'none') return;
+    _reactionSoundPlayer.play(soundId);
   }
 
   void _speakTarget() async {
@@ -127,6 +147,7 @@ class _NumberScreenState extends State<NumberScreen> {
 
   Future<void> _showVictoryScreen() async {
     await _finishSession();
+    await _reactionMessageService.speakFinal(_hits, _fails);
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
@@ -271,7 +292,10 @@ class _NumberScreenState extends State<NumberScreen> {
           if (_showCheckIcon)
             CheckIconOverlay(color: secondaryColor),
 
-          ReactionOverlay(enabled: _showReactionEffect),
+          ReactionOverlay(
+            enabled: _showReactionEffect,
+            type: _reactionType,
+          ),
 
           if (_showErrorIcon)
             CheckIconOverlay(

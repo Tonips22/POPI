@@ -111,7 +111,11 @@ class UserPreferences {
   final String shape; // 'circle', 'square', 'triangle'
   final bool canCustomize;
   final String? voiceText; // 'none', 'double', 'long' or null (default)
-  final String? reactionType; // tipo de reacción seleccionada
+  final String? reactionType; // tipo de reacción visual seleccionada
+  final String? reactionSound; // sonido de refuerzo seleccionado
+  final bool reactionMessageSuccess;
+  final bool reactionMessageFail;
+  final bool reactionMessageFinal;
   final int addGameRounds;
   final int touchGameRounds;
   final int sortGameRounds;
@@ -147,6 +151,10 @@ class UserPreferences {
     this.canCustomize = false,
     this.voiceText,
     this.reactionType,
+    this.reactionSound,
+    this.reactionMessageSuccess = false,
+    this.reactionMessageFail = false,
+    this.reactionMessageFinal = false,
     this.touchGameRounds = 5,
     this.sortGameRounds = 5,
     this.shareGameRounds = 5,
@@ -184,6 +192,10 @@ class UserPreferences {
       'canCustomize': canCustomize,
       'voiceText': voiceText,
       'tipo_reaccion': reactionType,
+      'reactionSound': reactionSound,
+      'reactionMessageSuccess': reactionMessageSuccess,
+      'reactionMessageFail': reactionMessageFail,
+      'reactionMessageFinal': reactionMessageFinal,
       'touchGameRounds': touchGameRounds,
       'sortGameRounds': sortGameRounds,
       'shareGameRounds': shareGameRounds,
@@ -273,6 +285,10 @@ class UserPreferences {
       canCustomize: map['canCustomize'] ?? false,
       voiceText: map['voiceText'],
       reactionType: map['tipo_reaccion'],
+      reactionSound: _parseReactionSound(map),
+      reactionMessageSuccess: _parseBool(map['reactionMessageSuccess']),
+      reactionMessageFail: _parseBool(map['reactionMessageFail']),
+      reactionMessageFinal: _parseBool(map['reactionMessageFinal']),
       touchGameRounds: _parseRounds(map['touchGameRounds']),
       sortGameRounds: _parseRounds(map['sortGameRounds']),
       shareGameRounds: _parseRounds(map['shareGameRounds']),
@@ -338,6 +354,33 @@ class UserPreferences {
     return fallback;
   }
 
+  static bool _parseBool(dynamic value, [bool fallback = false]) {
+    if (value is bool) return value;
+    if (value is String) {
+      final normalized = value.toLowerCase();
+      if (normalized == 'true' || normalized == '1' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == 'false' || normalized == '0' || normalized == 'no') {
+        return false;
+      }
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    return fallback;
+  }
+
+  static String? _parseReactionSound(Map<String, dynamic> map) {
+    final dynamic raw = map['reactionSound'] ?? map['sonido_reaccion'];
+    if (raw is String) {
+      final value = raw.trim();
+      if (value.isEmpty || value.toLowerCase() == 'none') return null;
+      return value;
+    }
+    return null;
+  }
+
   /// Crea una copia modificando algunos campos
   UserPreferences copyWith({
     String? primaryColor,
@@ -349,6 +392,10 @@ class UserPreferences {
     bool?  canCustomize,
     Object? voiceText = _unset,
     Object? reactionType = _unset,
+    Object? reactionSound = _unset,
+    bool? reactionMessageSuccess,
+    bool? reactionMessageFail,
+    bool? reactionMessageFinal,
     int? touchGameRounds,
     int? sortGameRounds,
     int? shareGameRounds,
@@ -385,6 +432,13 @@ class UserPreferences {
       reactionType: identical(reactionType, _unset)
           ? this.reactionType
           : reactionType as String?,
+      reactionSound: identical(reactionSound, _unset)
+          ? this.reactionSound
+          : reactionSound as String?,
+      reactionMessageSuccess:
+          reactionMessageSuccess ?? this.reactionMessageSuccess,
+      reactionMessageFail: reactionMessageFail ?? this.reactionMessageFail,
+      reactionMessageFinal: reactionMessageFinal ?? this.reactionMessageFinal,
       touchGameRounds: touchGameRounds ?? this.touchGameRounds,
       addGameRounds: addGameRounds ?? this.addGameRounds,
       sortGameRounds: sortGameRounds ?? this.sortGameRounds,

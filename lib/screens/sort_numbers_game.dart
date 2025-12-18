@@ -4,10 +4,13 @@ import 'dart:math' as math;
 import '../widgets/number_tile.dart';
 import '../widgets/target_slot.dart';
 import '../widgets/check_icon_overlay.dart';
+import '../widgets/reaction_overlay.dart';
 // import '../widgets/preference_provider.dart';
 
 import '../logic/game_controller_ordenar.dart';
 import '../services/app_service.dart';
+import '../services/reaction_message_service.dart';
+import '../services/reaction_sound_player.dart';
 import 'settings_screen_ordenar.dart';
 import 'game_selector_screen.dart';
 import 'game_victory_screen.dart';
@@ -25,6 +28,9 @@ class _SortNumbersGameState extends State<SortNumbersGame>
 
   final OrdenarGameController _controller = OrdenarGameController();
   final AppService _service = AppService();
+  final ReactionSoundPlayer _reactionSoundPlayer = ReactionSoundPlayer();
+  final ReactionMessageService _reactionMessageService =
+      ReactionMessageService();
   GameSessionTracker? _sessionTracker;
 
   late List<int> pool;
@@ -35,7 +41,10 @@ class _SortNumbersGameState extends State<SortNumbersGame>
   int? _shakingValue;
 
   bool _showCheckIcon = false;
+  String? _reactionType;
+  bool _showReactionEffect = false;
   int _hits = 0;
+  int _fails = 0;
   int get _targetRounds {
     final prefs = _service.currentUser?.preferences;
     return prefs?.sortGameRounds ?? 5;
@@ -97,6 +106,9 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     final value = dragItem.value;
 
     if (!_controller.isCorrectPlacement(value, targetIndex)) {
+      _fails++;
+      _sessionTracker?.recordFail();
+      _reactionMessageService.speakFail();
       _shakeNumber(value);
       return;
     }
@@ -145,19 +157,51 @@ class _SortNumbersGameState extends State<SortNumbersGame>
     }
 
     _hits++;
+    _playReactionSound();
+    _reactionMessageService.speakSuccess();
     _sessionTracker?.recordHit();
 
-    final int maxRounds = _targetRounds;
-    if (maxRounds > 0 && _hits >= maxRounds) {
-      _showVictoryScreen();
-    } else {
-      _controller.initGame();
-      _startRound();
+    void continueFlow() {
+      final int maxRounds = _targetRounds;
+      if (maxRounds > 0 && _hits >= maxRounds) {
+        _showVictoryScreen();
+      } else {
+        _controller.initGame();
+        _startRound();
+      }
     }
+
+    final String? reactionType =
+        _service.currentUser?.preferences.reactionType;
+    final bool showReaction = reactionType != null;
+    if (showReaction) {
+      setState(() {
+        _showReactionEffect = true;
+        _reactionType = reactionType;
+      });
+      Future.delayed(const Duration(milliseconds: 1400), () {
+        if (!mounted) return;
+        setState(() {
+          _showReactionEffect = false;
+          _reactionType = null;
+        });
+        continueFlow();
+      });
+    } else {
+      setState(() => _reactionType = null);
+      continueFlow();
+    }
+  }
+
+  void _playReactionSound() {
+    final String? soundId = _service.currentUser?.preferences.reactionSound;
+    if (soundId == null || soundId.isEmpty || soundId == 'none') return;
+    _reactionSoundPlayer.play(soundId);
   }
 
   Future<void> _showVictoryScreen() async {
     await _sessionTracker?.finish();
+    await _reactionMessageService.speakFinal(_hits, _fails);
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
@@ -316,6 +360,10 @@ class _SortNumbersGameState extends State<SortNumbersGame>
               ),
             ),
 
+            ReactionOverlay(
+              enabled: _showReactionEffect,
+              type: _reactionType,
+            ),
             if (_showCheckIcon)
               CheckIconOverlay(color: secondaryColor),
           ],

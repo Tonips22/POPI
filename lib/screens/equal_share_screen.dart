@@ -1,11 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:popi/screens/settings_screen.dart';
 import '../widgets/check_icon_overlay.dart';
+import '../widgets/reaction_overlay.dart';
 // import '../widgets/preference_provider.dart';
 import '../services/app_service.dart';
 import '../services/game_session_tracker.dart';
+import '../services/reaction_message_service.dart';
+import '../services/reaction_sound_player.dart';
 import 'settings_screen_sumar.dart';
 import 'game_selector_screen.dart';
 import 'game_victory_screen.dart';
@@ -500,10 +502,15 @@ class EqualShareScreen extends StatefulWidget {
 class _EqualShareScreenState extends State<EqualShareScreen> {
   final EqualShareController _controller = EqualShareController();
   final AppService _service = AppService();
+  final ReactionMessageService _reactionMessageService =
+      ReactionMessageService();
+  final ReactionSoundPlayer _reactionSoundPlayer = ReactionSoundPlayer();
   GameSessionTracker? _sessionTracker;
 
   bool _showCheckIcon = false;
   bool _showErrorIcon = false;
+  bool _showReactionEffect = false;
+  String? _reactionType;
 
   int _hits = 0;
   int _errors = 0;
@@ -546,6 +553,8 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
       _controller.nextRound();
       _showCheckIcon = false;
       _showErrorIcon = false;
+      _showReactionEffect = false;
+      _reactionType = null;
       _roundStart = DateTime.now();
       _roundIndex++;
     });
@@ -556,14 +565,30 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
 
     if (isCorrect) {
       _sessionTracker?.recordHit();
+      _playReactionSound();
+      _reactionMessageService.speakSuccess();
+      final String? reactionType =
+          _service.currentUser?.preferences.reactionType;
+      final bool showReaction = reactionType != null;
       setState(() {
         _hits++;
         _showCheckIcon = true;
+        _showReactionEffect = showReaction;
+        _reactionType = reactionType;
       });
 
-      Future.delayed(const Duration(milliseconds: 800), () async {
+      final Duration delay = showReaction
+          ? const Duration(milliseconds: 1400)
+          : const Duration(milliseconds: 800);
+
+      Future.delayed(delay, () async {
+        if (!mounted) return;
         setState(() {
           _showCheckIcon = false;
+          if (showReaction) {
+            _showReactionEffect = false;
+            _reactionType = null;
+          }
           _roundIndex++;
           if (_hits < _targetRounds) {
             _controller.nextRound();
@@ -577,9 +602,12 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
       });
     } else {
       _sessionTracker?.recordFail();
+      _reactionMessageService.speakFail();
       setState(() {
         _errors++;
         _showErrorIcon = true;
+        _showReactionEffect = false;
+        _reactionType = null;
       });
 
       Future.delayed(const Duration(milliseconds: 800), () {
@@ -590,11 +618,20 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
     }
   }
 
+  void _playReactionSound() {
+    final String? soundId = _service.currentUser?.preferences.reactionSound;
+    if (soundId == null || soundId.isEmpty || soundId == 'none') return;
+    _reactionSoundPlayer.play(soundId);
+  }
+
   void _handleImmediateError() {
     _sessionTracker?.recordFail(); // Registra el error en la base de datos al instante
+    _reactionMessageService.speakFail();
     setState(() {
       _errors++;
       _showErrorIcon = true;
+      _showReactionEffect = false;
+      _reactionType = null;
     });
     Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
@@ -609,6 +646,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
 
   Future<void> _showVictoryScreen() async {
     await _finishSession();
+    await _reactionMessageService.speakFinal(_hits, _errors);
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
@@ -691,6 +729,7 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
                 _controller.initGame();
                 _showCheckIcon = false;
                 _showErrorIcon = false;
+                _showReactionEffect = false;
                 _roundStart = DateTime.now();
                 _roundIndex++;
               });
@@ -742,6 +781,11 @@ class _EqualShareScreenState extends State<EqualShareScreen> {
 
               ),
             ),
+          ),
+
+          ReactionOverlay(
+            enabled: _showReactionEffect,
+            type: _reactionType,
           ),
 
           if (_showCheckIcon)

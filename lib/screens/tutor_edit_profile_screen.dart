@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/app_service.dart';
+import '../services/user_service.dart';
 import '../models/user_model.dart';
-import 'tutor_edit_password_screen.dart';
+import 'tutor_edit_profile_screen_2.dart';
 
 class TutorEditProfileScreen extends StatefulWidget {
   final String studentId;
@@ -15,9 +16,11 @@ class TutorEditProfileScreen extends StatefulWidget {
 
 class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
   final AppService _appService = AppService();
+  final UserService _userService = UserService();
   final TextEditingController _nameController = TextEditingController();
 
   bool _isLoading = true;
+  bool _isSaving = false;
 
   UserModel? _student;
 
@@ -29,6 +32,19 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
     'avatar3',
     'avatar4',
     'avatar5',
+  ];
+
+  final List<int> _password = [];
+  bool _noPassword = false;
+  final List<_Animal> _animals = const [
+    _Animal('🦁', Color(0xFFFFF3CD)),
+    _Animal('🧸', Color(0xFFF5E6FF)),
+    _Animal('🐯', Color(0xFFFFE0B2)),
+    _Animal('🦓', Color(0xFFE0E0E0)),
+    _Animal('🐊', Color(0xFFD4EDDA)),
+    _Animal('🐸', Color(0xFFDFF5FF)),
+    _Animal('🦥', Color(0xFFFCE4EC)),
+    _Animal('🦒', Color(0xFFE8F5E9)),
   ];
 
   @override
@@ -114,24 +130,185 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
     );
   }
 
-  Future<void> _goToPasswordScreen() async {
+  void _addAnimal(int index) {
+    if (_noPassword || _password.length >= 4) return;
+    setState(() => _password.add(index));
+  }
+
+  void _backspace() {
+    if (_password.isEmpty) return;
+    setState(() => _password.removeLast());
+  }
+
+  void _toggleNoPassword(bool value) {
+    setState(() {
+      _noPassword = value;
+      if (value) {
+        _password.clear();
+      }
+    });
+  }
+
+  Future<void> _saveAndContinue() async {
     if (_student == null) return;
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, introduce el nombre del alumno'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
 
-    final updatedStudent = _student!.copyWith(
-      name: _nameController.text.trim(),
-      avatarIndex: _selectedAvatarIndex,
-    );
+    if (!_noPassword && _password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Selecciona de 1 a 4 emojis o marca la opción sin contraseña'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
 
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => TutorEditPasswordScreen(student: updatedStudent),
+    final password = _noPassword ? null : _password.join('');
+
+    setState(() => _isSaving = true);
+
+    try {
+      final updatedStudent = _student!.copyWith(
+        name: name,
+        avatarIndex: _selectedAvatarIndex,
+        password: password,
+      );
+
+      await _userService.updateUserProfile(_student!.id, updatedStudent);
+      await _userService.updatePassword(_student!.id, password);
+
+      if (!mounted) return;
+
+      final result = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TutorEditProfileScreen2(student: updatedStudent),
+        ),
+      );
+
+      if (result == true && mounted) {
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al guardar cambios: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  Widget _buildPasswordSlots() {
+    const double slotSize = 56;
+    return Opacity(
+      opacity: _noPassword ? 0.4 : 1,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          for (int i = 0; i < 4; i++) ...[
+            Container(
+              width: slotSize,
+              height: slotSize,
+              decoration: BoxDecoration(
+                color: i < _password.length
+                    ? _animals[_password[i]].bg
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black, width: 2),
+              ),
+              alignment: Alignment.center,
+              child: i < _password.length
+                  ? Text(
+                      _animals[_password[i]].emoji,
+                      style: const TextStyle(fontSize: 26),
+                    )
+                  : null,
+            ),
+            if (i < 3) const SizedBox(width: 8),
+          ],
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: _noPassword ? null : _backspace,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: slotSize,
+              height: slotSize,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.black, width: 2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.backspace_outlined, size: 22),
+            ),
+          ),
+        ],
       ),
     );
+  }
 
-    if (result == true && mounted) {
-      Navigator.pop(context, true);
-    }
+  Widget _buildAnimalsGrid() {
+    const double gridSpacing = 6;
+    return IgnorePointer(
+      ignoring: _noPassword,
+      child: Opacity(
+        opacity: _noPassword ? 0.35 : 1,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFD9D9D9),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.black26, width: 1),
+          ),
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: gridSpacing,
+              crossAxisSpacing: gridSpacing,
+              mainAxisExtent: 80,
+            ),
+            itemCount: _animals.length,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              final animal = _animals[index];
+              return InkWell(
+                onTap: _password.length < 4 ? () => _addAnimal(index) : null,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: animal.bg,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey, width: 1.2),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    animal.emoji,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -230,6 +407,31 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
               style: TextStyle(fontSize: 12),
             ),
           ),
+          const SizedBox(height: 24),
+          const Text(
+            "Contraseña del alumno",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "Selecciona entre 1 y 4 emojis en orden o deja al alumno sin contraseña.",
+          ),
+          const SizedBox(height: 14),
+          _buildPasswordSlots(),
+          const SizedBox(height: 12),
+          _buildAnimalsGrid(),
+          SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            title: const Text(
+              'Sin contraseña',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: const Text(
+              'Se podrá asignar una contraseña nueva desde este panel cuando lo necesites.',
+            ),
+            value: _noPassword,
+            onChanged: _toggleNoPassword,
+          ),
           const SizedBox(height: 32),
           Row(
             children: [
@@ -246,8 +448,18 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent),
-                  onPressed: _goToPasswordScreen,
-                  child: const Text("Continuar"),
+                  onPressed: _isSaving ? null : _saveAndContinue,
+                  child: _isSaving
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white),
+                          ),
+                        )
+                      : const Text("Continuar"),
                 ),
               ),
             ],
@@ -256,4 +468,10 @@ class _TutorEditProfileScreenState extends State<TutorEditProfileScreen> {
       ),
     );
   }
+}
+
+class _Animal {
+  final String emoji;
+  final Color bg;
+  const _Animal(this.emoji, this.bg);
 }

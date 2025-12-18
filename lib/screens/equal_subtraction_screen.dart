@@ -3,8 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:popi/screens/settings_screen_restar.dart';
 import '../widgets/check_icon_overlay.dart';
+import '../widgets/reaction_overlay.dart';
 import '../services/app_service.dart';
 import '../services/game_session_tracker.dart';
+import '../services/reaction_message_service.dart';
+import '../services/reaction_sound_player.dart';
 import 'game_selector_screen.dart';
 import 'game_victory_screen.dart';
 
@@ -435,13 +438,19 @@ class EqualSubtractionScreen extends StatefulWidget {
 class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
   final EqualSubtractionController _controller = EqualSubtractionController();
   final AppService _service = AppService();
+  final ReactionMessageService _reactionMessageService =
+      ReactionMessageService();
+  final ReactionSoundPlayer _reactionSoundPlayer = ReactionSoundPlayer();
   GameSessionTracker? _sessionTracker;
 
   bool _showCheckIcon = false;
   bool _showErrorIcon = false;
+  bool _showReactionEffect = false;
+  String? _reactionType;
 
   int _attempts = 0;     // nº de acciones (taps) en la ronda
   int _successes = 0;    // nº de rondas completadas
+  int _fails = 0;
   late DateTime _roundStart;
   int _roundIndex = 0;   // para reconstruir el tablero entre rondas
   int get _targetRounds {
@@ -484,8 +493,12 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
 
   void _handleInvalidMove() {
     _sessionTracker?.recordFail(); // Registra el error en la base de datos
+    _fails++;
+    _reactionMessageService.speakFail();
     setState(() {
       _showErrorIcon = true;
+      _showReactionEffect = false;
+      _reactionType = null;
     });
 
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -504,21 +517,39 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
       _roundStart = DateTime.now();
       _roundIndex++;
       _attempts = 0;
+      _showReactionEffect = false;
+      _reactionType = null;
     });
   }
 
   void _handleRoundUpdate(bool isCorrect, String equation) {
     _attempts++;
     if (isCorrect) {
+      _playReactionSound();
+      _reactionMessageService.speakSuccess();
       _sessionTracker?.recordHit();
+      final String? reactionType =
+          _service.currentUser?.preferences.reactionType;
+      final bool showReaction = reactionType != null;
       setState(() {
         _successes++;
         _showCheckIcon = true;
+        _showReactionEffect = showReaction;
+        _reactionType = reactionType;
       });
 
-      Future.delayed(const Duration(milliseconds: 800), () async {
+      final Duration delay = showReaction
+          ? const Duration(milliseconds: 1400)
+          : const Duration(milliseconds: 800);
+
+      Future.delayed(delay, () async {
+        if (!mounted) return;
         setState(() {
           _showCheckIcon = false;
+          if (showReaction) {
+            _showReactionEffect = false;
+            _reactionType = null;
+          }
           _roundIndex++;
           if (_successes < _targetRounds) {
             _controller.nextRound();
@@ -532,12 +563,19 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
     }
   }
 
+  void _playReactionSound() {
+    final String? soundId = _service.currentUser?.preferences.reactionSound;
+    if (soundId == null || soundId.isEmpty || soundId == 'none') return;
+    _reactionSoundPlayer.play(soundId);
+  }
+
   Future<void> _finishSession() async {
     await _sessionTracker?.finish();
   }
 
   Future<void> _showVictoryScreen() async {
     await _finishSession();
+    await _reactionMessageService.speakFinal(_successes, _fails);
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
@@ -622,6 +660,7 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                 _roundStart = DateTime.now();
                 _roundIndex++;
                 _attempts = 0;
+                _showReactionEffect = false;
               });
             },
 
@@ -686,6 +725,11 @@ class _EqualSubtractionScreenState extends State<EqualSubtractionScreen> {
                 ),
               ),
             ),
+          ),
+
+          ReactionOverlay(
+            enabled: _showReactionEffect,
+            type: _reactionType,
           ),
 
           if (_showCheckIcon)
