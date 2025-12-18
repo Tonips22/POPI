@@ -29,9 +29,6 @@ class _TutorEditGameProfileDejarState
   double repeticiones = 3; // valor del slider (1–12)
   bool _loading = true;
 
-  String? objectImagePath;
-  String? containerImagePath;
-
   @override
   void initState() {
     super.initState();
@@ -166,7 +163,6 @@ class _TutorEditGameProfileDejarState
             ),
 
             const SizedBox(height: 20),
-
 
             const Spacer(),
 

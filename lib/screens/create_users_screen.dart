@@ -17,12 +17,16 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
 
   // Controladores de los campos
   final _nombreCtrl = TextEditingController();
-  final _tutorCtrl  = TextEditingController();
   final AppService _appService = AppService();
   
   // Para el Dropdown de Rol (Sin Admin)
   String? _selectedRole;
   final List<String> _roles = ['Estudiante', 'Tutor'];
+
+  // Tutores disponibles
+  List<UserModel> _availableTutors = [];
+  String? _selectedTutorId;
+  bool _isLoadingTutors = false;
 
   // Para el Avatar
   int _selectedAvatarIndex = 0;
@@ -30,11 +34,51 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
     'avatar6','avatar7', 'avatar8', 'avatar9', 'avatar10', 'avatar11'];
 
   @override
+  void initState() {
+    super.initState();
+    _loadTutors();
+  }
+
+  @override
   void dispose() {
     _nombreCtrl.dispose();
-    _tutorCtrl.dispose();
     super.dispose();
   }
+
+  Future<void> _loadTutors() async {
+    setState(() {
+      _isLoadingTutors = true;
+    });
+    try {
+      final tutors = await UserService().getTutors();
+      if (!mounted) return;
+      setState(() {
+        _availableTutors = tutors;
+        if (_selectedTutorId == null &&
+            _appService.currentUser?.role.toLowerCase() == 'tutor') {
+          _selectedTutorId = _appService.currentUser!.id;
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No se pudieron cargar los tutores: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingTutors = false;
+        });
+      }
+    }
+  }
+
+  bool get _isStudentSelected =>
+      _selectedRole != null && _normalizeRole(_selectedRole!) == 'student';
 
   void _showAvatarSelection() {
     showModalBottomSheet(
@@ -304,17 +348,40 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                             labelFont: labelFont,
                             fieldHeight: fieldH,
                             fieldRadius: fieldRad,
-                            child: TextField(
-                              controller: _tutorCtrl,
-                              textInputAction: TextInputAction.done,
-                              style: TextStyle(fontSize: labelFont, color: Colors.black87),
-                              decoration: _inputDecoration(
-                                hintText: 'Nombre del tutor (si aplica)',
-                                icon: Icons.supervisor_account_outlined,
-                                fieldRadius: fieldRad,
-                                labelFont: labelFont,
-                              ),
-                            ),
+                            child: _isLoadingTutors
+                                ? const Center(child: CircularProgressIndicator())
+                                : DropdownButtonFormField<String>(
+                                    value: _selectedTutorId ?? '',
+                                    items: [
+                                      const DropdownMenuItem(
+                                        value: '',
+                                        child: Text('Sin tutor asignado'),
+                                      ),
+                                      ..._availableTutors.map(
+                                        (t) => DropdownMenuItem(
+                                          value: t.id,
+                                          child: Text(t.name),
+                                        ),
+                                      ),
+                                    ],
+                                    onChanged: _isStudentSelected
+                                        ? (val) =>
+                                            setState(() => _selectedTutorId = val)
+                                        : null,
+                                    style: TextStyle(
+                                        fontSize: labelFont,
+                                        color: Colors.black87),
+                                    decoration: _inputDecoration(
+                                      hintText: _isStudentSelected
+                                          ? 'Selecciona un tutor'
+                                          : 'Solo para estudiantes',
+                                      icon: Icons.supervisor_account_outlined,
+                                      fieldRadius: fieldRad,
+                                      labelFont: labelFont,
+                                    ),
+                                    icon: const Icon(Icons.arrow_drop_down,
+                                        color: Colors.black54),
+                                  ),
                           ),
             
                           const SizedBox(height: 32),
@@ -362,24 +429,29 @@ class _CrearUsuarioScreenState extends State<CrearUsuarioScreen> {
                                 try {
                                   // Creamos un objeto temporal. El ID se ignorará en el servicio
                                   // porque generará uno nuevo numérico.
-                                  final tutorCandidate = _appService.currentUser;
+                                  final currentUser = _appService.currentUser;
+                                  String? tutorId;
+                                  if (normalizedRole == 'student') {
+                                    if (currentUser != null &&
+                                        currentUser.role.toLowerCase() ==
+                                            'tutor') {
+                                      tutorId = currentUser.id;
+                                    } else {
+                                      tutorId = (_selectedTutorId != null &&
+                                              _selectedTutorId!.isNotEmpty)
+                                          ? _selectedTutorId
+                                          : null;
+                                    }
+                                  }
 
-                                  final shouldAssignTutor =
-                                      normalizedRole == 'student' &&
-                                          tutorCandidate != null &&
-                                          tutorCandidate.role.toLowerCase() == 'tutor';
-
-                                  final String? tutorId =
-                                  shouldAssignTutor ? tutorCandidate!.id : null;
-
-                                  final tempUser = UserModel(
-                                    id: '',
-                                    name: nombre,
-                                    role: normalizedRole!,
-                                    avatarIndex: _selectedAvatarIndex,
-                                    tutorId: tutorId, // 👈 STRING
-                                    preferences: UserPreferences(),
-                                  );
+          final tempUser = UserModel(
+            id: '',
+            name: nombre,
+            role: normalizedRole!,
+            avatarIndex: _selectedAvatarIndex,
+            tutorId: tutorId, // 👈 STRING
+            preferences: UserPreferences(canCustomize: true),
+          );
 
                                   await UserService().createUser(tempUser);
 

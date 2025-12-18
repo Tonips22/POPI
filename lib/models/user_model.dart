@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// Modelo simplificado de usuario para el sistema de login
 class UserModel {
   final String id;
@@ -7,6 +9,7 @@ class UserModel {
   final String? password; // Password de 4 dígitos (opcional)
   final String? tutorId;
   final UserPreferences preferences;
+  final Timestamp? createdAt;
   final bool isActive;
 
   UserModel({
@@ -17,6 +20,7 @@ class UserModel {
     this.password,
     this.tutorId,
     required this.preferences,
+    this.createdAt,
     this.isActive = true,
   });
 
@@ -29,6 +33,8 @@ class UserModel {
       'password': password,
       'tutorId': tutorId,
       'preferences': preferences.toMap(),
+      if (createdAt != null) 'createdAt': createdAt,
+      if (createdAt != null) 'fecha_creacion': createdAt,
       'isActive': isActive,
     };
   }
@@ -65,6 +71,13 @@ class UserModel {
       }
     }
 
+    Timestamp? createdAt;
+    final dynamic rawCreatedAt =
+        map['createdAt'] ?? map['created_at'] ?? map['fecha_creacion'];
+    if (rawCreatedAt is Timestamp) {
+      createdAt = rawCreatedAt;
+    }
+
     return UserModel(
       id: docId,
       name: map['name'] ?? '',
@@ -73,6 +86,7 @@ class UserModel {
       password: map['password'],
       tutorId: tutorId,
       preferences: UserPreferences.fromMap(map['preferences'] ?? {}),
+      createdAt: createdAt,
       isActive: isActive,
     );
   }

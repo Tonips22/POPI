@@ -30,10 +30,10 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
   void initState() {
     super.initState();
     final prefs = _service.currentUser?.preferences ?? UserPreferences();
-    _touchRounds = prefs.touchGameRounds;
-    _sortRounds = prefs.sortGameRounds;
-    _shareRounds = prefs.shareGameRounds;
-    _subtractRounds = prefs.subtractGameRounds;
+    _touchRounds = prefs.touchGameRounds.clamp(1, 12).toInt();
+    _sortRounds = prefs.sortGameRounds.clamp(1, 12).toInt();
+    _shareRounds = prefs.shareGameRounds.clamp(1, 12).toInt();
+    _subtractRounds = prefs.subtractGameRounds.clamp(1, 12).toInt();
     _touchColor = _colorFromHex(prefs.touchGameColor, const Color(0xFF2196F3));
     _sortColor = _colorFromHex(prefs.sortGameColor, const Color(0xFF4CAF50));
     _shareColor = _colorFromHex(prefs.shareGameColor, const Color(0xFFFF9800));
@@ -50,7 +50,12 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
     final titleFontSize = _service.fontSizeWithFallback();
     final titleFontFamily = _service.fontFamilyWithFallback();
 
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        await _savePreferences(showFeedback: false);
+        return true;
+      },
+      child: Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         title: Text(
@@ -66,7 +71,9 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
         foregroundColor: Colors.black,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () async {
+            await _handleExit();
+          },
         ),
       ),
       body: ListView(
@@ -132,35 +139,9 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
             ),
             onChanged: (value) => setState(() => _subtractRounds = value),
           ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              backgroundColor: Colors.blueAccent,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: _isSaving ? null : _savePreferences,
-            icon: _isSaving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Icon(Icons.save),
-            label: Text(
-              _isSaving ? 'Guardando...' : 'Guardar',
-              style: TextStyle(
-                fontSize: titleFontSize * 0.8,
-                fontFamily: titleFontFamily,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
         ],
       ),
+    ),
     );
   }
 
@@ -194,9 +175,16 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
     return '0x$hex';
   }
 
-  Future<void> _savePreferences() async {
+  Future<void> _handleExit() async {
+    await _savePreferences(showFeedback: false);
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _savePreferences({bool showFeedback = true}) async {
     final currentUser = _service.currentUser;
-    if (currentUser == null) return;
+    if (currentUser == null || _isSaving) return;
 
     setState(() => _isSaving = true);
     final updated = currentUser.preferences.copyWith(
@@ -215,14 +203,14 @@ class _GamePreferencesScreenState extends State<GamePreferencesScreen> {
 
     if (success) {
       _service.updateCurrentUserPreferences(updated);
-      if (mounted) {
+      if (showFeedback && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Preferencias de juegos guardadas'),
           ),
         );
       }
-    } else {
+    } else if (showFeedback && mounted) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -258,7 +246,7 @@ class _RoundsCard extends StatelessWidget {
   final VoidCallback onColorTap;
 
   static const int _minRounds = 1;
-  static const int _maxRounds = 10;
+  static const int _maxRounds = 12;
 
   @override
   Widget build(BuildContext context) {
@@ -363,15 +351,6 @@ class _RoundsCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _hexLabel(color),
-                    style: TextStyle(
-                      fontSize: fontSize * 0.65,
-                      fontFamily: fontFamily,
-                    ),
-                  ),
-                ),
                 TextButton.icon(
                   onPressed: onColorTap,
                   icon: const Icon(Icons.palette),
@@ -383,10 +362,5 @@ class _RoundsCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _hexLabel(Color color) {
-    final hex = color.value.toRadixString(16).padLeft(8, '0').toUpperCase();
-    return '#${hex.substring(2)}';
   }
 }

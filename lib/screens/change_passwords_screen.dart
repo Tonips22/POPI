@@ -66,7 +66,7 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
 
   Future<void> _savePlainPassword() async {
     final pwd = _plainPwdCtrl.text.trim();
-    if (pwd.isEmpty) {
+    if (pwd.isEmpty && !_isStudent) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Introduce una contraseña'),
@@ -78,11 +78,16 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
 
     setState(() => _savingPlain = true);
     try {
-      await UserService().updatePassword(widget.userId, pwd);
+      await UserService().updatePassword(
+        widget.userId,
+        pwd.isEmpty ? null : pwd,
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Contraseña actualizada'),
+        SnackBar(
+          content: Text(
+            pwd.isEmpty ? 'Contraseña eliminada' : 'Contraseña actualizada',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -437,63 +442,57 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
                 animalsGrid(),
                 SizedBox(height: clamp(base * 0.04, 18, 28)),
 
-                if (_pwd.length == 4)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 12.0),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Contraseña lista (4 símbolos)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black87,
-                              fontSize: clamp(base * 0.024, 13, 16),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E7D32),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2E7D32),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            onPressed: () async {
-                              final password = _pwd.join('');
-                              try {
-                                await UserService().updatePassword(widget.userId, password);
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Contraseña guardada correctamente'),
-                                      backgroundColor: Colors.green,
+                          onPressed: () async {
+                            final password = _pwd.isEmpty ? null : _pwd.join('');
+                            try {
+                              await UserService().updatePassword(widget.userId, password);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      password == null
+                                          ? 'Contraseña eliminada'
+                                          : 'Contraseña guardada correctamente',
                                     ),
-                                  );
-                                  Navigator.pop(context);
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Error al guardar: $e'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                Navigator.pop(context);
                               }
-                            },
-                            child: const Text(
-                              'GUARDAR CONTRASEÑA',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error al guardar: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text(
+                            'GUARDAR CONTRASEÑA',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
+                ),
               ],
             ),
           );

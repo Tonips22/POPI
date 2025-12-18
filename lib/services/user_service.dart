@@ -39,9 +39,13 @@ class UserService {
               'role': user.role,
               'password': user.password,
               'isActive': user.isActive,
-              'createdAt': FieldValue.serverTimestamp(),
             };
+
       userData['id'] = newIdStr;
+
+      final FieldValue createdTimestamp = FieldValue.serverTimestamp();
+      userData['createdAt'] = createdTimestamp;
+      userData['fecha_creacion'] = createdTimestamp;
 
       await _fs.collection(_collection).doc(newIdStr).set(userData);
 
@@ -261,6 +265,26 @@ class UserService {
     } catch (e) {
       print('❌ Error genérico en getAllUsers: $e');
       rethrow;
+    }
+  }
+
+  /// Obtiene lista de tutores activos
+  Future<List<UserModel>> getTutors() async {
+    try {
+      final snapshot = await _fs
+          .collection(_collection)
+          .where('role', isEqualTo: 'tutor')
+          .get();
+      return snapshot.docs
+          .map((doc) => UserModel.fromMap(doc.data(), doc.id))
+          .where((user) => user.isActive)
+          .toList();
+    } on FirebaseException catch (e) {
+      print('❌ FirebaseException en getTutors: [${e.code}] ${e.message}');
+      return [];
+    } catch (e) {
+      print('❌ Error genérico en getTutors: $e');
+      return [];
     }
   }
 

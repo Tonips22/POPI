@@ -137,7 +137,7 @@ class _ChooseGameScreenState extends State<ChooseGameScreen> {
                   ),
                   child: ClipOval(
                       child: Image.asset(
-                        'assets/images/avatar${(currentUser.avatarIndex % 6) + 0}.jpg',
+                        'assets/images/avatar${currentUser.avatarIndex}.jpg',
                       width: 40,
                       height: 40,
                       fit: BoxFit.cover,

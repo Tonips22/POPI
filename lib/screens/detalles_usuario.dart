@@ -48,7 +48,10 @@ class _UsuarioDetallesScreenState extends State<UsuarioDetallesScreen> {
 
   String _asString(dynamic v) {
     if (v == null) return 'N/A';
-    if (v is Timestamp) return v.toDate().toString();
+    if (v is Timestamp) {
+      final date = v.toDate();
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    }
     return v.toString();
   }
 
@@ -207,7 +210,6 @@ class _UsuarioDetallesScreenState extends State<UsuarioDetallesScreen> {
   Widget build(BuildContext context) {
     // Campos principales (aguantando nombres alternativos)
     final name = _asString(_user['name'] ?? _user['nombre']);
-    final id = _asString(_user['id']);
     final roleEs = _translateRole(_user['role'] ?? _user['rol']);
 
     final createdAt = _user['created_at'] ?? _user['createdAt'] ?? _user['fecha_creacion'];
@@ -230,7 +232,6 @@ class _UsuarioDetallesScreenState extends State<UsuarioDetallesScreen> {
           children: [
             _sectionTitle('Usuario'),
             _detailRow('Nombre', name),
-            _detailRow('Id', id),
             _detailRow('Rol', roleEs),
             _detailRow('Fecha de creación', createdAtStr),
 
@@ -254,15 +255,15 @@ class _UsuarioDetallesScreenState extends State<UsuarioDetallesScreen> {
             _colorRow('Color secundario', _prefs['secondaryColor']),
             _detailRow('Forma', _asString(_prefs['shape'])),
 
-            _detailRow('Juego de rondas', _asString(_prefs['shareGameRounds'])),
+            _detailRow('Rondas tocar número', _asString(_prefs['touchGameRounds'])),
+            _detailRow('Rondas ordenar secuencia', _asString(_prefs['sortGameRounds'])),
+            _detailRow('Rondas repartir números', _asString(_prefs['shareGameRounds'])),
+            _detailRow('Rondas deja el mismo número', _asString(_prefs['subtractGameRounds'])),
             _boolRow('Mostrar tutorial juego 1', _prefs['showTutorialJuego1']),
             _boolRow('Mostrar tutorial juego 2', _prefs['showTutorialJuego2']),
             _boolRow('Mostrar tutorial juego 3', _prefs['showTutorialJuego3']),
             _boolRow('Mostrar tutorial juego 4', _prefs['showTutorialJuego4']),
-            _boolRow('Ordenar rondas', _prefs['sortGameRounds']),
-            _boolRow('Restar rondas', _prefs['subtractGameRounds']),
             _detailRow('Tipo de reacción', _asString(_prefs['tipo_reaccion'])),
-            _detailRow('Rondas de juego táctil', _asString(_prefs['touchGameRounds'])),
             _detailRow('Texto de voz', _asString(_prefs['voiceText'])),
           ],
         ),
