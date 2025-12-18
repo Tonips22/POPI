@@ -3,6 +3,8 @@ import 'package:popi/screens/tutor_edit_game_profile_dejar.dart';
 import 'package:popi/screens/tutor_edit_game_profile_reparte.dart';
 import 'package:popi/screens/tutor_edit_game_profile_tocar.dart';
 import 'package:popi/screens/tutor_edit_game_profile_ordenar.dart';
+
+import 'home_tutor_screen.dart';
 // import '../widgets/preference_provider.dart';
 
 class TutorChooseGameScreen extends StatelessWidget {
@@ -41,8 +43,15 @@ class TutorChooseGameScreen extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.black),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const TutorHomeScreen()),
+                      );
+                    },
                   ),
+
+
 
                   CircleAvatar(
                     backgroundImage: AssetImage(avatarPath),
@@ -89,17 +98,23 @@ class TutorChooseGameScreen extends StatelessWidget {
                             icon: Icons.touch_app,
                             label: 'Toca el número',
                             color: Colors.blue,
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => TutorEditGameProfileTocar(
-                                    studentId: studentId,   // ✅ NUEVO
+                                    studentId: studentId,
                                     studentName: studentName,
                                     avatarPath: avatarPath,
                                   ),
                                 ),
                               );
+
+                              if (result == true && context.mounted) {
+                                // Cambios guardados → mandar al HomeTutor
+                                Navigator.pop(context,true);
+                              }
+
 
                             },
                           ),
@@ -109,17 +124,23 @@ class TutorChooseGameScreen extends StatelessWidget {
                             icon: Icons.sort,
                             label: 'Ordena los números',
                             color: Colors.green,
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => TutorEditGameProfileOrdenar(
-                                    studentId: studentId,   // ✅ NUEVO
+                                    studentId: studentId,
                                     studentName: studentName,
                                     avatarPath: avatarPath,
                                   ),
                                 ),
                               );
+
+                              if (result == true && context.mounted) {
+                                // Cambios guardados → mandar al HomeTutor
+                                Navigator.pop(context,true);
+                              }
+
 
                             },
                           ),
@@ -129,17 +150,23 @@ class TutorChooseGameScreen extends StatelessWidget {
                             icon: Icons.share,
                             label: 'Reparte los números',
                             color: Colors.orange,
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => TutorEditGameProfileReparte(
-                                    studentId: studentId,   // ✅ NUEVO
+                                    studentId: studentId,
                                     studentName: studentName,
                                     avatarPath: avatarPath,
                                   ),
                                 ),
                               );
+
+                              if (result == true && context.mounted) {
+                                // Cambios guardados → mandar al HomeTutor
+                                Navigator.pop(context,true);
+                              }
+
 
                               },
                           ),
@@ -149,17 +176,23 @@ class TutorChooseGameScreen extends StatelessWidget {
                             icon: Icons.balance,
                             label: 'Deja el mismo número',
                             color: Colors.purple,
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) => TutorEditGameProfileDejar(
-                                    studentId: studentId,   // ✅ NUEVO
+                                    studentId: studentId,
                                     studentName: studentName,
                                     avatarPath: avatarPath,
                                   ),
                                 ),
                               );
+
+                              if (result == true && context.mounted) {
+                                // Cambios guardados → mandar al HomeTutor
+                                Navigator.pop(context);
+                              }
+
 
                             },
                           ),

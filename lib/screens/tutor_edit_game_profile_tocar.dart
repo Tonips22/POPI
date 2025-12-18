@@ -34,6 +34,20 @@ class _TutorEditGameProfileTocarState
     _loadPreferences();
   }
 
+  Future<void> _saveSortGameRounds() async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.studentId)
+        .update({
+      'preferences.touchGameRounds': repeticiones.round(),
+    });
+
+    if (context.mounted) {
+      Navigator.pop(context, true); // Vuelve a TutorChooseGameScreen indicando cambios
+    }
+  }
+
+
   Future<void> _loadPreferences() async {
     final user = await _appService.getUserById(widget.studentId);
     if (user == null) return;
@@ -172,12 +186,7 @@ class _TutorEditGameProfileTocarState
                     await _saveTouchGameRounds();
 
                     if (context.mounted) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const TutorHomeScreen()),
-                            (route) => false,
-                      );
+                      Navigator.pop(context, true);
                     }
                   },
                   child: const Text(
@@ -189,14 +198,13 @@ class _TutorEditGameProfileTocarState
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.greenAccent),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DifficultyScreen(),
-                      ),
-                    );
+                  onPressed: () async {
+                    await _saveSortGameRounds();
+                    if (context.mounted) {
+                      Navigator.pop(context, true); // vuelve a TutorChooseGameScreen
+                    }
                   },
+
                   child: const Text(
                     "Ajustar dificultad",
                     style: TextStyle(color: Colors.black),

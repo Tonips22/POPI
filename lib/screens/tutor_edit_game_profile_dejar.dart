@@ -166,43 +166,6 @@ class _TutorEditGameProfileDejarState
 
             const SizedBox(height: 20),
 
-            // 📸 Botones de imágenes (placeholder lógico)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      objectImagePath = 'assets/images/objeto_custom.png';
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Imagen de objeto subida"),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.image),
-                  label: const Text("Subir imagen objeto"),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      containerImagePath =
-                      'assets/images/contenedor_custom.png';
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Imagen de contenedor subida"),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.image),
-                  label: const Text("Subir imagen contenedor"),
-                ),
-              ],
-            ),
 
             const Spacer(),
 
@@ -217,12 +180,7 @@ class _TutorEditGameProfileDejarState
                     await _saveSubtractGameRounds();
 
                     if (context.mounted) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const TutorHomeScreen()),
-                            (route) => false,
-                      );
+                      Navigator.pop(context,true);
                     }
                   },
                   child: const Text(

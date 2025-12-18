@@ -174,12 +174,7 @@ class _TutorEditGameProfileOrdenarState
                     await _saveSortGameRounds();
 
                     if (context.mounted) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const TutorHomeScreen()),
-                            (route) => false,
-                      );
+                      Navigator.pop(context,true);
                     }
                   },
                   child: const Text(
