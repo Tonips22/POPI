@@ -70,40 +70,35 @@ class _TutorialJuego2ScreenState extends State<TutorialJuego2Screen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Arrastra los números para colocarlos en orden correcto. '
-                'Si te equivocas, siempre puedes volver a intentarlo.',
-                style: theme.textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Consejos:',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 4 / 3,
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 700),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Image.asset(
+                          'assets/images/tutorial_juego2.gif',
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Text(
+                                'Añade el GIF del tutorial en assets/images/tutorial_juego2.gif',
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      SizedBox(height: 16),
-                      _TutorialTip(text: 'Empieza por el número más pequeño.'),
-                      _TutorialTip(
-                        text: 'Coloca cada ficha en su lugar para formar la secuencia.',
-                      ),
-                      _TutorialTip(
-                        text: 'Si un número no encaja, vuelve a dejarlo en la fila principal.',
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -143,32 +138,6 @@ class _TutorialJuego2ScreenState extends State<TutorialJuego2Screen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _TutorialTip extends StatelessWidget {
-  const _TutorialTip({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.check_circle, color: Color(0xFF2596BE)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-        ],
       ),
     );
   }
