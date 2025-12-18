@@ -127,12 +127,6 @@ class _ChangePasswordsScreenState extends State<ChangePasswordsScreen> {
             letterSpacing: 0.5,
           ),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 8),
-            child: Icon(Icons.more_vert, color: Colors.black),
-          ),
-        ],
         elevation: 0,
       ),
       body: LayoutBuilder(

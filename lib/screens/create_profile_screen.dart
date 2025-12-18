@@ -109,12 +109,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 8.0),
-            child: Icon(Icons.more_vert, color: Colors.black),
-          ),
-        ],
         elevation: 0,
       ),
       body: Center(

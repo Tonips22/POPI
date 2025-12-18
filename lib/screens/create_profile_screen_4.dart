@@ -41,12 +41,6 @@ class _CreateProfileScreen4State extends State<CreateProfileScreen4> {
           ),
         ),
         centerTitle: true,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 8),
-            child: Icon(Icons.more_vert, color: Colors.black),
-          ),
-        ],
       ),
 
       // === CONTENIDO DE LA PANTALLA ===

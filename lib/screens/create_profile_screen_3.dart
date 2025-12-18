@@ -33,12 +33,6 @@ class _CreateProfileScreen3State extends State<CreateProfileScreen3> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 8.0),
-            child: Icon(Icons.more_vert),
-          ),
-        ],
       ),
       body: Center(
         child: SingleChildScrollView(
