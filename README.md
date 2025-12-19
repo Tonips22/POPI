@@ -7,7 +7,6 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.9.2-02569B?style=flat&logo=flutter)](https://flutter.dev)
 [![Firebase](https://img.shields.io/badge/Firebase-Cloud-FFCA28?style=flat&logo=firebase)](https://firebase.google.com)
 [![Platform](https://img.shields.io/badge/%20Android%20|%20Web-blue?style=flat)]()
-[![License](https://img.shields.io/badge/License-Private-red?style=flat)]()
 
 *Una aplicación educativa diseñada para estudiantes con diversidad funcional, centrada en el aprendizaje matemático inclusivo y personalizado.*
 
