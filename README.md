@@ -1,103 +1,565 @@
-# POPI — Juego educativo de Matemáticas accesible para tabletas
+<div align="center">
 
-POPI es una aplicación educativa para tabletas pensada para alumnado con discapacidad cognitiva. Está diseñada para ser accesible, altamente personalizable y fácil de usar por tutores y estudiantes. El objetivo es ofrecer minijuegos compactos que trabajen reconocimiento de números, orden, clasificación y operaciones básicas con ayuda audiovisual y adaptaciones según las necesidades de cada estudiante.
+# 🎓 POPI
 
-Este repositorio contiene el prototipo inicial y la estructura sobre la que se desarrollará la app.
+### Plataforma Educativa Accesible para Matemáticas
 
----
+[![Flutter](https://img.shields.io/badge/Flutter-3.9.2-02569B?style=flat&logo=flutter)](https://flutter.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Cloud-FFCA28?style=flat&logo=firebase)](https://firebase.google.com)
+[![Platform](https://img.shields.io/badge/%20Android%20|%20Web-blue?style=flat)]()
+[![License](https://img.shields.io/badge/License-Private-red?style=flat)]()
 
-## Contenido de este documento
+*Una aplicación educativa diseñada para estudiantes con diversidad funcional, centrada en el aprendizaje matemático inclusivo y personalizado.*
 
-1. Visión general
-2. Estado actual del proyecto
-3. Funcionalidades (actuales y planificadas)
-4. Estructura de carpetas recomendada
-5. Autores
+[Características](#-características-principales) • [Arquitectura](#-arquitectura) • [Instalación](#-instalación) • [Uso](#-guía-de-uso) • [Documentación](#-documentación)
 
----
-
-## 1. Visión general
-
-POPI propone una serie de minijuegos pensados para tabletas, con enfoque en accesibilidad y personalización de la experiencia:
-
-- Perfiles de estudiantes (datos, preferencias visuales y de audio).
-- Personalización: colores, tipografías, tamaño de letra, formas de mostrar números (grafía, pictograma, audio, dibujo), imágenes y audios personalizados.
-- Cuatro minijuegos esenciales que se adaptan a distintos rangos numéricos y niveles de dificultad.
-- Registro de progreso (gráficas de aciertos/errores) y roles: administrador, tutor y estudiante.
-- Ayuda multimedia (vídeos subtitulados por juego) y reforzadores positivos personalizados al finalizar cada partida.
+</div>
 
 ---
 
-## 2. Estado actual (qué hay en el repositorio)
+## 📋 Tabla de Contenidos
 
-El proyecto ya contiene varias pantallas y widgets funcionales, en español, con diseño pensado para tabletas:
-
-### Pantallas principales:
-  - **CustomizationScreen**: Pantalla principal de personalización
-  - **ColorSettingsScreen**: Selección de colores personalizados
-  - **FontsSettingsScreen**: Configuración de tipografías y tamaño de texto
-  - **NumberFormatScreen**: Preferencias de visualización de números
-  - **SettingsScreen**: Configuración general del juego
-  - **DifficultyScreen**: Ajuste de dificultad y rangos numéricos
-
-### Pantallas de gestión y administración:
-  - **AdminScreen**: Panel principal del administrador
-  - **ManageUsersScreen**: Gestión de usuarios (crear, desactivar, eliminar)
-  - **CreateUsersScreen**: Creación de nuevas cuentas
-  - **DesactivateUsersScreen**: Desactivación de usuarios
-  - **DeleteUsersScreen**: Eliminación de usuarios del sistema
-  - **ResetPasswordsScreen**: Restablecimiento de contraseñas
-  - **ChangePasswordsScreen**: Cambio de contraseñas
-
-### Pantallas de creación de perfiles:
-  - **CreateProfileScreen** (1-4): Flujo completo de creación de perfil de estudiante con selección de avatar, datos personales y configuración
-
-### Pantallas de juegos:
-  - **GameSelectorScreen**: Selector de minijuegos disponibles
-  - **NumberScreen**: Minijuego "Toca el número que suena" (implementado con TTS)
-  - **SortNumbersGame**: Minijuego "Ordena la secuencia" con drag & drop
-
-### Pantallas de autenticación:
-  - **LoginScreen**: Pantalla de inicio de sesión con selección de usuario
-  - **PasswordScreen**: Pantalla de contraseña con sistema de animales y colores
-
-### Widgets reutilizables:
-  - **CustomizationOptionCard**, **ColorSettingCard**, **ColorPickerDialog**: Personalización visual
-  - **NumberFormatOptionCard**, **UploadOptionCard**: Preferencias de formato
-  - **NumberGrid**, **NumberCircle**: Componentes del juego de números
-  - **NumberTile**, **TargetSlot**: Componentes para el juego de ordenar números con drag & drop
-
-### Lógica de juego:
-  - **GameController**: Controlador singleton para gestión de dificultad, rangos numéricos y generación de números aleatorios
-
-### Modelos:
-  - **number_format_preferences.dart**: Modelo para preferencias de visualización de números
-
-### Utilidades:
-  - **color_constants.dart**: Constantes de colores de la aplicación
-
-### Archivo principal:
-  - **main.dart**: Punto de entrada de la aplicación
-
-Es una base funcional con múltiples características ya implementadas, pensada para un equipo de principiantes.
+- [Visión General](#-visión-general)
+- [Características Principales](#-características-principales)
+- [Arquitectura](#-arquitectura)
+- [Tecnologías](#-tecnologías)
+- [Instalación](#-instalación)
+- [Configuración](#-configuración)
+- [Guía de Uso](#-guía-de-uso)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Juegos Educativos](#-juegos-educativos)
+- [Sistema de Personalización](#-sistema-de-personalización)
+- [Gestión de Usuarios](#-gestión-de-usuarios)
+- [Análisis y Reportes](#-análisis-y-reportes)
+- [Contribución](#-contribución)
+- [Licencia](#-licencia)
 
 ---
 
-## 3. Funcionalidades actuales y planificadas
+## 🌟 Visión General
 
-### Funcionalidades ya implementadas:
+**POPI** es una aplicación educativa multiplataforma desarrollada con Flutter, diseñada específicamente para estudiantes con diversidad funcional cognitiva. La aplicación ofrece una experiencia de aprendizaje matemático personalizada, accesible y motivadora a través de minijuegos interactivos adaptables.
 
-#### Interfaz y personalización:
-- Navegación completa entre pantallas de personalización
-- Selección visual de colores y tipografías (UI y diálogos funcionales)
-- Interfaz para escoger cómo mostrar números (grafía, pictograma, audio, dibujo)
-- Tarjetas para subir imagen/audio (UI preparada)
-- Modelos para serializar preferencias (toMap / fromMap)
-- Ajuste de dificultad con slider y selección de rangos numéricos
+### Objetivos del Proyecto
 
-#### Gestión de usuarios:
-- Panel de administrador completo
-- Flujo de creación de perfiles de estudiantes (4 pantallas)
+- **Accesibilidad Universal**: Diseño inclusivo que se adapta a diferentes necesidades cognitivas y sensoriales
+- **Personalización Total**: Cada estudiante puede tener una experiencia completamente adaptada a sus preferencias y capacidades
+- **Seguimiento Pedagógico**: Herramientas avanzadas para que tutores y educadores monitoreen el progreso
+- **Motivación Continua**: Sistema de refuerzos positivos personalizables para mantener el compromiso del estudiante
+
+---
+
+## ✨ Características Principales
+
+### 🎮 Cuatro Juegos Matemáticos Interactivos
+
+1. **"Toca el Número"** - Reconocimiento numérico con síntesis de voz
+2. **"Ordena la Secuencia"** - Ordenación de números con drag & drop
+3. **"Reparte Igual"** - Sumas y distribución equitativa
+4. **"Deja Igual"** - Restas para igualar cantidades
+
+### 🎨 Personalización Avanzada
+
+- **Visual**: Colores, tipografías (Comic Neue, OpenDyslexic), tamaño de texto
+- **Audio**: Síntesis de voz (TTS) configurable, audios personalizados
+- **Formato de Números**: Grafía, pictogramas, audio, o dibujos
+- **Refuerzos Positivos**: Mensajes y sonidos personalizables por estudiante
+
+### 👥 Sistema Multi-Rol
+
+- **Estudiantes**: Acceso simplificado con contraseñas visuales (animales/colores)
+- **Tutores**: Gestión de perfiles, configuración de juegos, análisis de progreso
+- **Administradores**: Control total del sistema, gestión de usuarios y vinculaciones
+
+### 📊 Análisis y Seguimiento
+
+- **Registro de Sesiones**: Tracking automático de todas las partidas
+- **Estadísticas Detalladas**: Hits, errores, tiempo de juego, evolución diaria
+- **Informes PDF**: Reportes profesionales con gráficas y recomendaciones pedagógicas
+- **Visualizaciones**: Gráficos de progreso con FL Chart
+
+### 🔒 Seguridad y Privacidad
+
+- **Firebase Authentication**: Sistema seguro de autenticación
+- **Cloud Firestore**: Base de datos en tiempo real con reglas de seguridad
+- **Roles y Permisos**: Separación clara de capacidades por rol
+- **Datos Encriptados**: Protección de información sensible
+
+---
+
+## 🏗️ Arquitectura
+
+POPI está construido siguiendo principios de arquitectura limpia y patrones de diseño profesionales:
+
+### Patrón de Arquitectura
+
+```
+┌─────────────────────────────────────────────┐
+│              PRESENTATION LAYER             │
+│    (Screens, Widgets, UI Components)        │
+└─────────────────┬───────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────┐
+│               BUSINESS LOGIC                │
+│  (Controllers, Services, State Management)  │
+└─────────────────┬───────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────┐
+│                DATA LAYER                   │
+│    (Models, Firebase, Local Storage)        │
+└─────────────────────────────────────────────┘
+```
+
+### Componentes Clave
+
+- **Services (Singleton)**: `AppService`, `UserService`, `GameSessionTracker`, `PdfReportService`
+- **Controllers**: Lógica de juego específica para cada minijuego
+- **Models**: `UserModel`, `UserPreferences`, `SesionJuego`, `StudentReport`
+- **Widgets Reutilizables**: Sistema de componentes modulares y configurables
+
+---
+
+## 🛠️ Tecnologías
+
+### Framework y Lenguaje
+
+- **Flutter 3.9.2**: Framework multiplataforma de Google
+- **Dart SDK ^3.9.2**: Lenguaje de programación optimizado
+
+### Backend y Base de Datos
+
+- **Firebase Core**: Plataforma de desarrollo de aplicaciones
+- **Cloud Firestore**: Base de datos NoSQL en tiempo real
+- **Firebase Storage**: Almacenamiento de archivos multimedia
+
+### Librerías Principales
+
+| Librería | Versión | Propósito |
+|----------|---------|-----------|
+| `flutter_tts` | ^4.2.3 | Síntesis de voz (Text-to-Speech) |
+| `fl_chart` | ^1.1.1 | Gráficas y visualizaciones |
+| `pdf` | ^3.10.7 | Generación de informes PDF |
+| `printing` | ^5.11.0 | Impresión y exportación de PDFs |
+| `file_picker` | ^10.3.7 | Selección de archivos del sistema |
+| `audioplayers` | ^6.5.1 | Reproducción de audio personalizado |
+
+### Fuentes Tipográficas
+
+- **Arial**: Fuente base por defecto
+- **Comic Neue**: Fuente amigable y legible
+- **OpenDyslexic**: Fuente especializada para dislexia
+
+---
+
+## 📦 Instalación
+
+### Prerrequisitos
+
+- Flutter SDK 3.9.2 o superior ([Instalar Flutter](https://flutter.dev/docs/get-started/install))
+- Dart SDK ^3.9.2
+- Android Studio / Xcode (para desarrollo móvil)
+- Cuenta de Firebase configurada
+
+### Pasos de Instalación
+
+1. **Clonar el repositorio**
+
+```bash
+git clone https://github.com/tu-organizacion/popi.git
+cd popi
+```
+
+2. **Instalar dependencias**
+
+```bash
+flutter pub get
+```
+
+3. **Configurar Firebase**
+
+```bash
+# Instalar FlutterFire CLI
+dart pub global activate flutterfire_cli
+
+# Configurar Firebase para el proyecto
+flutterfire configure
+```
+
+4. **Ejecutar la aplicación**
+
+```bash
+# Modo desarrollo
+flutter run
+
+# Modo release (Android)
+flutter build apk --release
+
+# Modo release (iOS)
+flutter build ios --release
+```
+
+---
+
+## ⚙️ Configuración
+
+### Firebase
+
+1. Crear un proyecto en [Firebase Console](https://console.firebase.google.com/)
+2. Habilitar **Cloud Firestore** y **Authentication**
+3. Configurar reglas de seguridad de Firestore
+4. Añadir los archivos de configuración:
+   - Android: `google-services.json` en `android/app/`
+   - iOS: `GoogleService-Info.plist` en `ios/Runner/`
+
+### Estructura de Base de Datos
+
+```
+users/
+  └─ {userId}/
+      ├─ name: string
+      ├─ role: "student" | "tutor" | "admin"
+      ├─ avatarIndex: number
+      ├─ password: string (opcional)
+      ├─ tutorId: string (para estudiantes)
+      ├─ isActive: boolean
+      ├─ preferences: {...}
+      └─ createdAt: timestamp
+
+sesiones_juego/
+  └─ {sessionId}/
+      ├─ userId: string
+      ├─ gameId: number
+      ├─ hits: number
+      ├─ fails: number
+      ├─ timestamp: timestamp
+      └─ duration: number
+```
+
+---
+
+## 📖 Guía de Uso
+
+### Para Estudiantes
+
+1. **Inicio de Sesión**
+   - Seleccionar avatar en la pantalla de estudiantes
+   - Ingresar contraseña visual (secuencia de animales y colores)
+
+2. **Selección de Juego**
+   - Elegir uno de los cuatro juegos disponibles
+   - Ver tutorial si es la primera vez (opcional)
+
+3. **Jugar**
+   - Seguir las instrucciones de voz
+   - Completar las rondas configuradas
+   - Recibir refuerzos positivos personalizados
+
+### Para Tutores
+
+1. **Acceso al Panel**
+   - Login con usuario y contraseña de texto
+   - Acceder al panel de tutor
+
+2. **Gestión de Perfiles**
+   - Crear nuevos perfiles de estudiantes
+   - Editar preferencias de personalización
+   - Configurar dificultad de juegos
+   - Personalizar refuerzos positivos
+
+3. **Consultar Progreso**
+   - Ver estadísticas detalladas
+   - Generar informes PDF
+   - Analizar evolución diaria
+
+### Para Administradores
+
+1. **Gestión de Usuarios**
+   - Crear cuentas de tutores y estudiantes
+   - Activar/desactivar usuarios
+   - Resetear contraseñas
+   - Vincular estudiantes con tutores
+
+2. **Configuración Global**
+   - Gestionar permisos de personalización
+   - Administrar recursos multimedia
+   - Supervisar uso del sistema
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+popi/
+├── lib/
+│   ├── main.dart                    # Punto de entrada
+│   ├── firebase_options.dart        # Configuración Firebase
+│   │
+│   ├── screens/                     # Pantallas de la aplicación
+│   │   ├── home_screen.dart
+│   │   ├── login_screen.dart
+│   │   ├── game_selector_screen.dart
+│   │   ├── number_screen.dart       # Juego 1: Toca el número
+│   │   ├── sort_numbers_game.dart   # Juego 2: Ordena
+│   │   ├── equal_share_screen.dart  # Juego 3: Reparte
+│   │   ├── equal_subtraction_screen.dart # Juego 4: Resta
+│   │   ├── admin_screen.dart
+│   │   ├── tutor_edit_profile_*.dart
+│   │   └── ...
+│   │
+│   ├── models/                      # Modelos de datos
+│   │   ├── user_model.dart
+│   │   ├── sesion_juego.dart
+│   │   ├── student_report.dart
+│   │   └── number_format_preferences.dart
+│   │
+│   ├── services/                    # Lógica de negocio
+│   │   ├── app_service.dart
+│   │   ├── user_service.dart
+│   │   ├── game_session_tracker.dart
+│   │   ├── pdf_report_service.dart
+│   │   ├── reaction_message_service.dart
+│   │   └── reaction_sound_player.dart
+│   │
+│   ├── logic/                       # Controladores de juego
+│   │   ├── game_controller.dart
+│   │   ├── game_controller_ordenar.dart
+│   │   └── voice_controller.dart
+│   │
+│   ├── widgets/                     # Componentes reutilizables
+│   │   ├── number_tile.dart
+│   │   ├── target_slot.dart
+│   │   ├── check_icon_overlay.dart
+│   │   ├── reaction_overlay.dart
+│   │   └── ...
+│   │
+│   └── utils/                       # Utilidades
+│       └── color_constants.dart
+│
+├── assets/                          # Recursos multimedia
+│   ├── images/
+│   ├── icons/
+│   ├── sounds/
+│   └── fonts/
+│
+├── android/                         # Configuración Android
+├── ios/                            # Configuración iOS
+├── web/                            # Configuración Web
+└── test/                           # Tests unitarios
+```
+
+---
+
+## 🎮 Juegos Educativos
+
+### 1. Toca el Número 🔊
+
+**Objetivo**: Reconocimiento numérico auditivo y visual
+
+**Mecánica**:
+- Se genera una cuadrícula de números aleatorios
+- El sistema pronuncia un número usando TTS
+- El estudiante debe tocar el número correcto
+- Retroalimentación inmediata con animaciones
+
+**Configuración**:
+- Rango numérico (min-max)
+- Cantidad de números en la cuadrícula
+- Número de rondas por partida
+- Velocidad de voz
+
+### 2. Ordena la Secuencia 📊
+
+**Objetivo**: Comprensión del orden numérico
+
+**Mecánica**:
+- Números desordenados en la parte superior
+- Espacios objetivo en la parte inferior
+- Drag & drop para ordenar de menor a mayor
+- Validación al completar la secuencia
+
+**Configuración**:
+- Cantidad de números a ordenar
+- Rango numérico
+- Número de rondas
+- Dificultad (ascendente/descendente)
+
+### 3. Reparte Igual ➕
+
+**Objetivo**: Sumas y distribución equitativa
+
+**Mecánica**:
+- Bolas con valores numéricos
+- Recipientes con números objetivo
+- Arrastrar bolas para que la suma en cada recipiente sea igual al objetivo
+- Validación automática
+
+**Configuración**:
+- Cantidad de bolas
+- Rango de valores
+- Número de recipientes
+- Complejidad de las sumas
+
+### 4. Deja Igual ➖
+
+**Objetivo**: Restas para igualar cantidades
+
+**Mecánica**:
+- Jarras con diferentes cantidades de bolas
+- Eliminar bolas hasta igualar todas las cantidades
+- Objetivo: todas las jarras con el mismo número de bolas
+
+**Configuración**:
+- Número de jarras (2-6)
+- Rango de bolas iniciales
+- Complejidad de las restas
+
+---
+
+## 🎨 Sistema de Personalización
+
+### Personalización Visual
+
+```dart
+// Colores personalizables
+- Color primario de la interfaz
+- Color de fondo
+- Color de texto
+- Colores de refuerzos positivos
+
+// Tipografía
+- Familia: Comic Neue, OpenDyslexic, Roboto
+- Tamaño: Pequeño (16px), Mediano (20px), Grande (24px)
+```
+
+### Personalización de Contenido
+
+- **Formato de Números**: Texto, pictogramas, audio, o combinaciones
+- **Avatares**: Selección de 20+ avatares diferentes
+- **Mensajes de Refuerzo**: Personalizables por estudiante
+- **Sonidos de Refuerzo**: Biblioteca de sonidos o uploads personalizados
+
+### Personalización de Juegos
+
+Cada juego puede configurarse individualmente:
+- Nivel de dificultad (1-5)
+- Rangos numéricos específicos
+- Número de rondas por partida
+- Activación de tutoriales
+- Tipos de refuerzos positivos
+
+---
+
+## 👥 Gestión de Usuarios
+
+### Modelo de Usuario
+
+```dart
+class UserModel {
+  String id;
+  String name;
+  String role; // "student", "tutor", "admin"
+  int avatarIndex;
+  String? password;
+  String? tutorId; // Vinculación tutor-estudiante
+  UserPreferences preferences;
+  bool isActive;
+  Timestamp? createdAt;
+}
+```
+
+### Flujo de Creación de Perfil (Estudiantes)
+
+1. **Pantalla 1**: Selección de avatar
+2. **Pantalla 2**: Datos personales y contraseña visual
+3. **Pantalla 3**: Preferencias de visualización
+4. **Pantalla 4**: Configuración de juegos y refuerzos
+
+### Sistema de Autenticación
+
+- **Estudiantes**: Contraseña visual (secuencia de 4 animales con colores)
+- **Tutores/Admin**: Usuario y contraseña tradicional
+- **Seguridad**: Contraseñas encriptadas, sesiones controladas
+
+---
+
+## 📊 Análisis y Reportes
+
+### Seguimiento de Sesiones
+
+Cada partida registra:
+- Usuario y juego
+- Hits y errores
+- Timestamp y duración
+- Configuración utilizada
+
+### Informes PDF Profesionales
+
+Los informes incluyen:
+- **Cabecera**: Datos del estudiante y periodo
+- **Resumen Ejecutivo**: Sesiones totales, días activos, tasa de éxito global
+- **Evolución Diaria**: Gráfica de barras hits/errores por día
+- **Detalle por Juego**: Tabla con estadísticas específicas
+- **Recomendaciones Pedagógicas**: Sugerencias basadas en el rendimiento
+
+### Servicio de Reportes
+
+```dart
+class StudentReportService {
+  Future<StudentReportData> generateReport(
+    String userId,
+    DateTime start,
+    DateTime end
+  );
+}
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Ejecutar todos los tests
+flutter test
+
+# Test con cobertura
+flutter test --coverage
+
+# Tests específicos
+flutter test test/widget_test.dart
+```
+
+---
+
+## 🚀 Despliegue
+
+### Android
+
+```bash
+flutter build apk --release --split-per-abi
+```
+
+### Web
+
+```bash
+flutter build web --release
+```
+
+---
+
+## 🤝 Contribución
+
+Este es un proyecto educativo cerrado, pero abierto a sugerencias y mejoras.
+
+### Estándares de Código
+
+- **Linting**: Uso de `flutter_lints ^6.0.0`
+- **Formato**: `dart format lib/`
+- **Naming**: Convenciones de Dart estándar
+- **Comentarios**: Documentación de métodos públicos
+
+---
+
+## 3. Funcionalidades Implementadas
 - Selección de avatares personalizados (16 opciones)
 - Gestión de usuarios: crear, desactivar, eliminar
 - Sistema de restablecimiento y cambio de contraseñas
@@ -200,7 +662,7 @@ El proyecto utiliza las siguientes dependencias clave:
 - flutter_sound o record
 
 ---
-## 6. Autores
+## 👨‍💻 Autores
 
 - Juan Ramón Gallardo Casado
 - Jose Manuel Medina Horta
